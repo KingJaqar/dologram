@@ -1,2 +1,2 @@
-# Woolly Up
+# Nebuls
 A messenger web app developed with React Native Expo
