@@ -1,0 +1,180 @@
+
+test(&apos;matches sender nicknames and live attachment types&apos;, async () =&gt; {
+  addMessage(&apos;nickname&apos;, &apos;hello&apos;, { senderId: &apos;other&apos; });
+  addMessage(&apos;file&apos;, &apos;&apos;);
+  addMessage(&apos;removed-file&apos;, &apos;&apos;);
+  sqlite.prepare(&apos;INSERT INTO cache_message_media VALUES (?, ?)&apos;).run(&apos;file&apos;, JSON.stringify({ media_type: &apos;file&apos;, deleted_at: null }));
+  sqlite.prepare(&apos;INSERT INTO cache_message_media VALUES (?, ?)&apos;).run(&apos;removed-file&apos;, JSON.stringify({ media_type: &apos;file&apos;, deleted_at: &apos;2026-11-11&apos; }));
+  expect((await search(&apos;josé&apos;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;nickname&apos;]);
+  const files = await search(&apos;file&apos;);
+  expect(files.matches.map((message) =&gt; message.messageId)).toEqual([&apos;file&apos;]);
+  expect(files.matches[0].preview).toBe(&apos;File&apos;);
+});
+
+test(&apos;stops a cancelled search and returns no matches for an empty query&apos;, async () =&gt; {
+  const controller = new AbortController();
+  controller.abort();
+  const getAll = jest.spyOn(db, &apos;getAllAsync&apos;);
+  await searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;]&apos;, &apos;hello&apos;, null, controller.signal);
+  await search(&apos;&apos;);
+  expect(getAll).not.toHaveBeenCalled();
+});</file><file path="apps/mobile/src/search/__tests__/SearchScreen.test.tsx">import React from &apos;react&apos;;
+import { act, fireEvent, render, waitFor } from &apos;@testing-library/react-native&apos;;
+import type { ChatListItem } from &apos;@dologram/shared&apos;;
+import SearchScreen from &apos;../../../app/search&apos;;
+import { searchCachedMessages, type MessageMatch } from &apos;../query&apos;;
+
+const mockRouter = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () =&gt; true };
+const mockChats = [{
+  chatId: &apos;chat&apos;, title: &apos;White&apos;, preview: &apos;Hello&apos;, timeLabel: &apos;&apos;, sortMs: 0,
+  unreadCount: 0, muted: false, isGroup: false, pinned: false, savedMessages: false,
+  avatarId: &apos;other&apos;, avatarName: &apos;White&apos;, ownStatus: null, archived: false, accessibilityLabel: &apos;White&apos;,
+}] satisfies ChatListItem[];
+
+jest.mock(&apos;expo-router&apos;, () =&gt; ({
+  useRouter: () =&gt; mockRouter,
+  useLocalSearchParams: () =&gt; ({}),
+  useFocusEffect: (callback: () =&gt; void) =&gt; jest.requireActual(&apos;react&apos;).useEffect(callback, [callback]),
+}));
+jest.mock(&apos;../../auth/AuthProvider&apos;, () =&gt; ({ useAuth: () =&gt; ({ session: { user: { id: &apos;me&apos; } } }) }));
+jest.mock(&apos;../../theme/ThemeProvider&apos;, () =&gt; ({
+  useTheme: () =&gt; {
+    const tokens = jest.requireActual(&apos;@dologram/shared&apos;);
+    return { ...tokens, colors: tokens.color.light, duration: () =&gt; 0, reduceMotion: true };
+  },
+}));
+jest.mock(&apos;react-native-safe-area-context&apos;, () =&gt; ({ useSafeAreaInsets: () =&gt; ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
+jest.mock(&apos;../../chatList/useChatList&apos;, () =&gt; ({
+  useChatList: () =&gt; ({ active: mockChats, archived: [], ignored: [], loading: false, error: false, reload: jest.fn() }),
+}));
+jest.mock(&apos;../../queue/db&apos;, () =&gt; ({ getLocalDatabase: async () =&gt; ({}) }));
+jest.mock(&apos;../../components/Icon&apos;, () =&gt; ({ Icon: () =&gt; null }));
+jest.mock(&apos;../../components/Avatar&apos;, () =&gt; ({ Avatar: () =&gt; null }));
+jest.mock(&apos;../query&apos;, () =&gt; ({ ...jest.requireActual(&apos;../query&apos;), searchCachedMessages: jest.fn() }));
+
+const match: MessageMatch = {
+  chatId: &apos;chat&apos;, messageId: &apos;message&apos;, sender: &apos;You&apos;,
+  preview: &apos;Hello from history&apos;, createdAt: &apos;2026-11-11T00:00:00Z&apos;,
+};
+
+beforeEach(() =&gt; {
+  jest.clearAllMocks();
+  jest.mocked(searchCachedMessages).mockResolvedValue({ matches: [match], next: null });
+});
+
+test(&apos;filters conversations, clears immediately, and opens the selected chat&apos;, async () =&gt; {
+  const screen = render(&lt;SearchScreen /&gt;);
+  const input = screen.getByPlaceholderText(&apos;Search chats and messages&apos;);
+  fireEvent.changeText(input, &apos;white&apos;);
+  expect(screen.getByText(&apos;White&apos;)).toBeTruthy();
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;Clear search&apos; }));
+  expect(input.props.value).toBe(&apos;&apos;);
+  expect(screen.getByText(&apos;Search DoloGram&apos;)).toBeTruthy();
+  fireEvent.changeText(input, &apos;white&apos;);
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;White&apos; }));
+  expect(mockRouter.push).toHaveBeenCalledWith({ pathname: &apos;/chat/[chatId]&apos;, params: { chatId: &apos;chat&apos; } });
+  await act(async () =&gt; undefined);
+});
+
+test(&apos;opens a message result with its focus target and preserves search on the back stack&apos;, async () =&gt; {
+  const screen = render(&lt;SearchScreen /&gt;);
+  fireEvent.changeText(screen.getByPlaceholderText(&apos;Search chats and messages&apos;), &apos;hello&apos;);
+  await waitFor(() =&gt; expect(screen.getByText(match.preview)).toBeTruthy());
+  fireEvent.press(screen.getByText(match.preview));
+  expect(mockRouter.push).toHaveBeenCalledWith({
+    pathname: &apos;/chat/[chatId]&apos;, params: { chatId: &apos;chat&apos;, focusMessageId: &apos;message&apos; },
+  });
+});
+
+test(&apos;drops results from a previous query and retries a failed search&apos;, async () =&gt; {
+  let resolveOld!: (page: { matches: MessageMatch[]; next: null }) =&gt; void;
+  jest.mocked(searchCachedMessages).mockImplementationOnce(() =&gt; new Promise((resolve) =&gt; { resolveOld = resolve; }));
+  const screen = render(&lt;SearchScreen /&gt;);
+  const input = screen.getByPlaceholderText(&apos;Search chats and messages&apos;);
+  fireEvent.changeText(input, &apos;old&apos;);
+  await waitFor(() =&gt; expect(searchCachedMessages).toHaveBeenCalledTimes(1));
+  jest.mocked(searchCachedMessages).mockRejectedValueOnce(new Error(&apos;database unavailable&apos;));
+  fireEvent.changeText(input, &apos;new&apos;);
+  await act(async () =&gt; { resolveOld({ matches: [{ ...match, preview: &apos;Stale result&apos; }], next: null }); });
+  await waitFor(() =&gt; expect(screen.getByText(&quot;Couldn&apos;t search messages.&quot;)).toBeTruthy());
+  expect(screen.queryByText(&apos;Stale result&apos;)).toBeNull();
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;Retry&apos; }));
+  await waitFor(() =&gt; expect(screen.getByText(match.preview)).toBeTruthy());
+});</file><file path="apps/mobile/src/search/query.ts">import type { SQLiteDatabase } from &apos;expo-sqlite&apos;;
+import { strings, type MediaType } from &apos;@dologram/shared&apos;;
+import { attachmentLabel } from &apos;../media/model&apos;;
+
+export type SearchCursor = { createdAt: string; messageId: string };
+export type MessageMatch = SearchCursor &amp; { chatId: string; sender: string; preview: string };
+
+type CachedMessage = {
+  message_id: string;
+  chat_id: string;
+  created_at: string;
+  content: string;
+  sender: string;
+  media_types: string | null;
+};
+
+const BATCH_SIZE = 200;
+const PAGE_SIZE = 30;
+const MEDIA_TYPES: readonly MediaType[] = [&apos;photo&apos;, &apos;video&apos;, &apos;voice&apos;, &apos;file&apos;];
+
+export function normalizeSearch(value: string): string {
+  return value.normalize(&apos;NFKC&apos;).trim().toLowerCase();
+}
+
+function previewOf(content: string, query: string): string {
+  const normalized = content.normalize(&apos;NFKC&apos;).trim();
+  const match = normalized.toLowerCase().indexOf(query);
+  const start = Math.max(0, match - 36);
+  const end = Math.max(start + 160, match + query.length);
+  return `${start &gt; 0 ? &apos;…&apos; : &apos;&apos;}${normalized.slice(start, end)}${end &lt; normalized.length ? &apos;…&apos; : &apos;&apos;}`;
+}
+
+/** Walk the synced cache in bounded batches. JS normalization also handles non-ASCII text. */
+export async function searchCachedMessages(
+  db: SQLiteDatabase,
+  userId: string,
+  chatIds: string,
+  query: string,
+  cursor: SearchCursor | null,
+  signal: AbortSignal,
+): Promise&lt;{ matches: MessageMatch[]; next: SearchCursor | null }&gt; {
+  const matches: MessageMatch[] = [];
+  if (!query) return { matches, next: null };
+  let after = cursor;
+  while (!signal.aborted) {
+    const rows = await db.getAllAsync&lt;CachedMessage&gt;(
+      `SELECT m.message_id, m.chat_id, m.created_at,
+          json_extract(m.payload, &apos;$.content&apos;) AS content,
+          CASE WHEN m.sender_id = own.user_id THEN &apos;You&apos;
+            ELSE COALESCE(NULLIF(sender.nickname, &apos;&apos;), profile.display_name, ?) END AS sender,
+          (SELECT group_concat(DISTINCT json_extract(media.payload, &apos;$.media_type&apos;))
+             FROM cache_message_media media
+             WHERE media.message_id = m.message_id AND json_extract(media.payload, &apos;$.deleted_at&apos;) IS NULL
+          ) AS media_types
+        FROM cache_messages m
+        JOIN cache_chat_members own ON own.chat_id = m.chat_id AND own.user_id = ?
+        LEFT JOIN cache_chat_members sender ON sender.chat_id = m.chat_id AND sender.user_id = m.sender_id
+        LEFT JOIN cache_profiles profile ON profile.user_id = m.sender_id
+        WHERE m.chat_id IN (SELECT value FROM json_each(?))
+          AND m.deleted_at IS NULL AND m.seq IS NOT NULL
+          ${after ? &apos;AND (m.created_at, m.message_id) &lt; (?, ?)&apos; : &apos;&apos;}
+        ORDER BY m.created_at DESC, m.message_id DESC LIMIT ?`,
+      [strings.chatList.unknownMember, userId, chatIds, ...(after ? [after.createdAt, after.messageId] : []), BATCH_SIZE],
+    );
+    if (signal.aborted) break;
+    for (const row of rows) {
+      const types = row.media_types?.split(&apos;,&apos;) ?? [];
+      const labels = MEDIA_TYPES.filter((type) =&gt; types.includes(type)).map(attachmentLabel).join(&apos; · &apos;);
+      const content = row.content ?? &apos;&apos;;
+      if (![content, row.sender, labels].some((value) =&gt; normalizeSearch(value).includes(query))) continue;
+      if (matches.length === PAGE_SIZE) return { matches, next: matches[PAGE_SIZE - 1] };
+      const text = normalizeSearch(labels).includes(query) &amp;&amp; content ? `${labels} · ${content}` : content || labels;
+      matches.push({
+        chatId: row.chat_id,
+        messageId: row.message_id,
+        createdAt: row.created_at,
+        sender: row.sender,
+        preview: text ? previewOf(text, query) : strings.chat.attachmentOnly,

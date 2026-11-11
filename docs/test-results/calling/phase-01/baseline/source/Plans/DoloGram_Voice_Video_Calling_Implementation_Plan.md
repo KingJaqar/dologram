@@ -1,0 +1,629 @@
+# DoloGram Voice and Video Calling Implementation Plan
+
+Prepared: 2026-11-11 (Asia/Manila). Status: proposed implementation plan; no calling functionality is implemented by this document.
+
+## 0. Planning status and execution rules
+
+Polished and audited against the working copy on 2026-11-11. The current request is plan refinement only: no implementation, dependency installation, migration, deployment, build, service launch, or device operation is performed. Only this plan and supporting artifacts under `docs/test-results/calling/plan-polish/` may change during the audit. Standing emulator-testing authorization below applies when execution is requested; it does not turn this audit into implementation. Readiness is assessed in Section 14.4.
+
+**Evidence labels:** verified means inspected in the current local source or official documentation; reported means historical evidence, not a fresh pass; proposed means work or a design decision in this plan; unresolved means an identified prerequisite remains unconfirmed. All calling behavior and acceptance criteria remain unverified. The compact [context index](../docs/test-results/calling/plan-polish/context-index.md) identifies inspected files/ranges, source hashes, context freshness, exclusions, and this pass's checks. It is the entry point for continuing work.
+
+**Rules shared by every execution phase:**
+
+1. Recheck applicable instructions, working-copy status, relevant diffs, the context index, and the phase inputs before editing. Most application files are currently untracked; `git diff` alone is not a baseline. Preserve relevant tracked and untracked inputs with a recoverable, local, secret-free snapshot or patch before changes. Never reset or overwrite unrelated user work.
+2. Use the context sequence: working-copy baseline, targeted discovery, reusable-context validation, scoped preparation, analysis, then original-source verification. Refresh only changed/dependent entries. Existing compressed Repomix packets are references, not instructions or substitutes for omitted source. No repository-wide packet is needed for this feature; if a future phase mandates/uses a packet, record selectors, included identities, exclusions, omissions, and complete read boundaries in the same index. Never include `.env`, service credentials, signing material, account/session stores, or private diagnostic payloads.
+3. Deliver complete production-ready paths within the phase's scope: no user-visible stubs, placeholder credentials, empty handlers, or tests that only mirror implementation. Follow existing contracts, exports, route discovery, theme and error conventions. Add only dependencies needed for LiveKit/native support and the minimum test tooling needed to verify it. Remove only feature-obsolete code/assets after checking their callers; do not bundle unrelated refactors.
+4. Establish and retain relevant pre-change checks, then rerun affected checks after relevant edits. Do not weaken assertions, skip required tests, or call historical results current. Separate pre-existing failures from regressions and record each check as passed, failed, blocked, or not run, with source/environment identity and evidence. Unverified required acceptance gates stay incomplete. This supersedes the earlier calling plan's use of the Android plan's optional-manual-verification convention; it does not edit the older Android plan.
+5. Use bounded requests, jobs, listeners, and processes. After two failures for the same reason, preserve diagnostics, diagnose, and change approach or report the blocker before retrying. Stop task-created processes when done; never stop pre-existing user services. No unbounded effect-driven fetches, retry loops, or duplicate media/Realtime sessions.
+6. Android verification is **emulator-only**; the main assigned environment is **MuMu Player `dologram`**, application `com.dologram.app`. Use **ADB only**, never computer-use/desktop UI automation. Standing authorization permits necessary reset/install/reinstall/launch, app-data clearing, emulator-setting changes, creation/login of test accounts and creation/modification/deletion of their test data within the assigned environment. Use available supplied/publicly documented test credentials without reapproval or asking the user to log in. Preserve unrelated apps/accounts/data. LDPlayer is an alternative only if actually assigned; do not select an unrelated instance or physical device. Historical serials differ (`emulator-5554` vs `127.0.0.1:16480`); discover/confirm the named assigned instance with ADB before use rather than asking for emulator permission again. Current live identity remains technically unconfirmed; no device was accessed during auditing.
+7. Reuse a compatible approved development client/artifact. No speculative rebuilds or assumed quota: record installed modules/build fingerprint, build need, remaining allowance, upload permission, and chosen EAS profile first. Cloud EAS is the existing build method; local native builds remain excluded. The older report records an EAS source-upload authorization blocker; this planning request does not resolve it. Native dependency changes require a compatible new artifact, so an old development APK is not proof of calling support.
+8. Before integration tests, identify and confirm a dedicated Supabase test target, LiveKit test project, disposable accounts/chats, provider webhook/scheduler settings, and permitted peer endpoint. Never run fixtures against shared/production accounts because an older test does so, and never infer isolation from a container. Credentials stay in approved secret stores and out of command output. Use bounded test fixtures and disable external notification dispatch except to designated test recipients.
+9. Use phase work items and reporting in Section 9. Pending manual/provider/platform verification must not stop independent implementation or phases with satisfied technical prerequisites. Keep unmet gates pending, with no completion credit or release claim; do not silently waive them. During later execution, questions/status requests do not pause authorized work. Ask only for genuinely unavailable essential access information, a new material decision or an action outside standing authorization, explaining the affected dependency; first consult the available supplied materials without exposing credentials.
+
+## 1. Goal and scope
+
+Implement one-to-one internet voice and video calls inside DoloGram using:
+
+- **LiveKit Cloud:** transport microphone and camera streams.
+- **Supabase Postgres and Realtime:** persist invitations, authoritative call state, participants, and history; notify signed-in clients about changes.
+- **Supabase Edge Functions:** authenticate callers, enforce membership and call permissions, issue short-lived LiveKit tokens, process signed LiveKit events, and clean up abandoned sessions.
+- **Expo/React Native screens:** outgoing call, incoming call, connecting, active call, reconnecting, and ended states, with answer, decline, hang up, mute, audio routing, camera toggle, and camera switch controls.
+
+Delivery target: the existing Android app first. Keep shared contracts and the media abstraction suitable for iOS and a future web client, but do not claim support for those clients before their own builds and verification.
+
+The first usable milestone supports calls while both apps are in the foreground. A subsequent milestone adds notification invitations. Reliable lock-screen calling and continued calls in the background require a separate native integration milestone described in Section 10.
+
+Initial exclusions: group calls, telephone numbers/PSTN, recording, transcription, screen sharing, picture-in-picture, call transfer, and voice-to-video upgrades during an existing voice call. A voice call publishes microphone audio only; a video call permits microphone and camera tracks, with explicit camera controls. Transport encryption is used, but application-managed end-to-end encryption is a separate future design and must not be advertised as implemented.
+
+### 1.1 Requirements, implementation coverage, and observable acceptance
+
+Stable IDs below cover the agreed calling scope. V0-V8 refer to Section 11 verification groups. All are **not run** for calling. Phase 6/Phase 7 acceptance belongs to those later milestones and must not block a correctly labelled foreground release or be represented as delivered by it.
+
+| ID | Observable acceptance criterion | Implementation coverage | Verification |
+| --- | --- | --- | --- |
+| CALL-01 | A starts a voice call in an eligible A-B chat; B answers; both exchange audible media; either ends it and both leave. No camera track is allowed. | Phases 1-3; Sections 4-7 | V1, V2, V4, V5: real peer/media exchange plus source-grant rejection. |
+| CALL-02 | A starts video; B can answer with camera off; both can exchange video/audio when enabled. Turning camera off releases its capture without ending voice. | Phase 2, Phase 4; Sections 6-7 | V2, V4, V5: track observations, rendering and capture teardown. |
+| CALL-03 | Accept, decline, caller cancel, no-answer expiry, connection failure and hang-up produce exactly the allowed transitions in Section 5.2; terminal calls never reopen. | Phases 1-3, Phase 5 | V1, V2, V4: action/deadline/race cases and late-event replay. |
+| CALL-04 | Concurrent invitations reserve each user once; duplicate create IDs do not duplicate attempts; only the bound caller/first accepting callee session receives tokens. | Phases 1-3 | V1, V2, V4: parallel transactions, response loss, opposite-direction calls, two accepting sessions. |
+| CALL-05 | Anonymous/unrelated/nonmember users cannot read/control/join calls, and restricted users cannot initiate/join; groups/self/incomplete chats cannot initiate. Access loss triggers cleanup. A bound participant with a valid JWT can still end after restriction; an invalidated session stops locally and is cleaned up by the server. | Phases 1-2, Phase 5 | V1, V2: direct table/RPC/function attacks; revoke access during a live call. |
+| CALL-06 | Only the Edge backend mints five-minute room/source-scoped credentials after acceptance; client/Realtime/history/logs expose no signing secret; ended-call credentials fail admission, including refreshed/late credentials. | Phases 0-3, Phase 8; Section 6 | V1, V2, V4, V8: claims inspection, invalid signatures, issuance/end race, cutoff boundary, client memory teardown and fresh artifact scan. |
+| CALL-07 | Mute, actual available speaker/earpiece route selection, hang-up, camera on/off and available-camera switch reflect SDK outcomes. Unsupported routes/cameras are disabled/explained rather than simulated as successful. | Phases 3-4 | V4, V5: SDK state/track checks and allowed MuMu media/route observations. Hardware-only assertions stay unverified if unavailable. |
+| CALL-08 | Denying microphone prevents create/accept; denying camera permits camera-off video participation. Permission prompts do not end a call on blur. Controls have labelled roles/states, theme contrast, reduced-motion behavior, and at least 48 dp targets without overlap at large text. | Phases 3-4 | V4, V5: permission cases, accessibility tree/layout, settings return and prompt lifecycle. |
+| CALL-09 | An incoming call appears while a different chat is open; stale/duplicate events do not ring twice. Back inside the app preserves one media session and exposes a return banner. | Phase 3, Phase 5 | V4, V5: global subscription, subscribe/fetch race, reconnect and navigation. |
+| CALL-10 | Every hang-up, error, sign-out, active-account removal/switch, confirmed background and process-loss path releases local resources; old-account async results never connect; voice recording/playback cannot compete for call audio. | Phases 3-5 | V2, V4, V5: all discovered auth callers; recorder preparation race; track/listener/timer counts and server crash recovery. |
+| CALL-11 | Lost webhooks, signaling/media outages, process death and provider errors converge to authoritative state within the stated healthy-service budgets; bounded retries neither duplicate effects nor leak reservations/rooms. | Phases 1-2, Phase 5 | V1, V2, V4, V5: fault injection, scheduler overlap, worker restart, due scans and reconciliation. |
+| CALL-12 | The accessible chat's Calls screen is reachable; pages show correct direction/type/outcome/time/duration once per attempt. Call again uses a new request and eligibility checks. Unavailable history shows an honest offline/error state. | Phase 1, Phase 5 | V1, V3-V5: tied timestamps/page boundaries, unauthorized access, zero-duration outcomes, retry and deletion. |
+| CALL-13 | A valid Phase 6 invitation notification opens the correct active account's still-live call; expired/cancelled/wrong-account pushes cannot answer/join. Message notifications still work. | Phase 6; Sections 7, 10 | V2, V4, V6: dispatch/tap/foreground handler/channel cases and expired pushes. |
+| CALL-14 | Phase 7's Android background/lock-screen behavior follows its recorded platform-state support matrix; force-stop limitations are stated; native end/answer routes through the same server state machine. | Phase 7 | V2, V4, V7: native actions, service lifecycle, lock/unlock and cancellation on the assigned MuMu. |
+| CALL-15 | SDK 57/RN 0.86 builds use a compatible pinned LiveKit set; missing-native/disabled clients still start, message and switch accounts. New calls require a verified compatible artifact. | Phase 0, Phase 3, Phase 8 | V0, V4, V5, V8: dependency/config/import checks, old-runtime fallback and authorized native build. |
+| CALL-16 | Global/chat notification and mute settings control alerts; a device-locally blocked chat cannot launch or ring in the foreground. Phase 6 dispatch honors its last synchronized device preferences and server mute state; taps always revalidate. History is retained. No server-wide blocking or retroactive prevention of an already displayed OS notification is claimed. | Phase 3, Phases 5-6 | V2, V4-V6: silenced vs visual invitation, local block, preference synchronization/channel changes and privacy defaults. |
+| CALL-17 | Server flags, rate limits, max duration and quota failures work across devices; healthy-service timing budgets are measured; diagnostic output contains only permitted metadata. | Phases 1-2, Phase 5, Phase 8 | V1, V2, V5, V8: limits/disabled state, timings, job lag, provider quota error, scrubbed logs. |
+| CALL-18 | A source-matched release artifact passes the relevant checks, supports only verified modes, and can be disabled while cleanup/history continue; baseline failures and unmet gates remain visible. | Phases 0-8 as delivered | V0, V8 plus required V1-V7 results for the delivered milestones; rollback rehearsal. |
+
+## 2. Repository findings and integration constraints
+
+| Existing location | Reuse or planned change |
+| --- | --- |
+| `apps/mobile/package.json` | Expo `~57.0.32`, React Native `0.86.3`, existing `expo-dev-client`, `expo-audio`, `expo-video`, and `expo-notifications`. Verify LiveKit native compatibility before committing to SDK versions. |
+| `apps/mobile/app/_layout.tsx` | Mount an authenticated, account-scoped call provider and global incoming-call presentation. Extend the existing notification response router. |
+| `apps/mobile/app/chat/[chatId]/index.tsx` | Add voice and video buttons to the chat header for eligible direct chats. Retain the existing info action. |
+| `apps/mobile/src/chat/realtime.ts` | Existing per-chat Broadcast is used for typing/read hints and is mounted with a chat. Incoming calls need an app-wide subscription, not just this chat channel. |
+| `apps/mobile/src/sync/source.ts` | Existing Postgres Changes delivery and payload validation offer patterns to reuse. Calls get a separate delivery lifecycle rather than being forced into message synchronization. |
+| `apps/mobile/src/notifications/pushNotifications.ts` | Reuse registration and response subscriptions; distinguish call invitations from message notifications. |
+| `apps/mobile/src/auth/accountSession.ts` (`activateAccountSession`, `switchToSavedAccount`), `apps/mobile/src/storage/localData.ts` (`clearLocalData`) | Add pre-session-change teardown while the old JWT is valid, plus account-generation cleanup in the provider. |
+| `apps/mobile/app/(main)/(tabs)/settings.tsx`, `app/manage-accounts.tsx`, `src/components/AccountSwitcherPopover.tsx` (under `apps/mobile/`) | These also call `auth.signOut`, some without `clearLocalData`; every active-account sign-out/removal path needs the same narrow teardown hook. Sign-in/up activation already passes through `activateAccountSession`. |
+| `apps/mobile/src/components/VoiceRecordButton.tsx`, `VoiceNotePlayer.tsx`, `VideoPlayback.tsx` | Coordinate audio ownership so voice recording/playback and calling do not capture or configure the microphone simultaneously. |
+| `apps/mobile/app.json`, `app.config.js`, `eas.json` | Configure required natives through Expo plugins. Reuse compatible development/release artifacts; Phase 3/Phase 8 justify a replacement EAS build only when the source/native capability and distribution needs require it. |
+| `packages/shared/src/db/database.types.ts`, `strings/index.ts`, `theme/icons.ts` | Regenerate database types and add common call contracts, copy, and icons. Keep the native LiveKit dependency outside the shared package. |
+| `apps/mobile/src/components/Icon.tsx` (`lucideRegistry`) | The renderer explicitly imports/registers glyphs and returns null for unregistered names. Add necessary call glyphs to both this registry and the semantic shared map; preserve current asset-backed star behavior and unrelated concurrent icon edits. |
+| `supabase/migrations/016_align_messenger_schema.sql` | Use the current `chats.chat_id`, `chats.type`, and `chat_members.user_id` contract, not the original pre-alignment schema. |
+| `supabase/functions/send-push-notifications/` | Reuse delivery patterns and active-user checks; retain separate call payloads, expiry rules, preferences, and deduplication. |
+| `apps/mobile/src/chat/query.ts` (`ChatScreenSnapshot`), `src/chats/preferences.ts` (under `apps/mobile/`) | Snapshot already exposes `chat`, `members`, and `savedMessages`; use these for affordances. `blocked`, `notifications`, and `sounds` are device-local preferences; `chat_members.muted_until` is server-backed. Do not invent a server block list. |
+| `apps/mobile/src/notifications/pushNotifications.ts` (`loadNotifications`, `handleNotification`, `androidChannelId`) | Optional-native loading already avoids incompatible clients. The notification handler/channel currently assumes messages; extending only the tap router would suppress generic call alerts. |
+| `scripts/scan-mobile-bundle.ps1` | Current patterns cover Supabase/admin secrets, not LiveKit secrets. Extend coverage in Phase 2 and scan a fresh matching export in Phase 8. |
+
+Verified correction: the working copy has `025_add_group_chat_avatars.sql` and **`026_shared_chat_nicknames.sql`**, so the earlier duplicate-025 finding is stale and is not a repair task. The second audit also found the new, unrelated `027_unique_folder_names.sql`; local sequence currently ends at 027, not 026. Its folder migration is preserved and is not calling repair scope. Deployed history is uninspected. Allocate the next zero-padded sequence from the verified execution target and current repository immediately before implementation, preserving applied versions per `supabase/AGENTS.md`; `<next>` below is deliberate.
+
+No calling modules, LiveKit dependencies, call schema, calling endpoints, call rate-limit infrastructure, or call scheduler are present in the inspected source. Existing SQL tests are transactional assertion scripts, not a confirmed pgTAP runner. Local presence of notification code does not prove hosted deployment, Firebase configuration, or runtime support. The older Phase 17 report records passing typecheck/shared tests/export, pre-existing sign-up lint findings, and a stopped full-Jest hang; none were rerun or promoted to current calling evidence during polishing.
+
+Use the actual `apps/mobile/app/` routes. The mobile AGENTS file's generic `src/app/` guidance does not match the existing layout; do not move existing routes for this feature.
+
+Follow existing EAS cloud-build conventions. Do not create or edit generated Android/iOS projects manually. Install native dependencies with `npx expo install`, pin the versions validated with SDK 57, and record them in `docs/versions.md`. LiveKit needs a development build and cannot run in Expo Go. [LiveKit Expo guide](https://docs.livekit.io/transport/sdk-platforms/expo/), [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/)
+
+## 3. Product behavior and initial defaults
+
+These are implementation defaults, adjustable through server configuration after observing usage:
+
+| Decision | Initial behavior |
+| --- | --- |
+| Eligible conversation | A direct chat with exactly two distinct current members. Reject groups, Saved Messages, and incomplete one-member direct chats. |
+| Concurrent calls | One ringing, accepted, or active call per user across devices and chats. The database enforces this. |
+| Ring window | 30 seconds from server creation time. Network delivery does not extend the deadline. |
+| Connection window | 30 seconds after acceptance to establish both participants, otherwise fail and release reservations. |
+| Disconnect grace | 20 seconds for a connected participant to recover; reconciling server state determines the final result. |
+| Token TTL | 5 minutes for initial admission. Check exact SDK refresh and revocation behavior in the compatibility milestone. |
+| Pilot maximum duration | 30 minutes, enforced by the server, with a visible warning near the limit. This is a configurable budget control, not a LiveKit free-plan limit. |
+| Camera privacy | No remote camera/microphone publishing before acceptance. Camera preview is local and optional. Support answering a video invitation with camera initially off. |
+| Speaker default | Voice: earpiece when available. Video: speaker when no headset is connected. Prefer the connected wired/Bluetooth route and reflect the actual route in the UI. |
+| Background, first milestone | Foreground-only. A confirmed Android `background` transition stops publishing and ends the call on a best-effort basis; server cleanup covers process termination. A permission dialog/focus blur alone must not cancel an answer or call. Do not promise background audio until the native milestone ships. |
+| Navigation within app | Back minimizes an active call into a persistent return-to-call banner; only hang up ends it. Maintain one media session above individual screens. |
+| History | Per-chat Calls screen with incoming/outgoing, voice/video, outcome, timestamp, duration, and call-again actions. No new main tab or message schema change is required. |
+| Notifications | Respect account notification settings and chat mute preferences for audible alerts. A persisted invitation/history record remains even when alerts are silenced. |
+
+If a user is offline, never add a call action to the existing message queue. Show an immediate connectivity error. Reconnection may reconcile an existing call; it must not replay an expired invitation.
+
+Server deadline comparisons use database UTC time, not client clocks. Include `serverTime` in state responses to estimate display offset, and use monotonic elapsed time between refreshes. A 30-second ring deadline is a strict acceptance cutoff even if a worker has not yet changed the displayed database status.
+
+The foreground caller is bound to its client session during **create**, not on the first token request; otherwise another signed-in device could seize the outgoing call. The callee is bound on the first valid accept. A client-session UUID identifies a runtime instance for honest multi-device coordination; it is not an independent authentication credential or proof of physical device identity. Generate it once per authenticated runtime and never copy it from another client's event. A fresh runtime cannot take over or end the old bound session: display that the call belongs to another session, wait for server reconciliation/expiry, and allow a new attempt only after its reservation clears. Cleanup never fabricates another session's binding.
+
+## 4. Architecture and end-to-end flow
+
+```mermaid
+sequenceDiagram
+    participant A as Caller app
+    participant E as Call Edge Functions
+    participant D as Supabase database
+    participant B as Callee app
+    participant L as LiveKit
+    A->>E: Create invitation with user JWT and request ID
+    E->>D: Validate and atomically reserve both users
+    D-->>B: Realtime call update
+    B->>E: Accept invitation with user JWT
+    E->>D: Conditional transition to accepted
+    D-->>A: Accepted state
+    A->>E: Request room token
+    B->>E: Request room token
+    E->>D: Check participant, membership, session, current state
+    E-->>A: Room-scoped short-lived token
+    E-->>B: Room-scoped short-lived token
+    A->>L: Connect and publish allowed tracks
+    B->>L: Connect and publish allowed tracks
+    L->>E: Signed participant/room events
+    E->>D: Reconcile media state and start duration
+    A->>E: Hang up
+    E->>D: End call and enqueue durable room cleanup
+    E->>L: Revoke admission, remove participants, close room
+    D-->>B: Terminal state and history update
+```
+
+Supabase is authoritative for permission, invitation status, and history. LiveKit is authoritative for media connectivity. Client events improve responsiveness but cannot establish another user's acceptance, rewrite history, or certify that a peer actually joined.
+
+Create no room connections and issue no media tokens during ringing. This limits accidental publishing and avoids spending participant minutes on unanswered invitations. A unique opaque room name is generated per call and never reused.
+
+After acceptance, provision that room idempotently with a two-participant limit before returning admission tokens. Persist its SID/readiness privately. Concurrent token requests share the same provisioning result; a missing room during provisioning is not a completed-call signal. Provider creation failure is retryable only within the connection window and ends as `failed` if that deadline expires.
+
+## 5. Database and authoritative state
+
+### 5.1 Proposed tables
+
+| Table | Core fields and responsibility |
+| --- | --- |
+| `calls` | `call_id`, `chat_id`, `caller_id`, `callee_id`, `media_type` (`voice`/`video`), `status`, `created_at`, `ring_expires_at`, `accepted_at`, `connect_expires_at`, `connected_at`, `ended_at`, `ended_by`, `end_reason`, monotonic `revision`, caller-scoped `request_id`. One row per attempt, including a busy outcome. |
+| `call_participants` | Safe public connection observations only: composite key `(call_id, user_id)`, role, current connected flag/generation, join/leave timestamps, and participant `revision`. Exactly the two intended users. Keep device-session bindings and provider identifiers in `private.call_rooms` or its private participant mapping. |
+| `private.call_user_reservations` | `user_id` primary key, `call_id`, next reconciliation deadline. Atomically reserve both users during ringing and retain through accepted/active states. No client reads/writes or Realtime publication. |
+| `private.call_rooms` | Internal mapping from call to unique room name, room SID/generation, participant identities/session bindings, readiness, issuance epoch/lease, latest finalized token `nbf`/expiry metadata, revocation/cleanup state. No raw tokens. Not published through Realtime or readable by normal users. |
+| `private.call_jobs` | Durable outbox for room cleanup and, later, invitation push dispatch. Include unique deduplication key, attempt count, next attempt, completion/error state, and deletion-surviving termination/operation-generation metadata needed to clean late provider completions. |
+| `private.call_webhook_events` | Provider event ID primary key, processing status, event timestamp, and minimal required metadata. Deduplicate replayed events; avoid persisting tokens or unnecessary raw payloads. |
+| `private.call_settings`, `private.call_rate_limits` | Singleton feature/default settings and durable per-user/per-pair attempt windows. These do not exist yet; add them rather than referring to an assumed general rate-limit service. |
+
+Use foreign keys to `public.chats(chat_id)` and `auth.users(id)`, status/media checks, caller-not-equal-to-callee checks, and consistency constraints on terminal timestamps. Index `call_participants(user_id, call_id)`, `calls(chat_id, created_at desc, call_id desc)`, and pending deadlines/jobs. History filters the current pair and uses the latter call index; do not index a participant `created_at` column that is not defined. Make `(caller_id, request_id)` unique to handle create retries without duplicate calls or notifications; reusing a request ID with different chat/media inputs is a 409, not a new attempt.
+
+History follows actual server-side chat/account deletion: `calls.chat_id` and caller/callee Auth references use `ON DELETE CASCADE`; public participants and reservations cascade from their call. Device-local chat hiding/deletion is not a server cascade. A database BEFORE DELETE path snapshots opaque room name/participant identities and in-flight operation generations into a standalone private cleanup job before the call/private room mapping is removed; that job has no cascading foreign key to deleted call/chat/user rows. A job must not depend on deleted rows to terminate media. Keep provider credentials outside it. Test direct and cascaded deletion during live media and in-flight room provisioning. No automatic time-based history purge or separate retention project is required for this release.
+
+Keep operational tables in a private schema. Return only safe call fields through authenticated endpoints/RLS. Tokens are never database history fields, URLs, push payloads, analytics attributes, or SQLite values.
+
+### 5.2 State transitions
+
+| From | To | Authorized trigger |
+| --- | --- | --- |
+| none | `ringing` | Caller creates a valid invitation and both reservations succeed. |
+| none | `failed` (`busy`) | Valid attempt finds either participant reserved; return busy and persist a single history outcome without disturbing the existing call. |
+| `ringing` | `accepted` | Callee accepts before the server deadline; bind the winning callee client session. |
+| `ringing` | `declined` | Callee declines. |
+| `ringing` | `cancelled` | Caller cancels. |
+| `ringing` | `missed` | Server ring deadline passes without an earlier transition. |
+| `accepted` | `in_progress` | Server verifies both expected participants are connected to the current LiveKit room. |
+| `accepted` | `ended` | Either participant hangs up before connection completes. Duration is zero. |
+| `accepted` | `failed` | Connection deadline passes or unrecoverable permission/provider setup fails. |
+| `in_progress` | `ended` | Either participant hangs up, maximum duration is reached, or a server policy terminates the call. |
+| `in_progress` | `failed` | Media does not recover within the disconnect grace period, or a provider failure is confirmed. |
+
+`declined`, `cancelled`, `missed`, `ended`, and `failed` are terminal. Never reopen a terminal call. `connecting` and `reconnecting` are UI/participant states, not alternate invitation statuses.
+
+Every transition runs in a transaction with row locking, deadline checks, and a conditional current-state/revision check. Reserve users in a stable user-ID order to avoid deadlocks. A unique reservation row enforces the rule even when different chats call the same user at the same moment. Simultaneous A-to-B and B-to-A calls produce one ringing call and a busy response for the losing attempt; its client can discover the existing incoming call.
+
+Repeated accept/decline/hang-up requests return the resulting authoritative state. If accept races cancel or timeout, the first valid database transition wins. Only one device can win acceptance; the remaining devices dismiss their ringing UI. A reconnect by that selected session is allowed; another device cannot silently take over.
+
+Release reservations in the same transaction as terminal state and durable cleanup enqueueing. Expired rows are not deleted blindly: the worker first reconciles and terminalizes the owning call. Client clocks and missing heartbeats alone are not evidence that an otherwise healthy media call ended.
+
+All accepted/live calls have a due reconciliation time even if no webhook arrives. Check actual room presence at least every ten seconds during the pilot, advancing the deadline after a successful observation. A lost leave event is detected by this scan. Set a disconnect deadline on the first confirmed absence; terminalize only after the 20-second grace plus the next scan, unless an explicit terminal action already won. A provider timeout alone is not proof of absence: retain reconciling state and alert. Independently, the database sweep and admission RPC enforce the 30-minute cap from `connected_at` even if provider presence is unavailable: commit `ended` with `max_duration`, deny further tokens, release reservations and enqueue cleanup. Actual remote disconnection can only be confirmed after the provider responds again. Expose that eventual-cleanup limitation; do not postpone the logical cap until provider recovery or claim healthy media lost a reservation merely from a stale lease.
+
+Duration is server-defined elapsed time from the first verified simultaneous connection to terminal time, including short reconnect gaps. Store timestamps and derive duration, rather than trusting the client timer. If only one side joined, duration remains zero. For failures detected later, use the last confirmed media/disconnect time where available; mark uncertain measurements internally rather than inventing precision.
+
+### 5.3 RLS and database functions
+
+- Permit history/state reads only to the recorded caller or callee while they still have access to that chat. Membership alone must not reveal a previous pair's call to a newly added member.
+- Deny direct authenticated inserts/updates/deletes to call state, participant bindings, reservations, and operational tables.
+- Expose proposed service-only transaction RPCs `call_create`, `call_transition`, `call_prepare_admission`, `call_finalize_admission`, and `call_reconcile`. No authenticated/anonymous client gets EXECUTE. Edge Functions verify the user JWT first and pass the resulting actor ID through an admin/service-role client; the database sees that service role, so it must not assume `auth.uid()` still represents the user. Each RPC explicitly checks the supplied verified actor against stored caller/callee, membership, account state, session binding, and permitted transition. Scheduler-only actions are separate from user actions. Deny PUBLIC/anon/authenticated execution and test attempted direct invocation. Ordinary clients only read safe RLS-protected rows.
+- If any function uses `SECURITY DEFINER`, pin `search_path`, fully qualify references, revoke default/public execution, grant only its intended role, and explicitly check actor and membership. Private worker-only functions accept verified server authority only.
+- Call lifecycle functions must validate active-account restrictions already used by notification delivery, including bans and mandatory password changes. Apply these checks again when issuing tokens.
+- Recheck both users against the authoritative Auth ban/password-change state on create/accept/admission and during active reconciliation. The existing notification function's `isActiveUser` checks `auth.users` through the Auth admin API; the public profile flag alone is insufficient. A restricted/deleted account cannot create new media, but an already-bound participant must still be able to end/disconnect its existing call. Membership/account deletion must enqueue cleanup using the deletion-safe job design above; access loss detected by periodic reconciliation also terminates media. No new general admin/account-management feature is required.
+- Add only the safe call/participant tables to `supabase_realtime`; do not publish secrets, webhook payloads, or the operational tables.
+
+For database-side account checks, implement a private, tightly granted helper that reads the required `auth.users` ban/app-metadata state; confirm actual target columns in Phase 1. Do not trust actor/status booleans submitted by an ordinary client or assume a public profile flag matches Auth. The service-only RPC rechecks transactional permissions; the Edge's verified user/session and admin check are additional boundaries. Keep endpoint/internal worker grants separate and prove ordinary JWTs cannot call worker-only actions.
+
+## 6. Edge Function contracts and security
+
+### 6.1 Endpoints
+
+| Endpoint | Request | Result and checks |
+| --- | --- | --- |
+| `call-action` | `{ action: 'create', chatId, mediaType, requestId, clientSessionId }` | Validate JWT, active users, exactly two eligible members, rate limit, feature flag, and reservations. Derive callee and actor server-side. Return safe call state. |
+| `call-action` | `{ action: 'accept' | 'decline' | 'cancel' | 'end', callId, requestId, clientSessionId }` | Check actor role, membership, selected-session policy, status, and deadlines; invoke the corresponding atomic transition. |
+| `call-action` | `{ action: 'snapshot', callId?, clientSessionId }` | Return safe active/incoming state (or the accessible specified call), feature availability, `serverTime`, and server-derived `canAnswer`, `canCancel`, `canJoin`, `canEnd`, `belongsToThisSession` booleans. Derive them for the JWT actor and supplied runtime session; never disclose other session IDs/provider identities. This supports startup/reconnect and truthful multi-device UI. Capabilities are presentation hints, never substitutes for action-time authorization. |
+| `call-token` | `{ callId, clientSessionId }` | Admit only the bound caller or selected accepting callee to an accepted/in-progress call. Return `{ serverUrl, participantToken, expiresAt, callId, revision, serverTime }` after final authorization. |
+| `livekit-webhook` | Provider-signed raw body | Verify LiveKit signature/body integrity, persist/deduplicate event, map room and identity to the intended call, reconcile, and enqueue cleanup where required. |
+| `reconcile-calls` | Server scheduler credential | Expire ringing/connecting calls, confirm media recovery or failure, process retry jobs, enforce duration limits, and repair missed provider events. Not callable by ordinary users. |
+| `send-call-notifications` | Internal outbox job, later milestone | Resolve current eligible tokens/preferences and send short-lived, deduplicated invitation notifications. No user-supplied recipient list. |
+
+Use `supabase.functions.invoke` with the active user's JWT for user endpoints, verify authentication server-side, and retain platform JWT verification where supported. Existing webhook functions with `verify_jwt = false` are not templates for unauthenticated user endpoints. Provider webhooks need `verify_jwt = false` because LiveKit does not supply a Supabase JWT; signature verification is mandatory inside the handler. [Supabase function authentication](https://supabase.com/docs/guides/functions/auth)
+
+Use a stable error envelope such as `{ code, message, retryable }`. Cover `CALL_BUSY`, `CALL_EXPIRED`, `CALL_ALREADY_HANDLED`, `CALL_NOT_ALLOWED`, `CALL_PERMISSION_REQUIRED`, `CALL_PROVIDER_UNAVAILABLE`, `CALL_FEATURE_DISABLED`, and `CALL_RATE_LIMITED`; map them to shared user-facing strings. Return 401 for invalid authentication, 404 for inaccessible calls to avoid disclosing existence, 409 for conflicting state, and 429 with retry guidance for limits. Recover a lost response by reading the authoritative state, not by creating a new attempt ID.
+
+Accept POST only (plus inert OPTIONS where needed); reject malformed JSON, oversized bodies (initial cap 8 KiB), invalid UUIDs/enums, and unexpected actor/room/recipient fields before database writes. Error/log output must not serialize JWTs, provider headers, or SDK request objects. A permission-required condition is ordinarily local UI state, not proof sent by a client to bypass admission checks.
+
+Proposed request bounds: client action/token timeout ten seconds; one automatic retry after a transient timeout/5xx, then reconcile/show retry. Lifecycle actions retain their original request ID. `call-token` has no request-ID field: its safe retry retains the same call/runtime session, may mint a fresh short-lived token after renewed checks, and must not create another room or media connection. Record the greatest finalized `nbf`/expiry across issued credentials so cleanup covers every retry; never cache raw tokens server-side to simulate identical responses. Do not retry authorization/validation/conflict failures as transport errors. For a 429, honor `Retry-After` only while the invitation/connection deadline remains valid. Provider HTTP calls are bounded to five seconds; interactive calls do not spin on provider faults. Realtime recovery polls at most every five seconds for a live call, with at most one in-flight request; stop on terminal/account transitions and on background in foreground-only mode. Phase 7 supplies its supported background signaling lifecycle instead. Jobs take a single fenced claim, use backoff (initially 2, 5, 15, then 60 seconds), and escalate after five unsuccessful attempts while retaining the durable cleanup record for controlled recovery. Apply the two-identical-failures diagnosis rule in Section 0 to execution commands, not by disabling essential operational recovery.
+
+### 6.2 Token policy
+
+- Store `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` only in Edge Function secrets. Keep privileged Supabase credentials server-side. No `EXPO_PUBLIC_` LiveKit secret or client-side token minting.
+- Use a server-generated opaque identity per call participant and a unique opaque room name. Do not put names, usernames, emails, or telephone numbers in these identifiers.
+- Allow joining exactly the call's room, subscribing, and publishing only the required sources. Voice permits microphone; video permits microphone and camera. Deny room administration, recording, room listing, screen sharing, and unrelated data publishing.
+- Set explicit five-minute initial TTL. Keep returned tokens in memory only and discard them on call end or account change.
+- Check current state, participant/session binding, membership, and server feature flags on every issuance. A caller may never supply an arbitrary room or participant identity.
+- TTL does not end an already connected call. Ending a call requires server removal/revocation and room cleanup, plus the database terminal state. LiveKit refreshes connected participants' credentials; validate removal against refreshed tokens too. [LiveKit token lifecycle and grants](https://docs.livekit.io/frontends/reference/tokens-grants/)
+
+### 6.3 Cross-service failure handling
+
+Database transactions and LiveKit API requests cannot be one atomic transaction. Use durable jobs, bounded retries, and idempotent provider operations rather than assuming both succeed together.
+
+Implement admission fencing explicitly: `call_prepare_admission` locks the call, checks current state/actor/session/deadlines, and grants a ten-second issuance lease tied to the call's epoch. Sign a token in the function, then `call_finalize_admission` reacquires the row lock, verifies the same epoch/lease and current permissions, and records only its `nbf`/expiry metadata before allowing the HTTP response. A terminal transition increments the epoch, invalidating any unfinished issuance. Never return a token after failed finalization. A response finalized just before termination can arrive late, so termination still has to revoke all finalized credentials.
+
+Apply the same epoch/operation-generation check to room provisioning: after a provider create completes, persist/use readiness only if its call is still live in that epoch. If the call ended or was deleted while creation was in flight, issue no admission token and enqueue/reopen cleanup by the immutable room name in the standalone job. An earlier `room not found` cleanup result must not suppress a later create-completion cleanup. Preserve the deletion/termination tombstone and outstanding bounded operation lease until those operations settle or expire; stale callbacks cannot recreate a live call row. Phase 2 fault tests cover terminal/delete-before-create-response and cleanup-before-late-create-completion races.
+
+Lease expiry permits another worker to recover the job; it is not proof that a timed-out provider request was cancelled or that cleanup finished. Retain the standalone cleanup metadata for unresolved dispatches, re-probe under the bounded retry policy, and require an observed settled outcome before declaring cleanup confirmed. If the provider outcome cannot be established, leave an explicit pending/failed cleanup record and alert rather than discard its tombstone or report success. Test request timeout followed by a late provider side effect, not only a late successful HTTP response.
+
+The cleanup job uses `RoomServiceClient.removeParticipant(room, identity, { revokeTokenTs })` for both identities and then deletes the room. The documented JS option is a `bigint`; the Room Service API cutoff is **Unix seconds**, must be near the provider's current time (within 60 seconds), and rejects token `nbf` values earlier than the cutoff. Select a current cutoff strictly later than the latest finalized token `nbf`, including same-second issuance, and cover provider-refreshed credentials/observed clock skew. Do not replay an old termination timestamp as a cutoff minutes later: retries use a valid current cutoff. Verify this with the pinned SDK in Phase 2. The provider's documented revocation window is finite, and refreshed-token expiry must be tested across that boundary. [Removal options](https://docs.livekit.io/reference/server-sdk-js/types/RemoveParticipantOptions.html), [Room Service removal contract](https://docs.livekit.io/reference/other/roomservice-api/)
+
+Do not assume deleting a room alone makes an issued join token unusable, default TTL covers refreshed tokens, or the default revocation buffer rejects the newest token. Phase 0 confirms the documented API/version contracts; **Phase 2** must demonstrate old and refreshed credentials cannot revive an ended call, including in-flight issuance, same-second admission, late responses, and provider retry. A failed proof blocks this security gate and requires diagnosis/provider-supported correction; no custom ad hoc JWT signing or silent weakening of the requirement. Provider outages mean remote termination is eventually confirmed, not instantaneous; local teardown and database denial happen immediately and cleanup failures remain visible.
+
+On create/accept provider failure, retain recoverable database state only within its connection deadline. On a lost token response, a safe retry is allowed for the same bound session while the call is live. On an end failure, both clients stop local media immediately, the database remains terminal, and the cleanup job retries until provider termination is confirmed. Unconfirmed cleanup is an operational alert, not a successful server cleanup result.
+
+After committing an explicit terminal action and its outbox job, the handler attempts that same idempotent cleanup immediately within a five-second overall provider budget, removing the two identities concurrently before room deletion. It returns the terminal database state even if provider cleanup is still pending; it must not wait for the next ten-second sweep or claim provider completion without confirmation. The durable job covers interruption/timeouts and prevents a function-exit background promise from being the only cleanup mechanism.
+
+Verify webhook signatures against the unmodified request body with the pinned server SDK; do not parse and reserialize first. Use event IDs for idempotency, room SID and participant connection generation to reject stale leave events, and current LiveKit state when event ordering is ambiguous. Never revive a terminal call after a late join event; remove the participant instead. LiveKit webhook delivery is not guaranteed, so a scheduled worker must reconcile with the Room Service API. [LiveKit webhook delivery](https://docs.livekit.io/intro/basics/rooms-participants-tracks/webhooks-events/), [Room Service API](https://docs.livekit.io/reference/server-sdk-js/classes/RoomServiceClient.html)
+
+Use Supabase Cron/`pg_cron` for SQL deadline processing and durable job claims. Enable `pg_net` and approved secret storage only if needed for scheduled Edge invocation; no scheduler/extension is assumed deployed. Supabase documents second-based schedules. Run a lightweight SQL sweep every ten seconds, invoking the reconciler only for due active calls/jobs, not an empty Edge request every tick. Overlapping workers claim bounded batches with `FOR UPDATE SKIP LOCKED` and expiring job leases; no network call runs while holding a database transaction open. A room-not-yet-created state during acceptance must be distinct from an unexpected missing active room. Record actual scheduling latency and invocation budget in Phase 1/Phase 2. UI dismisses expired ringing at the server deadline; conditional SQL still rejects late acceptance before a sweep. [Cron](https://supabase.com/docs/guides/cron), [Cron quickstart](https://supabase.com/docs/guides/cron/quickstart)
+
+Proposed observable pilot bounds under a healthy provider/test network: server-authorized hang-up makes the other UI terminal within five seconds; provider cleanup confirms within ten seconds; abandoned ringing reservations clear by the 30-second deadline plus one sweep and five seconds of processing (45 seconds from create). Media failure terminalizes after the first server-confirmed absence plus 20-second grace, one sweep, and five seconds of processing. These are test acceptance budgets, not an SLA or claims of measured performance. Measure and report misses; do not increase budgets merely to make a test pass.
+
+## 7. Mobile call lifecycle and screens
+
+### 7.1 Modules
+
+Create `apps/mobile/src/calls/` containing:
+
+- `CallProvider.tsx` and `useCall.ts`: one active session, account-scoped orchestration, incoming invitations, navigation banner, and cleanup.
+- `api.ts`: typed Edge Function requests and RLS-backed state/history reads.
+- `realtime.ts`: app-wide subscriptions and resubscription/refetch logic.
+- `media.ts`: a narrow LiveKit adapter for connect/disconnect, tracks, device permissions, audio routing, and SDK connection events.
+- `state.ts`: presentation-state reducer, separate from server transition authority.
+- `permissions.ts`: microphone/camera request flow and denied/revoked permission behavior using the validated native integration.
+- `history.ts` and `components/`: paginated history, controls, participant view, incoming/outgoing presentation, and return-to-call banner.
+
+Shared code belongs in `packages/shared/src/calls/` for status/media types, validation, error codes, and repository helpers, plus the existing strings/icons locations. Do not import native media code there.
+
+Necessary dependency candidates from LiveKit's Expo guide are `@livekit/react-native`, `@livekit/react-native-expo-plugin`, `@livekit/react-native-webrtc`, `@config-plugins/react-native-webrtc`, and `livekit-client`. Use `livekit-server-sdk` only in Edge Functions with an exact Deno-compatible import. Phase 0 checks peer ranges, native architecture support, current lockfile, config-plugin permission options, and documented methods before selecting exact versions; do not silently upgrade Expo/RN. Record unsupported combinations as a blocker. The guide and server SDK support statement establish candidate capabilities, not compatibility of this app's actual binary. [Server SDK runtime support](https://github.com/livekit/node-sdks/blob/main/packages/livekit-server-sdk/README.md)
+
+Initialize LiveKit globals once on the supported native path, outside render loops. Gate loading of native modules before evaluating their imports; a server flag alone cannot prevent a static missing-native import from crashing an old APK or an unsupported web route. Confirm the optional-native detection mechanism against the selected packages in Phase 0, following the existing `loadNotifications` pattern rather than inventing a module name. No new web calling client is included. Configuration changes go through Expo config/plugins; generated native directories already exist locally and remain untouched by hand.
+
+### 7.2 Realtime delivery and recovery
+
+Maintain filtered Postgres Changes subscriptions for calls where the current user is caller and where they are callee, with RLS as the security boundary. Observe the active call's participant rows as needed. This works even when a different chat is open. Reuse an existing application-wide channel only if its lifecycle and filters fit; do not duplicate subscriptions per screen.
+
+Subscribe and wait for subscription readiness, then fetch pending/live invitations. Merge call rows by `call_id` and call `revision`, participant rows by their composite key and participant `revision`; never compare the two revision sequences. Discard older revisions. Repeat reconciliation on reconnect, app foreground, auth refresh, and notification taps. Deduplicate invitations and stop ringtone on every accepted/terminal state, deadline, sign-out, or account switch. Realtime is a prompt to reconcile, never a guarantee of delivery.
+
+Use a bounded polling fallback while a live call has a signaling outage, and refetch server state before reconnecting media. Stop polling at terminal state. A LiveKit reconnection does not authorize joining a terminal call.
+
+### 7.3 Screens and controls
+
+Proposed routes, outside the main tab navigator:
+
+- `apps/mobile/app/call/[callId].tsx`: outgoing, incoming, connecting, active, reconnecting, and ended presentation driven by one provider.
+- `apps/mobile/app/chat/[chatId]/calls.tsx`: paginated call history with eligibility-aware call-again actions.
+
+Requirements:
+
+- Add voice/video launch buttons only for eligible chats; disable during creation or an existing reservation and explain disabled/offline states.
+- Incoming screen shows caller, voice/video label, answer and decline. Video preview never publishes before acceptance. A stale deep link resolves to ended/missed history, never a new call.
+- Outgoing screen offers cancel; accepted state says connecting until media is verified. Use snapshot capabilities to dismiss another session's answered invitation without joining or controlling that session; do not guess ownership from `accepted` alone. Active duration starts at server `connected_at`, with a monotonic local display corrected after refetch.
+- Mute disables microphone publishing and shows its real state. Camera off stops camera publication; camera switch is enabled only when available. A voice call cannot turn on video through its UI or token grants.
+- Speaker/audio-route control uses supported LiveKit native APIs selected in Phase 0, handles unavailable routes, headset changes, Bluetooth permissions, and route failures. Test actual sound output, not only the icon.
+- Stop/pause voice recording, voice-note playback, and video playback before taking call audio ownership; prevent a recorder from starting during a call. Restore normal audio mode after every exit path.
+- Permission denial produces clear retry/settings actions. Denying microphone prevents create/accept; camera denial allows audio-only participation in a video room with explicit UI feedback. Never repeatedly prompt without user action.
+- Prevent duplicate taps, display connection/reconnection feedback, support large text, themed contrast, accessible control names/states, and reasonable touch targets.
+- Signing out or changing account invalidates all pending call work with an account/session generation guard. Disconnect local media immediately, request server end where possible, and never apply the old account's delayed token or event to the new account.
+
+Implement one narrow callable `stopCurrentCallForSessionChange` lifecycle entry point (proposed name) used **before** `activateAccountSession` replaces the JWT and before every discovered active-account `auth.signOut`/removal caller listed in Section 2. Stop local media/alerts first. The originating caller cancels its own `ringing` attempt; a bound caller/callee ends its `accepted`/`in_progress` call. A callee device merely displaying an unaccepted invitation, or another unbound session, stops locally without declining/ending a call on other devices. Explicit callee decline remains a deliberate global transition. Choose the mutation from current authoritative state/capabilities, tolerate a racing transition, and use a bounded old-session request before continuing logout/switch even if the network fails. Do not reuse the new account's JWT for cleanup. `CallProvider` also reacts to auth-generation changes as a fallback for expiry/recovery flows. Apply the same ownership distinction to confirmed-background cleanup in foreground-only mode. Update affected account-switch/sign-in/notification tests and their mocks; do not redesign saved-account persistence.
+
+Use a minimal in-process audio-ownership hook/registration mechanism for the three existing media components, not an app-wide media rewrite. Acquiring call audio cancels/discards an in-progress voice recording and waits for its preparation/finally cleanup before configuring LiveKit audio; late recorder preparation must not reset audio mode after the call starts. It pauses existing players and disables new playback/recording while the call owns audio, including after minimizing back into chat. Releasing ownership restores normal configuration without auto-resuming playback. Keep sign-out, background, route blur, and unmount cleanup idempotent.
+
+Foreground alert preferences are loaded for the recipient account/chat. `blocked` is explicitly device-local today: suppress local launch/ringing for that chat, and route a new invitation to a bounded decline without exposing private details; do not terminate an existing call merely because a local notification is muted. Global/chat alert disabling silences unsolicited sound/vibration; it does not remove the deliberate in-app answer/decline UI unless blocked. Recheck preferences when they change while ringing. Server-wide blocking and synchronization of all device-local chat settings are outside scope.
+
+Wire those changes through the existing `updateChatPreferences`/notification-preference update functions with a minimal account-scoped change notification, so a mounted call provider does not use only its first loaded preference snapshot. Do not add a second general settings store. Keep full chat-setting synchronization outside scope; Phase 6 projects only the values needed for call delivery.
+
+## 8. Call history and local data
+
+Start with a dedicated per-chat history query keyed by `(created_at, call_id)` with a fixed page size, rather than altering message content to impersonate a call record. Use shared outcome formatting: missed incoming call, unanswered outgoing call, declined, cancelled, busy, connected, or failed. Call again creates a new request/call after rechecking eligibility.
+
+Add a Calls row in the existing `ChatInfoScreen` (`apps/mobile/app/chat/[chatId]/info.tsx`) for eligible direct chats so the proposed route is reachable. Fetch 30 rows ordered by `created_at desc, call_id desc`; the next page uses the strict lexicographic cursor, not an offset. Dedupe by call ID and refresh authoritative revisions. Render duration only after verified connection; accepted-but-never-connected calls show zero duration. Relative display uses the user's locale; server values remain UTC. Retain the previous result while a refresh fails, with an explicit retry/error state.
+
+MVP history is server-backed with an in-memory account-scoped cache and a clear offline state. Persistent offline history is outside this release; a future request would need explicit SQLite/cache/account-boundary work. Never silently store admission tokens. Clear current in-memory history on sign-out, account change, or loss of chat access. Section 5.1 settles this release's server retention behavior: follow actual chat/account cascades, preserve only required operational cleanup metadata, and add no automatic time-based history deletion.
+
+## 9. Implementation phases, work items, and gates
+
+No execution phase has started. All items below are pending. Each phase has five equal-weight required items (20% each); an item counts only when its changes and stated verification are finished. Context groups S0-S7 are defined in the context index: instructions/baseline, stack/config, database/contracts, auth, UI/audio, notifications, test harness, historical evidence. Section 0 rules apply without repetition.
+
+Before each phase/workstream: confirm its actual dependency inputs, inspect affected callers/consumers and relevant working-copy changes, save a recoverable baseline, run relevant V0 checks, and record them in `docs/test-results/calling/phase-NN.md` (proposed files; NN is 00 through 08). Phase completion gates and prerequisites for a particular work item are different: after Phase 0 contracts, author Phase 1 migrations/tests without a live database; prepare Phase 2 backend/unit tests against those contracts; prepare Phase 3/Phase 4 UI/media adapters/tests without claiming provider/native integration passed. Schema-dependent live integration waits for a migrated isolated target; media integration waits for the actual backend/artifact/peer. Pending manual verification neither stops these independent workstreams nor earns completion credit. Keep their reports distinct; never mark a dependent live integration ready from mocks alone or let an unrelated historical Android release gate stop calling work.
+
+### Phase 0 — Compatibility, baseline, and executable contracts
+
+- **Scope/requirements:** CALL-05, CALL-06, CALL-15, CALL-18; feasibility and contracts only within the later authorized execution.
+- **Prerequisites/context:** execution request; S0-S7; relevant official Expo 57, LiveKit native/server/token, Supabase auth/Cron references. No native build is automatically authorized.
+- **Affected components:** manifests/lockfile, config/plugin design, `docs/versions.md`, this plan/context and phase evidence. No app calling stubs are needed to complete discovery.
+- **Required items:** (1) baseline scripts/harness/results and input snapshots classified; (2) exact native/server package candidates, peer/version/module-loading and audio/permission APIs established without upgrading the app stack; (3) schema, service-only RPC, request/response/error and admission-fencing contracts finalized; (4) isolated targets, scheduler capabilities, test accounts, permitted media peer, artifacts/upload permissions and quota inventory recorded, with each unresolved dependency assigned to its affected gate; (5) version/config/build-change list and deterministic test/rollback procedures recorded with no material interface ambiguity.
+- **Baseline/gate:** V0 and source/API contract verification. This phase's discovery can finish while a later external gate is blocked, provided its blocker and precise discovery/resolution step are recorded. Native two-way media and end-to-end token revocation are **Phases 2-4 tests**, not claims made by a static Phase 0 review.
+
+
+#### Phase 0 progress — 2026-11-11 (Asia/Manila)
+
+**Status: Complete — 100% of Phase 0; overall calling-plan progress 11%
+(5/45 equal-weight items). Phases 1–8 have not started.** This execution note
+supersedes the historical audit-only/no-phase-started statements for Phase 0
+only. No calling runtime, migration, remote configuration, build or deployment
+was implemented. Phase 0 explicitly requires feasibility/contracts rather than
+calling stubs. [Phase report](../docs/test-results/calling/phase-00.md),
+[context index](../docs/test-results/calling/phase-00/context-index.md).
+
+| Item | Initial classification | Verified completion evidence |
+| --- | --- | --- |
+| (1) Baseline/harness/snapshots | Partially done: scripts/history existed; no current baseline. | Complete: 54-file secret-free recoverable working-copy snapshot; bounded current checks with failures classified; Git ownership and concurrent changes recorded. |
+| (2) Exact SDK/module/API contracts | Not started: no LiveKit installed or exact set selected. | Complete for discovery: six exact candidates/peer ranges and integrity-verified sources; module guards, public media/permission APIs and route-observation limitation documented; in-memory config probe passed; four Deno SDK probes passed. Native compilation/media remain Phases 2–4 gates. |
+| (3) Schema/RPC/wire/fencing | Partially done: prose proposals existed. | Complete: contracts.md fixes schemas, service-only RPC arguments, response/error/status/revision serialization, ownership, concurrent admission leases, lifecycle idempotency, deletion/provisioning fencing and cleanup. No SQL/function implementation started. |
+| (4) Isolated targets/resources | Partially done: historical inventory only. | Complete discovery: named MuMu confirmed by config+ADB; local and installed APKs separately hashed/inspected; EAS account/build/actual quota read; cached Deno/SQL CLI found. Missing disposable target/provider credentials, real peer proof, upload authorization and scheduler state assigned to later gates in compatibility.md. |
+| (5) Versions/config/checks/rollback | Partially done: general versions/build notes existed. | Complete: versions.md candidate table, exact later Expo plugin/install changes, bounded test procedures and nondestructive rollback/build gates recorded. No native/config/package modification. |
+
+**Checks actually run:** typecheck passed; shared Vitest 19 files/147 tests
+passed with a pre-existing config warning; existing Deno push tests 4/4 passed;
+pinned SDK contract tests 4/4 passed; in-memory candidate config probe passed;
+Expo public config passed. Pre-existing lint: 13 errors/3 warnings. Full Jest:
+initial sandbox cache EPERM (0 tests); diagnosed writable-cache run exceeded
+180 seconds after 10 suites printed PASS, so no full-suite pass. Cleanup failure
+was diagnosed and subsequent process inventory showed no task-owned test process.
+Expo install --check failed against the offline SDK map on existing RNGH 3.5.0
+(expected ~2.32.0). Full logs and invocation errors are preserved; no suppressions
+or unrelated repairs. Document/contract preservation checks are in the phase report.
+
+**Discrepancies/instructions:** current migrations end at 028, not the audit's
+027; preserve 028 and inspect target history before allocating a calling version.
+Use repository-mandated `expo install`, despite LiveKit's generic npm-install
+example. Mobile AGENTS describes src/app while the current routes/config use app;
+Phase 0 adds no routes and preserves the current layout. Existing lint/Jest/doctor
+historical results are superseded only by the current classified evidence above.
+SDK route selection resolves void with no public current-route getter; CALL-07
+needs actual supported-state/media evidence in Phase 3, not an invented API.
+Concurrent MediaPickerPanel preview edits were detected, inspected for relevance
+and preserved. No shared theme/UI behavior changed.
+
+**Later gates, not Phase 0 acceptance credit:** dedicated Supabase target/history/
+Auth schema and disposable accounts (B1); LiveKit project/secrets/webhook/Cron
+state and project budget (B5); compatible new APK and explicit cloud source-upload
+authorization (B2); real two-endpoint media/capture support (B3); native bridge
+(B6). Deno/SQL CLI discovery resolves the PATH-only part of B4. Current EAS query
+shows 6/15 Android builds used, 9 remaining for November; no quota consumed here.
+Both inspected APKs lack LiveKit/WebRTC; installed APK differs from the local dev
+APK. No live provider, SQL RLS/concurrency, media, rollback or release gate passed.
+
+**Next phase ready to start: yes, independent Phase 1 authoring only**, using
+these contracts and a fresh local migration inventory. Live SQL/type generation
+wait for a confirmed disposable target and any required remote-write authorization.
+Do not start Phase 1 under this Phase-0-only request.
+
+### Phase 1 — Database, authorization, and durable scheduling
+
+- **Scope/requirements:** CALL-03-CALL-06, CALL-11-CALL-12, CALL-17.
+- **Prerequisites/context:** Phase 0 database/API contracts; S0-S2, S6. Authoring can proceed offline; actual database writes/type generation require a confirmed disposable migrated Supabase test target. Inspect target migration history before finalizing migration version filenames. No production/shared fixture mutation.
+- **Affected components (proposed unless existing):** sequential call migrations; `supabase/tests/calling_*.sql`; shared call types/repository helpers and `packages/shared/src/db/database.types.ts`; target-only scheduler configuration/secret references.
+- **Required items:** (1) tables/checks/indexes, private settings/rate windows and deletion-safe jobs; (2) service-only actor-checked lifecycle/admission RPCs plus participant-only RLS; (3) deterministic reservations, deadlines, idempotency and epoch transitions; (4) due scanning/job claims, scheduler install/disable procedure and budget measurement; (5) isolated V1 security/concurrency/deletion tests and generated shared types verified against the new schema, with V0 typecheck/shared checks rerun.
+- **Gate:** V1 proves actual RLS/roles and parallel transactions, not just SQL parsing. Pending target availability blocks that integration gate. No provider calls are required yet. Record migration restore/recovery strategy; never roll back applied schema destructively to recover a test.
+
+### Phase 2 — LiveKit backend and termination integrity
+
+- **Scope/requirements:** CALL-03-CALL-06, CALL-11, CALL-17-CALL-18.
+- **Prerequisites/context:** Phase 1 contracts/schema for integration; S1-S2, S5-S6; isolated LiveKit project and approved function credentials/deployment target for provider tests. Mocked contract tests can be prepared independently.
+- **Affected components (proposed):** `supabase/functions/call-action/`, `call-token/`, `livekit-webhook/`, `reconcile-calls/`, minimal calling-only helpers/tests; existing `supabase/config.toml` and `scripts/scan-mobile-bundle.ps1`.
+- **Required items:** (1) authenticated action/snapshot endpoints, ownership capabilities and typed validation/error mapping; (2) fenced/idempotent room provisioning and least-privilege token issuance/retry; (3) signed/deduplicated webhook processing and active-state reconciliation; (4) bounded cleanup/revocation jobs, logical duration-cap enforcement despite provider outage, service flags/limits and scrubbed diagnostics plus LiveKit scanner patterns; (5) V2 tests of real token claims, fresh/refreshed-token removal, delayed token/create responses, terminal/delete-during-provisioning, provider failures, lost events, scheduler overlap and cleanup, with V0/affected V1 reruns.
+- **Gate:** unauthorized RPC/function calls fail; accepted calls alone get tokens; old/refreshed tokens cannot revive ended calls; cleanup is confirmed or explicitly failed. Verify server SDK Deno import/check/test through a confirmed runner, not by assuming Node-only imports work. Provider admission/cleanup checks require a permitted media peer (B3); mocks alone do not pass them.
+
+### Phase 3 — Complete foreground voice flow
+
+- **Scope/requirements:** CALL-01, CALL-03-CALL-10, CALL-15-CALL-16.
+- **Prerequisites/context:** Phase 0 call contracts for authoring; Phase 2 voice/security gates for live media integration; S1, S3-S6. Direct two-way verification additionally needs a compatible native artifact, the ADB-confirmed assigned MuMu instance, and a real test peer. Use standing emulator/account authorization without reapproval. If a replacement native build is necessary, resolve B2 and batch Phase 3/Phase 4 native dependency/plugin changes into one justified development artifact; do not wait for that artifact to author/test independent UI code.
+- **Affected components:** proposed `src/calls/` and `app/call/[callId].tsx`; existing root layout/guard/notification routing, chat header/TopBar usage, shared strings/icons/exports and native `Icon.tsx` registry, preference update notifications, all auth transition callers, and three audio/video components named in Section 2. No generated-native hand edits.
+- **Required items:** (1) guarded SDK/bootstrap, authenticated provider, global Realtime and snapshot recovery; (2) outgoing/incoming/connecting/active/ended route with complete create/answer/decline/cancel/end and voice controls; (3) minimize/return banner, accessible layout and actual available route handling; (4) pre-auth teardown and race-safe audio ownership, lifecycle cleanup and local alert/block handling; (5) V3/V4 automated behavior/regression checks and V5 real voice/permission/navigation/cleanup checks on the permitted runtime, with V0 reruns.
+- **Gate:** a permitted A-B pair exchanges actual audio, either end tears down both sides, no camera source is admitted, missing-native startup is safe, and all discovered account-switch/sign-out paths stop the old session. Inability to obtain a second permitted endpoint leaves this gate incomplete; do not introduce a web app or physical device as a workaround.
+
+### Phase 4 — Complete foreground video flow
+
+- **Scope/requirements:** CALL-02, CALL-06-CALL-08, CALL-10-CALL-11, CALL-15.
+- **Prerequisites/context:** Phase 3 voice contracts/components for authoring; verified Phase 3 voice baseline before combined video/media regression; S1, S4, S6. Direct verification uses the same native artifact if compatible, a real test peer and available camera sources in the assigned emulator. No speculative additional build; pending manual checks do not prevent independent video UI/contract work.
+- **Affected components:** calling media adapter/provider/controls, video layout, permission/config options and shared copy; existing player ownership only where required.
+- **Required items:** (1) camera/source permission flow with no pre-accept publication (local preview remains optional; if included it obeys the same privacy rule); (2) publish/subscribe/render local/remote video while preserving voice; (3) camera on/off/switch and camera-off answer with truthful unsupported-state handling; (4) conservative/adaptive quality, interruption/reconnect and camera-resource teardown; (5) V2 source-grant checks, V4 controls/permissions and V5 actual video/capture checks plus affected voice regression.
+- **Gate:** actual remote video and two-way audio work, camera-off releases capture, denied camera still permits explicit audio-only participation, and a voice grant cannot publish video. If the emulator exposes only one/no camera, verify supported behavior and disabled controls; do not invent a second-camera pass.
+
+### Phase 5 — History, resilience, and foreground release readiness
+
+- **Scope/requirements:** CALL-09-CALL-12, CALL-16-CALL-18.
+- **Prerequisites/context:** Phase 3/Phase 4 foreground behavior; S2-S6; isolated fault-injection/fixtures. Reuse compatible artifacts and the same permitted emulator/peer.
+- **Affected components:** proposed history route/query/components; existing `ChatInfoScreen` entry; provider/reconciler/settings where required; phase/operator evidence.
+- **Required items:** (1) reachable history, stable cursor pagination, direction/outcome/duration and retry/call-again; (2) startup/subscribe/refetch/revision and signaling/media outage recovery; (3) crash/access-loss/deletion cleanup and max-duration/rate/quota handling; (4) functional flags, local/server preference behavior and minimum operational metrics/alerts; (5) V1-V5 failure matrix plus affected messaging/account/media regression, with timing budgets and remaining gate status recorded.
+- **Gate:** the foreground implementation/integration checks assigned to Phases 1-5 for CALL-01-CALL-12 and CALL-15-CALL-17 are complete with evidence. This includes Phase 3/Phase 4's required native artifact/media checks, but does not pull Phase 6's call-push/preference-projection portion of CALL-16, Phase 7's background behavior, or Phase 8's final release-artifact/rollout checks backward into Phase 5. Those portions remain explicitly pending until their owning phase. Phase 8 may prepare release work independently; it cannot claim release readiness before the selected milestone's required gates pass.
+
+### Phase 6 — Expiring invitation notifications
+
+- **Scope/requirements:** CALL-10, CALL-13, CALL-16-CALL-18.
+- **Prerequisites/context:** Phase 5 foreground contracts/functional inputs for authoring, with verified foreground baseline before combined push/media regression; S3, S5-S6. Real push tests require confirmed test-only Expo/FCM settings, provider credentials and compatible native notification support. Existing source does not establish deployment. Missing manual/provider checks do not block independent dispatch/payload/handler implementation and automated tests.
+- **Affected components:** proposed call notification outbox worker/payload tests; notification migration for call channel/capability and device-preference projection; existing push registration/handler, root response routing, account cleanup and preference tests.
+- **Required items:** (1) expiry-aware/deduplicated dispatch to validated recipients only; (2) backward-compatible call channel registration/server fields without broadening the message channel constraint; (3) foreground handler and notification response discrimination, generic privacy defaults, wrong-account/stale handling; (4) cross-device accepted/end cancellation, preference changes, retries/receipts and token cleanup; (5) V2/V4/V6 real push/tap/expiry tests and existing message notification regressions.
+- **Gate:** a real expiring call alert opens only a still-valid correct-account invitation; taps do not auto-accept; stale alerts and message paths remain safe. Ordinary notification delivery is not a Phase 7 native ringing guarantee.
+
+### Phase 7 — Native Android background/lock-screen calling
+
+- **Scope/requirements:** CALL-10-CALL-11, CALL-14-CALL-18; existing Android-first delivery. iOS/web delivery is not added to this phase.
+- **Prerequisites/context:** Phase 6 contracts and applicable behavior; S1, S3-S6; official current Android calling/service requirements and assigned-emulator constraints. Selecting/verifying the compatible native bridge is item (1), not a prerequisite for starting that discovery. Bridge-dependent implementation/build waits for that result and any genuinely required artifact/upload/quota gate.
+- **Affected components:** native calling integration through config plugins, calling provider/audio/session bridge, server expiry/push actions and capability flags; no unrelated native refactor.
+- **Required items:** (1) select/verify the supported native approach and Android permission/OS-state matrix before bridge-dependent changes; (2) implement incoming presentation and native answer/decline/end mapped to existing transactions; (3) capability-gated background audio/signaling lifecycle replacing foreground-only background teardown, with camera policy and foreground-service cleanup; (4) expiration/cancellation/sign-out/lockscreen race recovery and foreground-only fallback when capability is disabled/unavailable; (5) V4/V7 direct native-state checks with source-matched artifact and regression evidence.
+- **Gate:** every advertised Android state is implemented and directly verified on the assigned environment; unsupported/force-stopped states are named. If essential OS behavior cannot be exercised within the allowed emulator, that claim stays blocked/unverified. iOS PushKit/CallKit remains future discovery only, requiring a separate delivery decision.
+
+### Phase 8 — Artifact verification, rollout, and rollback
+
+- **Scope/requirements:** CALL-06, CALL-15, CALL-17-CALL-18 and all requirements for the selected delivered milestone.
+- **Prerequisites/context:** Phase 5 for foreground, plus Phase 6/Phase 7 for their support claims; S0-S7; permitted artifacts/upload/quotas and explicit target/recipient authorization for pilot enablement. Preparation may proceed before those external gates clear.
+- **Affected components:** operator/setup/troubleshooting documentation, test results, version/build ledger, flags and authorized test/release configuration. Reuse an approved source-matched preview artifact or justify a single replacement build first.
+- **Required items:** (1) exact source/lockfile/config-to-artifact identity and required native capability recorded; (2) applicable automated checks and direct platform matrix complete, with unchanged pre-existing failures identified; (3) fresh Android export/artifact bundle scanned for the newly relevant secret patterns; (4) flags/drain/cleanup/history rollback rehearsed against the isolated test target; (5) final setup/limits/support matrix and pilot decision documented, then enable only within explicit authorized target scope.
+- **Gate:** V8 and all required earlier evidence for delivered modes pass; any required blocked/not-run criterion prevents a ready-to-release claim. A pre-existing unrelated lint finding is reported separately, not silently fixed; required calling tests must still pass. No automatic paid upgrade, store publication, production migration or third-party source upload is implied.
+
+Suggested new migration groups remain `<next>_create_calling_schema.sql`, `<next>_secure_call_lifecycle.sql`, `<next>_enable_call_realtime_and_jobs.sql`, and in Phase 6 `<next>_add_call_notification_preferences.sql`. The second-audit repository ends at 027; choose actual versions only after the execution-target history check and another current filename inventory.
+
+### 9.1 Execution progress reporting
+
+This rule applies during authorized execution, not this polishing pass. In each phase report preserve the five item numbers and their verification links. Phase completion is completed required weight divided by total required weight times 100, rounded to a whole percentage. A work item with unfinished required verification earns no completion weight. Record justified item/weight/scope changes before recalculating; do not silently remove gates. Report current-phase progress separately from overall project progress, state whether the next phase is ready, and use:
+
+> Current execution phase: [name] — [X]% complete. Completed: [verified work]. Remaining: [required work]. Blockers: [none or specific blocker].
+
+Follow with `Next phase ready to start: yes/no — [runnable work, dependency evidence and any blocked integration gate].` Distinguish ready independent authoring from gated live integration/release; pending verification is not a blanket instruction to stop the next workstream. Do not report 100% or describe work as partially complete while a required gate is unmet. No execution percentage is asserted by this planning document.
+
+## 10. Notification and native background milestones
+
+Phase 6 uses the existing push registration infrastructure for an ordinary expiring invitation. Payload contains a type discriminator (`call_invite`/`call_ended`), call ID, recipient account ID, and server deadline; omit room credentials and use a generic caller-free preview by default. Derive provider TTL from remaining ring time, capped by provider support; do not dispatch after expiry. Deduplicate on call/device/event and recheck state immediately before dispatch. A notification tap verifies current account, membership, status, and deadline through the server before rendering answer controls. A push is never acceptance or authorization to connect.
+
+Extend both the root tap router **and** `pushNotifications.ts`'s foreground handler, which currently admits only message previews/generic `New message` content and matching message channels. Keep message payloads without a type discriminator backward compatible. Add separate `calls-v1-<sound><vibration>` Android channels and a nullable registered call-channel field on `push_tokens`, with its own check constraint. Do not reuse or relax `android_channel_id`'s `messages-v2-[01]{3}` restriction from migration 023. Old clients have no registered call channel and receive no call push until a compatible client opts in. Respect notification/FCM runtime availability and OS permission failures; lack of push must not break foreground calls.
+
+For Phase 6 only, add the minimum device-scoped call preference projection needed by the server: proposed `call_device_preferences(push_token, chat_id, enabled, sounds, blocked, updated_at)`, keyed by token/chat. RLS permits only the current owner of the token to read/upsert/delete its own rows for accessible chats; worker reads are privileged; never publish tokens/preferences through Realtime. Synchronize relevant existing local preferences at registration, on change and reconnect, then register call-push capability. Removing/reassigning a token clears its projection. Dispatch joins this projection, `push_tokens` sound/vibration eligibility, account status and `chat_members.muted_until`; it does not assume local AsyncStorage is server-readable. This is a delivery projection, not a general server block feature. An offline preference change cannot revoke a push already handed to the OS; apply current local state on foreground/tap and document the synchronization boundary. Do not change existing local block semantics merely to force a network write.
+
+Persist dispatch outcomes so a restarted worker can distinguish unsent from sent attempts; check receipts where supported, prune invalid tokens, and cap retries at the invitation deadline. Exactly-once external delivery cannot be guaranteed after a lost provider response: use a stable notification identifier/tag and client deduplication to suppress duplicates. `call_ended` is best effort with no incoming-call sound; it must not be routed as a new invitation. Do not count call notifications as unread messages or change message badges.
+
+Do not automatically switch to a saved account or display another account's caller details from a notification. If needed, route to an account-choice/sign-in flow, then revalidate the invitation. Dismiss local ringing on accepted/terminal changes across devices; cancellation notifications are best effort and the embedded deadline remains the fallback.
+
+Phase 7 is separately scoped because ordinary push delivery and JavaScript execution do not guarantee wake-up, ringing, or continued media under every OS state. Validate the currently supported Android Telecom/ConnectionService or Core-Telecom approach, call-style notification behavior, microphone/camera foreground-service requirements, notification/full-screen permissions, and store policy eligibility against official platform documentation at implementation time. Evaluate a maintained Expo-compatible native bridge in Phase 0/Phase 7 before choosing a library. iOS requires its own CallKit/PushKit design and APNs credentials if delivered. Follow Expo's current notification behavior documentation rather than assuming background execution. [Expo notification behavior](https://docs.expo.dev/push-notifications/what-you-need-to-know/)
+
+Document separately: foreground, app backgrounded, screen locked, process removed by OS, and user force-stopped. A force-stopped app must not be promised reliable incoming calls. Request native permissions in context and preserve user mute preferences. Background video, where unsupported, stops camera publication while an explicitly supported audio session continues.
+
+Phase 7 explicitly replaces the foreground-only AppState policy **only** when its native capability, supported OS state and server feature flag permit continued calling. Keep required audio ownership and native-supported signaling/session supervision active; do not run the foreground-only end/poll-stop path on every background event. Disable camera publication as specified by the validated platform matrix. With native support unavailable/disabled, retain foreground-only teardown. Sign-out, real hang-up, account/access loss and terminal server state still clean up in every mode. Verify both capability-enabled continuation and disabled fallback; native callbacks remain subject to the same ownership/deadline/transition checks.
+
+## 11. Verification matrix and confirmed check entry points
+
+V0 is a source/environment-specific baseline: status/diffs and snapshot; dependency/runtime/artifact identity; relevant automated checks below; known failures classified before edits. Record process timeouts, target identities (not credentials), test counts, and log paths. Current polishing performs static document/source checks only. Historical passes do not satisfy V0 for execution.
+
+Verification groups: **V1** SQL/RLS/concurrency; **V2** Edge/provider/security/jobs; **V3** shared contracts/formatting; **V4** mobile automated behavior; **V5** permitted MuMu direct foreground behavior; **V6** real invitation push; **V7** native background behavior; **V8** matching artifact/export/scan/rollback/release evidence. The matrix specifies which groups own the behavior; Section 1.1 maps every requirement to them.
+
+| Area / group | Required meaningful cases |
+| --- | --- |
+| SQL/security — V1/V2 | Anonymous/nonmember access; participant vs unrelated member; forged actor/room/media/session; restricted accounts; direct/group/self/incomplete chats; direct writes and service-only RPC execution denied; caller binding at create; current membership and deletion-safe cleanup. |
+| Concurrency — V1/V2/V4 | Simultaneous opposite-direction calls; two callers to one callee; two sessions accepting; duplicate create with same/different inputs; accept vs timeout/cancel/decline; simultaneous hang-up; transaction deadlock avoidance; job lease restart. Run real parallel database connections for SQL races. |
+| Tokens/provider — V2/V8 | Exact room/source grants; five-minute initial TTL; expired initial admission; auto-refreshed reconnect credentials; strict seconds-based removal cutoff and equality/window boundary; issuance vs termination; ended-room recreation; old token after deletion; quota denial and response loss. |
+| Webhooks/jobs — V1/V2 | Invalid signature/body tampering; deduplication/replay; stale room/participant generation; missing join/leave/finish; late join after terminal; lost notification response; overlapping sweeps, controlled retry/exhaustion, deletion/cascade and job lag; terminal/delete-before-create-response and cleanup-before-late-provisioning; logical duration cap while provider presence/cleanup is unavailable. |
+| Voice/video — V4/V5 | Actual two-way tracks and rendered/audio output with permitted peer; mic mute; available emulator routes and truthful unsupported routes; camera toggle/switch where exposed; camera-off answer; permission denial/revocation; no pre-accept publishing; capture/audio released after every exit. Hardware-only claims cannot pass from an icon/mock. |
+| Lifecycle/network — V2/V4/V5/V7 | Back/minimize/return; permission dialog vs confirmed background; reload/crash; emulator-controlled network handover/loss rather than a SIM/physical device requirement; signaling-only/media-only outage; deadline recovery; all auth callers while token requests are pending; caller-ringing cancel vs bound-session end vs unbound callee local dismissal; another-device ownership capabilities; Phase 7 enabled-background continuation vs foreground-only fallback. |
+| History — V1/V3/V4/V5 | Correct incoming/outgoing outcome/time/duration; accepted-with-no-media zero duration; tied-timestamp strict cursor/no duplicates; unreachable/inaccessible chat; reachable Calls entry; offline/error retry; eligibility-aware call again. |
+| Push/native — V2/V4/V6/V7 | Message vs call foreground handler; separate channel registration; null old-client capability; local/last-synced server prefs; wrong-account/stale/duplicate/expired/cancelled push; no auto-accept; receipt/token cleanup; native OS-state matrix; message routing/badges unchanged. |
+| Regression/release — V0/V3/V4/V5/V8 | Messaging, attachments/playback, recorder preparation, account switching/removal, notifications, shared exports, semantic-to-native call glyph registry (no null/unknown icons), disabled/missing-native startup; new secret patterns in fresh artifact; flags refuse new calls but preserve end/cleanup/history; isolated rollback rehearsal. |
+
+Use SQL integration tests under `supabase/tests/`, Deno tests next to Edge Functions, shared Vitest tests, and React Native Jest tests for the call reducer/provider and controls. Mock external provider faults for automation, but do not treat mocked audio/video as proof of working media.
+
+The following existing scripts/arguments are source-confirmed. Run from `G:\codebase\DoloGram` during execution, retaining logs and exit codes (not during polishing):
+
+```powershell
+npm run typecheck
+npm run lint --workspace @dologram/mobile
+npm run test --workspace @dologram/shared
+npm run test --workspace @dologram/mobile -- --runInBand
+npm run scan:mobile-bundle
+```
+
+Add documented Deno and SQL test commands when their fixtures/functions exist. The root `gen:types` script currently contains placeholder project parameters; use the verified target project reference to regenerate types rather than running it blindly.
+
+The source-confirmed Android JavaScript export command is `npx expo export --platform android` from `G:\codebase\DoloGram\apps\mobile`; it writes generated output and is allowed only during later authorized execution. Run the bundle scanner against that source-matched output, not the pre-existing `dist`. The scanner accepts a `-Path` argument for a specifically identified artifact directory; prove the directory is the intended generated artifact before scanning. JS export is not a native APK build or evidence of native media behavior.
+
+The prior polishing pass recorded Node/npm, ADB and EAS on PATH, with no `deno`, `psql` or `supabase` command found; this second audit did not rerun tool discovery. Do not install/download tooling or invent a runnable SQL command during auditing. Phase 0 must locate an available approved Deno runner and PostgreSQL client/Supabase CLI or existing test facility, verify version/help, then record exact commands/working directories for the proposed tests and type generation. Existing Deno tests use `Deno.test`; SQL tests use transactional assertions and rollback. Do not assert a pgTAP pipeline exists. Use explicit fake inputs for unit tests, dedicated targets for integration, and no ambient production secrets in the test process.
+
+The full mobile Jest command historically hung with no output and lint historically reported pre-existing sign-up findings. The current Jest configuration has since gained a Reanimated mock mapping; its operational result is unverified, so do not assume that old hang still reproduces or restore the old config. During execution attempt a bounded current baseline once, retain diagnostics, and determine whether targeted new/affected tests can run through the same supported runner with explicit file selection. If two attempts fail for the same reason, diagnose/change approach or report a test-harness blocker; do not repeatedly rerun or disable checks. A targeted equivalent check must retain the same meaningful assertions and its limitation must be reported; a hung/blocked required test is not a pass. Fix only a calling-introduced test/config issue, not an unrelated global harness refactor.
+
+V5 requires two independently authenticated media endpoints, while the main designated app environment remains MuMu Player `dologram`. Standing authorization already covers necessary test-account creation/login and testing operations inside that assigned emulator: do not request these again. Discover the actual technical peer option in Phase 0, reusing an allowed test peer or a minimal test-only fixture in the assigned environment where feasible; no new user-facing web product is needed. If the only viable peer requires a separate environment/resource outside actual authorization, identify that exact missing resource and affected live check rather than treating ordinary emulator access as blocked. Continue available automated and ADB-based checks, and all independent implementation, while genuine two-way evidence remains pending. Record emulator/APK/target identities and evidence without credentials; do not replace actual media/hardware evidence with mock results.
+
+Minimum result record for each verification: requirement ID, test/action and concrete input, expected/observed outcome, passed/failed/blocked/not run, source hash/artifact/runtime, isolated target identity, evidence path, and next step for unmet criteria. Failures introduced by this change block acceptance. Unrelated pre-existing failures remain separately reported with their baseline evidence; they are not new repair scope.
+
+## 12. Rollout, usage budget, and rollback
+
+- Add server-controlled `calling_enabled`, pilot-user allowlist, and separate `call_push_enabled` / native-background capability flags. Client visibility is not enforcement. Disabled calling must not initialize native media or break ordinary messaging.
+- Configure secrets in Supabase, provider webhook URL/signing key, scheduler credentials, function auth settings, call notification preferences, and the selected LiveKit project. Maintain a sample configuration containing names only, with no real credentials.
+- Monitor invitation-to-accept/connect time, completed and failed calls, classified failure reason, missed/declined/busy rates, reconnects, worker delay, cleanup failures, participant minutes, and data transfer. Log opaque call IDs rather than tokens or personal media contents. Scrub SDK/error objects before logging.
+- Proposed initial abuse limits: at most five create attempts per user per rolling minute, counting valid unsuccessful attempts but not idempotent retries as new attempts. Three consecutive missed calls to the same peer within ten minutes start a 60-second pair cooldown; reset that streak on acceptance or cooldown expiry. Caller cancellation is still subject to the overall limit. Cap token issuance at ten requests per user/call per rolling minute, preserving already-connected media rather than disconnecting it on rate limit. Enforce transactionally across devices and make thresholds configurable. Reject invalid/inaccessible requests before revealing whether a target is busy, and bound unauthenticated request bodies through platform limits.
+- LiveKit currently lists 5,000 monthly WebRTC participant minutes, 50 GB downstream transfer, and 100 concurrent connections on Build. Both time and data limits matter; a ten-minute two-person call consumes about twenty participant minutes. These are provider allowances, not guaranteed production capacity. Recheck them before rollout. [LiveKit pricing](https://livekit.com/pricing), [Quotas and limits](https://docs.livekit.io/deploy/admin/quotas-and-limits/)
+- Start video with a conservative validated resolution/bitrate, adaptive subscription behavior, and lower quality on weak links. Preserve voice where possible; show failures when provider quotas prevent a new connection. Review Supabase function, database, Realtime, and scheduler allowances too; a free media tier does not imply unlimited free infrastructure.
+- Warn on usage thresholds, enforce the pilot call-duration limit, and handle quota rejection cleanly. Do not automatically upgrade or enable paid plans as part of implementation.
+- Roll back by disabling new create/accept/token issuance through the server flag, explicitly draining/ending existing calls according to the incident policy, and keeping reconciliation, webhook handling, cleanup jobs, and history reads running. An already shipped client must receive a normal disabled/error response. Avoid destructive schema rollback; retain call records and deploy a compatible client fix.
+
+## 13. Definition of done
+
+The foreground release is implemented when Phases 0-5 and its Phase 8 release work are complete: eligible users can initiate, answer, decline, cancel, and end voice/video calls; controls operate on actual media; state/history and multi-device races are consistent; credentials stay server-side; stale calls and media are cleaned up; and messaging/account workflows retain their behavior.
+
+Notification invitations and native background calling are tracked as Phase 6 and Phase 7, with separate verified support claims. Any pending manual/device/provider checks are named explicitly in the handoff rather than counted as passed. Implementation begins with Phase 0, followed by the dependency order above.
+
+## 14. Material decisions, unresolved prerequisites, and separate findings
+
+### 14.1 Corrections made during polishing
+
+- Preserved one-to-one Android-first calling and staged foreground, invitation-push, then native-background delivery. No group calls, new web/iOS product, recording or unrelated refactor was added.
+- Corrected stale duplicate-migration advice against the current 025/026 filenames. Target migration history still needs execution-time confirmation; no existing migration is changed by this plan.
+- Replaced physical-device language with the existing MuMu-only constraint. Required evidence may stay blocked by unavailable peer/hardware; it is not waived or counted as completed. The latest user's verification-integrity rule governs calling-phase progress instead of importing the older Android plan's optional-manual completion rule.
+- Moved dynamic provider/native proofs out of a static Phase 0 review into Phases 2-4, avoiding a circular gate. All nine phases now have named prerequisites/context/components, five measurable items and explicit verification gates.
+- Made service-role actor forwarding, caller binding at create, private operational state, deletion-safe cleanup, admission fencing, live due scans, provider revocation units/window, native import guards and budgeted retries explicit. These close missing security/integration paths in the original plan rather than introduce a new platform.
+- Added all discovered auth callers, recorder preparation/playback ownership, a reachable history entry, and notification handler/channel compatibility. Phase 6's minimal device-preference projection is necessary because existing chat preferences live only in AsyncStorage; it is not a server-wide block list.
+
+Second-pass audit corrections (2026-11-11):
+
+- Applied standing assigned-emulator/account/data authorization and ADB-only control. Pending verification leaves completion/release gates incomplete but does not stop technically independent work or trigger repeated permission/account-login requests.
+- Distinguished lifecycle idempotency from token retries; added safe ownership capabilities to snapshots and state/session-aware teardown. A ringing caller cancels; a bound active participant ends; an unbound ringing callee stops locally without declining another device's call.
+- Removed the Phase 7 bridge-selection circular prerequisite and made supported native background mode explicitly replace the foreground-only teardown/signaling policy. Kept optional camera preview optional.
+- Removed backward Phase 6/Phase 8 acceptance dependencies from Phase 5 and made authoring vs live-integration prerequisites explicit without weakening required verification or the five-item progress denominator.
+- Settled deletion cascades, protected late provisioning and timeout side effects with deletion-surviving cleanup, and enforced the logical duration cap even when provider cleanup cannot yet be confirmed.
+- Revalidated changed manifest facts and current Jest mapping without operational tests; recorded migration 027 and preserved other user work. Artifact reuse replaces unconditional development-plus-preview rebuild wording. No feature or platform was added.
+
+### 14.2 Unresolved execution prerequisites
+
+None of these later dependencies prevents starting Phase 0 under an execution request. They are **not claims of failed implementation** or blanket stop conditions. Continue the independent work stated in each row, use standing authorization, and ask only for genuinely unavailable information/resources or actions outside actual authorization at the affected boundary. The audit itself remains plan-only.
+
+| ID | Evidence / uncertainty | Affected work and consequence | Recommended resolution / independent work |
+| --- | --- | --- | --- |
+| B1 | No target database/history/configuration or isolated test accounts were inspected. Local migrations currently end at 027. | CALL-03-CALL-06, CALL-11-CALL-12; Phase 1 SQL integration/type generation and later deployment cannot be verified against an assumed target. | Phase 0 identifies the dedicated target from available configuration/materials; Phase 1 checks target history/schema/Auth columns before finalizing versions and database writes. Create/login authorized test accounts and manage test-only fixtures autonomously using available credentials; ask only for essential access information actually missing. Continue offline migration/contracts/tests authoring. Do not fix unrelated deployed drift as calling scope. |
+| B2 | An existing `apps/mobile/dologram-dev.apk` is present; its LiveKit capabilities are unverified. Manifests contain no LiveKit packages. Phase 17 reports a historical private-source-upload blocker; the build ledger is not current remaining quota. | CALL-01-CALL-02, CALL-07-CALL-08, CALL-15/CALL-18; Phase 3/Phase 4/Phase 8 direct integration needs a compatible artifact. | Phase 0 inventories/reuses a compatible artifact; installation/reset/testing inside the assigned emulator is already authorized. If replacement is necessary, establish exact native changes/profile/quota and reuse recorded upload authority where applicable; ask only if the required cloud source upload falls outside actual authorization. No speculative build or local-native workaround. Continue backend/UI/unit work. |
+| B3 | The main assigned environment is explicitly MuMu `dologram`; the current ADB endpoint and technical availability of a second real media endpoint remain unconfirmed. This is not a missing emulator/account-testing permission. | CALL-01-CALL-02, CALL-07, CALL-09-CALL-11; V5/provider media proofs need actual exchange, not only simulated users. | In Phase 0/execution identify the named instance through ADB, create/login test accounts, and choose an available permitted peer or minimal test fixture within the assigned environment where feasible. Request only an exact genuinely missing external peer/resource beyond standing authorization. Continue all available automated/ADB checks and independent phases; keep unavailable two-way evidence pending. |
+| B4 | Prior PATH discovery did not find Deno/psql/Supabase CLI; current tool availability is unconfirmed. Current Jest config has a new Reanimated mock mapping; the old hang/lint reports are historical, and calling-specific tests are not yet authored. | V1/V2 commands and Phase 0/Phase 1/Phase 2/Phase 3 integration gates need runner discovery; compilation alone does not prove behavior. | Phase 0 locates available approved runtimes/test facilities and records exact commands, then establishes a bounded baseline against the current config. Use the existing mock/config rather than reverting user work; diagnose only reproduced repeated failures. Prepare new tests independently; do not repair unrelated sign-up code or weaken assertions. |
+| B5 | LiveKit project keys, webhook deployment, Cron/pg_net/secret-storage state, Firebase/FCM setup, provider quotas and current budget are uninspected. Documentation confirms candidate capabilities only. | CALL-06, CALL-11, CALL-13-CALL-14, CALL-17; live provider/push/scheduler checks remain not run. | Confirm separate test project/targets and non-sensitive identifiers, register secrets through approved stores, validate schedule/invocation budget and dispatch recipients before integration. No paid upgrade. Continue mock/error-path checks and configuration design. |
+| B6 | No compatible Android native calling bridge or runtime state matrix has been selected or proven for Phase 7. | CALL-14 and background support claims, not the foreground release. | In Phase 7 select a maintained compatible bridge against current official Android/Expo contracts, record permissions/methods/lifecycle matrix and artifact need before coding that integration. If incompatible without stack changes, report that blocker rather than upgrade Expo/RN or promise background support. Phases 0-6 remain independent of that native design. |
+
+### 14.3 Out-of-scope findings
+
+The older Android Phase 17 standalone/hosted release gate remains reported unmet; this feature does not complete it. Pre-existing sign-up lint findings, the historical full-suite Jest hang, the placeholder root `gen:types` script, general direct-chat creation races, global server blocking, and broader web/admin/iOS milestones are not repair requirements here. Use a confirmed type-generation invocation and diagnose any runner issue needed for calling verification, but do not change unrelated files to improve the project's general status. The stale duplicate-025 issue is already resolved in the current filenames and needs no additional repair.
+
+Primary future native references: [Android Core-Telecom](https://developer.android.com/develop/connectivity/telecom/voip-app/telecom), [Android foreground service types](https://developer.android.com/develop/background-work/services/fgs/service-types). Phase 7 must recheck these and the selected bridge version before using APIs; this plan does not claim an existing native integration or store eligibility.
+
+### 14.4 Final second-pass readiness gate
+
+**Ready for execution, starting with Phase 0.** No unresolved prerequisite prevents beginning its source baseline, SDK/API compatibility selection, contract finalization and resource discovery under a subsequent execution request. This classification means the plan is actionable; no calling implementation, operational verification or release readiness is claimed by it. This audit stops after this gate.
+
+The exact next execution action is Phase 0 item (1): preserve relevant working-copy inputs and establish the bounded current baseline, then complete items (2)-(5), using standing ADB/emulator/test-account authorization and available materials. B1/B4 gate actual isolated database/test-runner integration; B2/B3 gate native/real-peer media evidence; B5 gates real provider/scheduler/push configuration; B6 gates Phase 7 bridge-dependent work. Each row above names affected requirements, resolution and independently runnable work. Missing later resources are not prerequisites to all authoring, and unmet verification is never counted as passed or released. Source/configuration changes after this audit invalidate only their dependent findings, not a reason to restart polishing without new evidence or instruction.
+
+## 15. Manual steps for the owner, only where access is missing
+
+**No owner-only step is currently confirmed missing.** Account access and hosted configuration have not been operationally inspected. During Phase 0, first reuse existing authorized accounts, credentials, projects and artifacts. The checklist below is conditional: ask the owner only for the specific missing access/account-security action, rather than handing normal implementation, cloud configuration or testing back to them. Independent work continues while an external dependency is pending.
+
+### 15.1 Conditional owner checklist
+
+| ID / when needed | What the owner may need to do | Agent work / completion evidence | Phase and requirement |
+| --- | --- | --- | --- |
+| OWNER-01 — before real LiveKit integration, if no accessible test project exists | Sign in to or create an account in [LiveKit Cloud](https://cloud.livekit.io/), complete any account verification/MFA personally required, and create/select a dedicated test project on the free tier. If the account/project is already accessible, skip this step. | Reuse authorized project access to configure the integration. Record only project identity/access status and available allowance, never login credentials. Completion: the intended test project and project URL are identified and authorized server-side access is usable. | Phase 0/Phase 2; CALL-06, CALL-15, CALL-17; B5. |
+| OWNER-02 — before backend integration, only if the isolated Supabase target or secret-management access is unavailable | Identify/make accessible the intended isolated Supabase test project. If authenticated tools cannot manage its secrets, enter `LIVEKIT_URL`, `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET` in that project's Edge Function secrets, using the values from the selected LiveKit project. Complete an owner-only account verification/MFA step if required. Do not create duplicate projects or rotate working credentials unnecessarily. | First consult available authorized configuration/secret stores; perform target discovery, secret configuration, migrations, function/webhook/Cron setup and checks when execution is authorized and access permits. If owner entry is needed, supply exact variable names and target identity. Completion: correct target/access and required secret presence are verified without printing values; backend integration still needs its actual Phase 1/Phase 2 tests. | Phases 0-2; CALL-03-CALL-06, CALL-11; B1/B5. |
+| OWNER-03 — only if a required replacement native build is genuinely blocked by account access, quota or source-upload authority | Complete an account-owner login/MFA action, provide an existing compatible approved APK, or address the specifically identified cloud-build/upload restriction. No repeated approval is needed for installing/reinstalling/testing DoloGram in the assigned emulator. Do not purchase builds or upgrade a plan unless separately chosen. | Establish exact native incompatibility, reuse options, current quota and existing upload authorization first; run any permitted necessary build and handle APK installation/testing through ADB. Completion: a source-compatible artifact is available with recorded identity. A file's mere existence is not proof of calling support. | Phase 3/Phase 4/Phase 8; CALL-01-CALL-02, CALL-07-CALL-08, CALL-15/CALL-18; B2. |
+| OWNER-04 — Phase 6 invitation notifications only, if Firebase/FCM ownership or credentials are unavailable | Use an existing Firebase project for `com.dologram.app`, or create one if none exists. If tools lack access, obtain the Android `google-services.json` configuration and configure an FCM V1 service-account credential in the matching Expo project, completing any owner-only authentication. Skip this if the existing setup is already valid. This is not a prerequisite for foreground voice/video. | Inspect existing registration/configuration first. Handle the Expo app configuration, call notification channels/payloads, any justified native artifact update and real push tests when authorized. Completion: correct app/project configuration and an actual test invitation delivery/tap are recorded; possession of credential files alone does not pass Phase 6. | Phase 6; CALL-13, CALL-16; B5. |
+
+LiveKit projects use a project URL, API key and API secret; these belong to server configuration for this design. Use the existing authenticated account/project tooling where available rather than requiring manual dashboard work. [LiveKit project configuration](https://docs.livekit.io/reference/developer-tools/livekit-cli/projects/)
+
+For OWNER-02, the dashboard fallback is the intended Supabase project's Edge Function secrets management. Store values there or in an approved protected server-side credential store. Never paste API secrets, service-role credentials or service-account private keys into this plan, ordinary chat, logs, source control or `EXPO_PUBLIC_` variables. Record names/presence and non-sensitive target IDs only. [Supabase secrets management](https://supabase.com/docs/guides/functions/secrets)
+
+For OWNER-04, `google-services.json` is Android project configuration; it is different from the **private service-account key JSON** used for FCM delivery. Keep that private key in approved credential storage/Expo credentials and out of source control and context packets. Follow the existing `apps/mobile/app.config.js`/EAS configuration instead of placing files arbitrarily. [Expo FCM V1 setup](https://docs.expo.dev/push-notifications/fcm-credentials/)
+
+### 15.2 Work the owner does not need to perform
+
+During authorized execution the agent handles code/dependency/config changes, test-runner discovery, schema migrations against the confirmed test target, Edge Functions, LiveKit room/token/webhook integration, permitted secret/scheduler configuration, screens/history, and verification. These are not owner checklist items simply because they involve a dashboard or CLI; owner participation is needed only for unavailable access, human account-security steps or an actual authorization/resource boundary.
+
+Under the standing emulator authorization, the agent also identifies MuMu `dologram` through ADB; creates/logs in to test accounts with available authorized credentials; installs, restarts, reinstalls or clears the application/emulator as necessary; and creates/deletes authorized test data. Do not ask the owner to do these or to reconfirm the same permission. No physical-phone testing or manual test-account login by the owner is required.
+
+If no technically usable second media endpoint is available within actual authorization, report the exact missing peer/resource and affected two-way check under B3. Do not turn that into a blanket request for the owner's phone or a new product. Continue all independent implementation and available automated/ADB checks, keeping unmet media verification pending.
+
+### 15.3 Tracking and readiness effect
+
+Initial status for OWNER-01 through OWNER-04: **not inspected; conditional, not confirmed missing or complete**. Phase 0 records `already satisfied`, `agent can complete`, `owner action required`, or `not needed for this milestone`, with a non-sensitive evidence link. If owner action is genuinely required, state the exact account/project/resource, requested action, dependent phase/check and independent work that continues. Do not treat elapsed time or silence as approval.
+
+This checklist does not change the Phase 0 readiness classification, add a new phase, require paid services or authorize implementation in the current planning turn. All accepted execution safeguards and acceptance gates remain in force.

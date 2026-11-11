@@ -1,0 +1,12 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --runTestsByPath src/search/__tests__/query.test.ts src/search/__tests__/SearchScreen.test.tsx src/chat/__tests__/query.test.ts src/components/__tests__/MessageText.test.tsx src/__tests__/a11yPressableSource.test.ts src/components/__tests__/a11yLabels.test.tsx --no-cache --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase00-jest-cache
+
+PASS src/search/__tests__/SearchScreen.test.tsx (29.896 s)
+(node:33572) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/search/__tests__/query.test.ts
+PASS src/chat/__tests__/query.test.ts
+(node:33572) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+PASS src/components/__tests__/MessageText.test.tsx (5.108 s)
+ERROR: The user name or password is incorrect.

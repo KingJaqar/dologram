@@ -1,0 +1,26 @@
+{
+  "name": "chat-list",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "test",
+    "--",
+    "--runInBand",
+    "--watch=false",
+    "--cacheDirectory",
+    "G:\\codebase\\DoloGram\\.tmp\\search-phase01-jest",
+    "--runTestsByPath",
+    "src/chatList/__tests__/useChatList.test.tsx",
+    "src/chatList/__tests__/preferences.test.ts"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 42868,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 120,
+  "seconds": 17.23,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-01\\prerequisite-regressions\\chat-list.log"
+}

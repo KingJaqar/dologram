@@ -1,0 +1,180 @@
+  message: { minHeight: 68, paddingVertical: 10, paddingHorizontal: 16, gap: 4 },
+  footer: { padding: 16, gap: 8, alignItems: &apos;center&apos; },
+});</file><file path="apps/mobile/src/components/SearchField.tsx">/**
+ * CMP-03: Search field — height 40, full radius, debounced filtering.
+ * 12.5, D-95
+ */
+import React, { useEffect, useRef, useState } from &apos;react&apos;;
+import {
+  TextInput,
+  View,
+  Pressable,
+  StyleSheet,
+  type TextInputProps,
+} from &apos;react-native&apos;;
+import { useTheme } from &apos;../theme/ThemeProvider&apos;;
+import { textStyle } from &apos;../theme/typography&apos;;
+import { Icon } from &apos;./Icon&apos;;
+
+export interface SearchFieldProps extends Omit&lt;TextInputProps, &apos;onChangeText&apos;&gt; {
+  /** Called ~150 ms after the user stops typing. */
+  onSearch: (query: string) =&gt; void;
+  debounceMs?: number;
+  inputRef?: React.Ref&lt;TextInput&gt;;
+}
+
+export function SearchField({
+  onSearch,
+  debounceMs = 150,
+  placeholder = &apos;Search&apos;,
+  inputRef,
+  ...inputProps
+}: SearchFieldProps) {
+  const theme = useTheme();
+  const c = theme.colors;
+  const [value, setValue] = useState(&apos;&apos;);
+  const timerRef = useRef&lt;ReturnType&lt;typeof setTimeout&gt; | null&gt;(null);
+
+  useEffect(() =&gt; {
+    return () =&gt; {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleChange = (text: string) =&gt; {
+    setValue(text);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (debounceMs === 0) onSearch(text);
+    else timerRef.current = setTimeout(() =&gt; onSearch(text), debounceMs);
+  };
+
+  const handleClear = () =&gt; {
+    setValue(&apos;&apos;);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    onSearch(&apos;&apos;);
+  };
+
+  return (
+    &lt;View
+      style={[
+        styles.container,
+        {
+          height: 40,
+          borderRadius: theme.radius.full,
+          backgroundColor: c.bg.surface,
+          paddingHorizontal: theme.space[3],
+        },
+      ]}
+    &gt;
+      &lt;Icon name=&quot;action.search&quot; size=&quot;sm&quot; color={c.text.muted} /&gt;
+
+      &lt;TextInput
+        ref={inputRef}
+        style={[
+          styles.input,
+          { ...textStyle(theme.typeTokens.bodyMd), color: c.text.primary },
+        ]}
+        value={value}
+        onChangeText={handleChange}
+        placeholder={placeholder}
+        placeholderTextColor={c.text.muted}
+        returnKeyType=&quot;search&quot;
+        clearButtonMode=&quot;never&quot;
+        accessibilityRole=&quot;search&quot;
+        {...inputProps}
+      /&gt;
+
+      {value.length &gt; 0 ? (
+        &lt;Pressable
+          onPress={handleClear}
+          accessibilityLabel=&quot;Clear search&quot;
+          accessibilityRole=&quot;button&quot;
+          style={styles.clearButton}
+          hitSlop={8}
+        &gt;
+          &lt;Icon name=&quot;nav.close&quot; size=&quot;sm&quot; color={c.text.muted} /&gt;
+        &lt;/Pressable&gt;
+      ) : null}
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: &apos;row&apos;,
+    alignItems: &apos;center&apos;,
+    gap: 8,
+  },
+  input: { flex: 1 },
+  clearButton: { padding: 2 },
+});</file><file path="apps/mobile/src/search/__tests__/query.test.ts">import { DatabaseSync } from &apos;node:sqlite&apos;;
+import type { SQLiteDatabase } from &apos;expo-sqlite&apos;;
+import { normalizeSearch, searchCachedMessages } from &apos;../query&apos;;
+
+let sqlite: DatabaseSync;
+let db: SQLiteDatabase;
+
+beforeEach(() =&gt; {
+  sqlite = new DatabaseSync(&apos;:memory:&apos;);
+  sqlite.exec(`
+    CREATE TABLE cache_messages (
+      message_id TEXT PRIMARY KEY, chat_id TEXT, sender_id TEXT, seq INTEGER,
+      created_at TEXT, deleted_at TEXT, payload TEXT
+    );
+    CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, nickname TEXT);
+    CREATE TABLE cache_profiles (user_id TEXT, display_name TEXT);
+    CREATE TABLE cache_message_media (message_id TEXT, payload TEXT);
+    INSERT INTO cache_chat_members VALUES (&apos;chat&apos;, &apos;me&apos;, NULL), (&apos;chat&apos;, &apos;other&apos;, &apos;José&apos;);
+  `);
+  db = {
+    getAllAsync: async (sql: string, params: string[]) =&gt; sqlite.prepare(sql).all(...params),
+  } as unknown as SQLiteDatabase;
+});
+
+afterEach(() =&gt; sqlite.close());
+
+function addMessage(id: string, content: string, options: {
+  chatId?: string; senderId?: string; deleted?: boolean; seq?: number;
+} = {}) {
+  sqlite.prepare(&apos;INSERT INTO cache_messages VALUES (?, ?, ?, ?, ?, ?, ?)&apos;).run(
+    id, options.chatId ?? &apos;chat&apos;, options.senderId ?? &apos;me&apos;, options.seq ?? 1,
+    &apos;2026-11-11T00:00:00Z&apos;, options.deleted ? &apos;2026-11-11T01:00:00Z&apos; : null,
+    JSON.stringify({ content }),
+  );
+}
+
+function search(query: string, cursor: Parameters&lt;typeof searchCachedMessages&gt;[4] = null) {
+  return searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;]&apos;, normalizeSearch(query), cursor, new AbortController().signal);
+}
+
+test(&apos;searches beyond the newest 200 rows and preserves tied-date pagination&apos;, async () =&gt; {
+  for (let index = 0; index &lt; 260; index++) {
+    addMessage(String(index).padStart(3, &apos;0&apos;), index &lt; 35 ? &apos;Needle&apos; : &apos;Unrelated&apos;);
+  }
+  const first = await search(&apos;needle&apos;);
+  expect(first.matches).toHaveLength(30);
+  expect(first.matches[0].messageId).toBe(&apos;034&apos;);
+  expect(first.next).toBeTruthy();
+  const second = await search(&apos;needle&apos;, first.next);
+  expect(second.matches).toHaveLength(5);
+  expect(second.next).toBeNull();
+  expect(new Set([...first.matches, ...second.matches].map((message) =&gt; message.messageId)).size).toBe(35);
+});
+
+test(&apos;excludes deleted messages, other accounts, and hidden conversations&apos;, async () =&gt; {
+  addMessage(&apos;valid&apos;, &apos;needle&apos;);
+  addMessage(&apos;deleted&apos;, &apos;needle&apos;, { deleted: true });
+  addMessage(&apos;foreign&apos;, &apos;needle&apos;, { chatId: &apos;foreign&apos; });
+  sqlite.prepare(&apos;INSERT INTO cache_chat_members VALUES (?, ?, NULL)&apos;).run(&apos;foreign&apos;, &apos;someone-else&apos;);
+  addMessage(&apos;hidden&apos;, &apos;needle&apos;, { chatId: &apos;hidden&apos; });
+  sqlite.prepare(&apos;INSERT INTO cache_chat_members VALUES (?, ?, NULL)&apos;).run(&apos;hidden&apos;, &apos;me&apos;);
+  const result = await searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;,&quot;foreign&quot;]&apos;, &apos;needle&apos;, null, new AbortController().signal);
+  expect(result.matches.map((message) =&gt; message.messageId)).toEqual([&apos;valid&apos;]);
+});
+
+test(&apos;normalizes Unicode and treats SQL metacharacters literally&apos;, async () =&gt; {
+  addMessage(&apos;unicode&apos;, &apos;ＣＡＦÉ&apos;);
+  addMessage(&apos;literal&apos;, &quot;100%_ &apos; OR 1=1 --&quot;);
+  expect((await search(&apos;café&apos;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;unicode&apos;]);
+  expect((await search(&quot;%_ &apos; OR 1=1 --&quot;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;literal&apos;]);
+});

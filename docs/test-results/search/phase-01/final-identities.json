@@ -1,0 +1,274 @@
+{
+  "baseline": [
+    {
+      "path": "apps/mobile/AGENTS.md",
+      "sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3",
+      "packet": true,
+      "current_sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "5bbcb737d3ec3a0cf4cd53673fc1a7744f15832fa66984f91ce8051bc2917c52",
+      "packet": true,
+      "current_sha256": "5bbcb737d3ec3a0cf4cd53673fc1a7744f15832fa66984f91ce8051bc2917c52",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "package.json",
+      "sha256": "7036f31c6e8488f38f82055803551e45e3c886005bf921f78eb9a0ccd08a3e67",
+      "packet": true,
+      "current_sha256": "7036f31c6e8488f38f82055803551e45e3c886005bf921f78eb9a0ccd08a3e67",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/search/query.ts",
+      "sha256": "7b584556cbc2139516f75a50c928351b9b9f3374ece2b2e88345a82d86a07d08",
+      "packet": true,
+      "current_sha256": "643df2428e1e71d36c6eac5f2fec36d96d6f940f6d074c405333a74e0b0e3922",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/query.test.ts",
+      "sha256": "24011de9eb4771482271c75f76f581a7efa4a31484928c650f2462e8f36f7935",
+      "packet": true,
+      "current_sha256": "0423a3f7160f0f40e32b3c5d95d50fe7c2503f4daeda427ed4c9c8d1be1464b7",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "apps/mobile/src/components/SearchField.tsx",
+      "sha256": "410c15b4412bebc2157e83f5d086ce6ca7baa8b5a6b58bb4ae634a319b7bec0b",
+      "packet": true,
+      "current_sha256": "e5ca4155a83501c12efb229d38425595f78e2982e556d4644157bc3024f92344",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/SearchScreen.test.tsx",
+      "sha256": "10417de6de16ec898beea3c49f5472db77134c423fe96c8046367905262ef046",
+      "packet": true,
+      "current_sha256": "10417de6de16ec898beea3c49f5472db77134c423fe96c8046367905262ef046",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/chats/infoQuery.ts",
+      "sha256": "33f58e3e54710b0351e34609235fce315c02841c1c2ccfd9e4b71275f7896691",
+      "packet": true,
+      "current_sha256": "33f58e3e54710b0351e34609235fce315c02841c1c2ccfd9e4b71275f7896691",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "packages/shared/src/chats/contacts.ts",
+      "sha256": "ebdb863568d63474037d9c5a85454322a314d5a83a8fe363826666e85047b518",
+      "packet": true,
+      "current_sha256": "ebdb863568d63474037d9c5a85454322a314d5a83a8fe363826666e85047b518",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "packages/shared/src/chats/direct.ts",
+      "sha256": "e8a11f938028e58ae02dc60310de4aa3f8ae9d7a7c102f01afe55dbebb22344a",
+      "packet": true,
+      "current_sha256": "e8a11f938028e58ae02dc60310de4aa3f8ae9d7a7c102f01afe55dbebb22344a",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "packages/shared/src/queue/types.ts",
+      "sha256": "7a74c99b7edf9bd78078738bc1ddb609fcfbd04e406c232e6c4583dd52922ecd",
+      "packet": true,
+      "current_sha256": "7a74c99b7edf9bd78078738bc1ddb609fcfbd04e406c232e6c4583dd52922ecd",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/queue/events.ts",
+      "sha256": "6acf3d8a54c1fb07b3af4f4790aa8a544623b1ca4ecd0d09656b788b0146a9d7",
+      "packet": true,
+      "current_sha256": "6acf3d8a54c1fb07b3af4f4790aa8a544623b1ca4ecd0d09656b788b0146a9d7",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/sync/cacheEvents.ts",
+      "sha256": "eca7c7a580e18ad0fd5b5f8b8f1c0b8b582a4a46740522d781f0b0cb63a9f942",
+      "packet": true,
+      "current_sha256": "eca7c7a580e18ad0fd5b5f8b8f1c0b8b582a4a46740522d781f0b0cb63a9f942",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/chatList/preferences.ts",
+      "sha256": "7fc643636936ef2ced3261137b592a6d6201c35764eb9b31b4b7416b1a5661dc",
+      "packet": true,
+      "current_sha256": "7fc643636936ef2ced3261137b592a6d6201c35764eb9b31b4b7416b1a5661dc",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/chats/preferences.ts",
+      "sha256": "680e5b8a271ce1b27d2e5fb1a8b530fb34608921897380d7abaffc7e6f505228",
+      "packet": true,
+      "current_sha256": "680e5b8a271ce1b27d2e5fb1a8b530fb34608921897380d7abaffc7e6f505228",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "Plans/DoloGram_Search_Implementation_Plan.md",
+      "sha256": "27457e240a5334a1a8773a5e56f829f140103fce01f83c4aedd08b75f34acf68",
+      "packet": false,
+      "current_sha256": "71b608043c17e251ad87df36638a3dbef073ebc966d5fba3902c864fd02b226c",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "Plans/context/DoloGram_Search_Context_Index.md",
+      "sha256": "6dbe9193dbbd72293e0b923514ff3752dcc1607f9e7ba828d37821f5f70db38e",
+      "packet": false,
+      "current_sha256": "6057e3d68a5915580030df717fda5c47fd1aab0954e0586050c8541d45c11f69",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "packages/shared/src/strings/index.ts",
+      "sha256": "a88d6bf3bcb56198be7cea1189b49de9a9d363942d59294a04d64205abd29ccc",
+      "packet": false,
+      "current_sha256": "e4d6577b0c611c4c9a5dc4f5f9da45cbb0d6628f9403042e1561271cc76ee254",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "apps/mobile/src/queue/db.ts",
+      "sha256": "cc054672695997f320a9df5ec021e3ce9b28869211da7b825e56a5c348585b22",
+      "packet": false,
+      "current_sha256": "cc054672695997f320a9df5ec021e3ce9b28869211da7b825e56a5c348585b22",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/chat/query.ts",
+      "sha256": "63bab823c9c23053f442da2bfccfecba630e9d5f0845d5f8db6c44f9070a77aa",
+      "packet": false,
+      "current_sha256": "63bab823c9c23053f442da2bfccfecba630e9d5f0845d5f8db6c44f9070a77aa",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/chatList/query.ts",
+      "sha256": "413cdc548248c2b1ee314e13dfa8080f7896f426f4b375533ba9e050de177470",
+      "packet": false,
+      "current_sha256": "f793585abb267c55cbe8b7a377ff3e3b2697983e64b1f44190b397b1f736f2cc",
+      "changed": true,
+      "owned": true
+    },
+    {
+      "path": "apps/mobile/src/chatList/useChatList.ts",
+      "sha256": "ae45a78c34f3e201a3dd46f2b18710492b5ae22e091eb76b27576ac7f2e005bd",
+      "packet": false,
+      "current_sha256": "ae45a78c34f3e201a3dd46f2b18710492b5ae22e091eb76b27576ac7f2e005bd",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/components/Avatar.tsx",
+      "sha256": "0a6c56666bb759e173918b8f7edf65b6ba426614e48c1c026d1c9fda1c6c024f",
+      "packet": false,
+      "current_sha256": "0a6c56666bb759e173918b8f7edf65b6ba426614e48c1c026d1c9fda1c6c024f",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/src/theme/ThemeProvider.tsx",
+      "sha256": "fec9875ca4d1bdf7aae179406715b13ab3711be360ad3997f01c93ced003b5f1",
+      "packet": false,
+      "current_sha256": "fec9875ca4d1bdf7aae179406715b13ab3711be360ad3997f01c93ced003b5f1",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/app/search.tsx",
+      "sha256": "f77d91e5f467b8d447957ce9d0e570903c86c156f73462fcb1dc4ad78f731699",
+      "packet": false,
+      "current_sha256": "f77d91e5f467b8d447957ce9d0e570903c86c156f73462fcb1dc4ad78f731699",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/app/chat/[chatId]/search.tsx",
+      "sha256": "19f189bd0a81a5ede74f5ac7c7f657f8b9cb22635f5d819f862aa22642a459ca",
+      "packet": false,
+      "current_sha256": "19f189bd0a81a5ede74f5ac7c7f657f8b9cb22635f5d819f862aa22642a459ca",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "apps/mobile/app/forward.tsx",
+      "sha256": "45cedb863860d8104884e16492204eb10ceac60cff014bb0c623bb3fb027d9db",
+      "packet": false,
+      "current_sha256": "45cedb863860d8104884e16492204eb10ceac60cff014bb0c623bb3fb027d9db",
+      "changed": false,
+      "owned": false
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "460920176ddd2313d5b6ae4d0e6145aab186a21408b3026c486e5a74d1c0622f",
+      "packet": false,
+      "current_sha256": "460920176ddd2313d5b6ae4d0e6145aab186a21408b3026c486e5a74d1c0622f",
+      "changed": false,
+      "owned": false
+    }
+  ],
+  "new": [
+    {
+      "path": "apps/mobile/src/search/matching.ts",
+      "sha256": "0da7adac704ecef59a85207b6c8edd5ed3f45afa77b113b4b99eb6df32b8007d"
+    },
+    {
+      "path": "apps/mobile/src/search/request.ts",
+      "sha256": "1872fe1631bbf5449f2410494776f959dda6343bb04a309756aefe5652cc4b73"
+    },
+    {
+      "path": "apps/mobile/src/search/people.ts",
+      "sha256": "05091e5bf1e688206f7e30e33666a74e57945c46d0ce397f10c06cade8f76f65"
+    },
+    {
+      "path": "apps/mobile/src/search/useMessageSearch.ts",
+      "sha256": "a26c104ad7dee6e913a0594b0ef98d90b4ae463278c346c014f8a3c6afea1efa"
+    },
+    {
+      "path": "apps/mobile/src/search/HighlightedText.tsx",
+      "sha256": "186c8dcc5f887b934862d66c14a2a90b5812af34902ddeefebfa1593ec962c0f"
+    },
+    {
+      "path": "apps/mobile/src/search/SearchResultRow.tsx",
+      "sha256": "6b2a6457f4252d648f7feac23fd6c387ed8a5730923581ce3493fdeff27474f8"
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/matching.test.ts",
+      "sha256": "f2fca8421d3c83c60eedba42120343e5610b32a38a1e5b4a86c5e9a665fb2a7d"
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/people.test.ts",
+      "sha256": "f670de490fb5a00d7b1e46bc94e6989778627630cdb715f9b1a6aa142dc4d135"
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/useMessageSearch.test.tsx",
+      "sha256": "b4cdeeee774d70453f0fc8ac4d379c3e47ac2bad169125ea28d27883bc8399f2"
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/SearchResultRow.test.tsx",
+      "sha256": "525dd8dd88201c1536b4bd29bc6dab32a3615381dd10ec5bd32a52963a366b6b"
+    },
+    {
+      "path": "apps/mobile/src/components/__tests__/SearchField.test.tsx",
+      "sha256": "90baf382789c134f01af64b0103e98ca0de4fbba95ab992b87261362125c81c4"
+    }
+  ]
+}

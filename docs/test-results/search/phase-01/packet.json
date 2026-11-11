@@ -1,0 +1,72 @@
+{
+  "version": "1.18.1",
+  "selectors": [
+    "apps/mobile/AGENTS.md",
+    "apps/mobile/package.json",
+    "package.json",
+    "apps/mobile/src/search/query.ts",
+    "apps/mobile/src/search/__tests__/query.test.ts",
+    "apps/mobile/src/components/SearchField.tsx",
+    "apps/mobile/src/search/__tests__/SearchScreen.test.tsx",
+    "apps/mobile/src/chats/infoQuery.ts",
+    "packages/shared/src/chats/contacts.ts",
+    "packages/shared/src/chats/direct.ts",
+    "packages/shared/src/queue/types.ts",
+    "apps/mobile/src/queue/events.ts",
+    "apps/mobile/src/sync/cacheEvents.ts",
+    "apps/mobile/src/chatList/preferences.ts",
+    "apps/mobile/src/chats/preferences.ts"
+  ],
+  "actual": [
+    "apps/mobile/src/chatList/preferences.ts",
+    "apps/mobile/src/chats/infoQuery.ts",
+    "apps/mobile/src/chats/preferences.ts",
+    "apps/mobile/src/components/SearchField.tsx",
+    "apps/mobile/src/queue/events.ts",
+    "apps/mobile/src/search/__tests__/query.test.ts",
+    "apps/mobile/src/search/__tests__/SearchScreen.test.tsx",
+    "apps/mobile/src/search/query.ts",
+    "apps/mobile/src/sync/cacheEvents.ts",
+    "apps/mobile/AGENTS.md",
+    "apps/mobile/package.json",
+    "packages/shared/src/chats/contacts.ts",
+    "packages/shared/src/chats/direct.ts",
+    "packages/shared/src/queue/types.ts",
+    "package.json"
+  ],
+  "compression": false,
+  "security": "enabled",
+  "sha256": "0881fcfc4b627994e297ad2838312945279d83247a49deb9d6776865dae88797",
+  "chunks": [
+    {
+      "file": "packet-read-1.txt",
+      "characters": 6552,
+      "lines": 195
+    },
+    {
+      "file": "packet-read-2.txt",
+      "characters": 6387,
+      "lines": 195
+    },
+    {
+      "file": "packet-read-3.txt",
+      "characters": 9646,
+      "lines": 195
+    },
+    {
+      "file": "packet-read-4.txt",
+      "characters": 8781,
+      "lines": 195
+    },
+    {
+      "file": "packet-read-5.txt",
+      "characters": 6665,
+      "lines": 195
+    },
+    {
+      "file": "packet-read-6.txt",
+      "characters": 2951,
+      "lines": 80
+    }
+  ]
+}

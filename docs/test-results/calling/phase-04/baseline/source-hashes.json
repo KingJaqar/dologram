@@ -1,0 +1,82 @@
+[
+  {
+    "path": "apps/mobile/src/calls/CallProvider.tsx",
+    "sha256": "e7415549805f3610847f6c43e3664136dba55385bacbf74ca24f0753f8ad5c9c",
+    "lines": 452
+  },
+  {
+    "path": "apps/mobile/src/calls/media.ts",
+    "sha256": "2842707b3489618a36ea59759a7d26c46b2bbba767e784450025fb310334abe9",
+    "lines": 107
+  },
+  {
+    "path": "apps/mobile/src/calls/state.ts",
+    "sha256": "c7c10028a9c9a13cac4974087e9448162716cd409a7b0221e62da1c02767dbc3",
+    "lines": 29
+  },
+  {
+    "path": "apps/mobile/src/calls/useCall.ts",
+    "sha256": "0ef672fbaccceef0bc9869c670040f0d119dbccf60af9d1bd9ff10b3d6b20631",
+    "lines": 32
+  },
+  {
+    "path": "apps/mobile/src/calls/api.ts",
+    "sha256": "5a858263104b227d65abdc9cd3cb39abe4dd6b196e560fc2df82a60d57d9c0f3",
+    "lines": 89
+  },
+  {
+    "path": "apps/mobile/src/calls/__tests__/state.test.ts",
+    "sha256": "ae8ad6a7e2527d0cbf9b2211e3c987f3823dfbd9f9b8467e30d1d58ca881001e",
+    "lines": 32
+  },
+  {
+    "path": "apps/mobile/src/calls/__tests__/audioOwnership.test.ts",
+    "sha256": "6d84be2d9f52b9601e4186df3b534dc4ff7f503673468afa41ede43197750476",
+    "lines": 26
+  },
+  {
+    "path": "apps/mobile/app/call/[callId].tsx",
+    "sha256": "13b949e6219d04f4e2cc6a9e4f229f2f16641509997c1f9a7536cc7806be11b0",
+    "lines": 129
+  },
+  {
+    "path": "apps/mobile/app/chat/[chatId]/index.tsx",
+    "sha256": "1d35c5d776bd6491c59e4892ffb32c9b1fc944118b0584dde777091deef19d0a",
+    "lines": 852
+  },
+  {
+    "path": "packages/shared/src/strings/index.ts",
+    "sha256": "7e88d08ee060a740e4d4983506243e295f5ebb7e29594e231eae163ca6c0cb02",
+    "lines": 541
+  },
+  {
+    "path": "apps/mobile/package.json",
+    "sha256": "5bbcb737d3ec3a0cf4cd53673fc1a7744f15832fa66984f91ce8051bc2917c52",
+    "lines": 72
+  },
+  {
+    "path": "apps/mobile/app.json",
+    "sha256": "56e6165be3cdd14d0735742d811b95fe46ca03b774041a9a97292ecd56a55df6",
+    "lines": 73
+  },
+  {
+    "path": "apps/mobile/app.config.js",
+    "sha256": "c43d67903faf8910177b5d6a423318d41ff5f1e2d6a1ddfe62a31da6d0dec876",
+    "lines": 9
+  },
+  {
+    "path": "apps/mobile/AGENTS.md",
+    "sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3",
+    "lines": 41
+  },
+  {
+    "path": "supabase/AGENTS.md",
+    "sha256": "ce08bcbdf1499b4c6a6046dcc1ba9ff689ed2a40c8b2856db285ca78e994b055",
+    "lines": 4
+  },
+  {
+    "path": "Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md",
+    "sha256": "ef530a58819a6fdfdd67c3a3094d15f7f6e4d8bfc51a681e45f861c566b0f2e3",
+    "lines": 758
+  }
+]

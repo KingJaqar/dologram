@@ -1,0 +1,12 @@
+
+> dologram@0.0.0 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @dologram/mobile@1.0.0 typecheck
+> tsc --noEmit
+
+
+> @dologram/shared@0.0.0 typecheck
+> tsc --noEmit
+

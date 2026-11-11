@@ -1,0 +1,16 @@
+Networking has been disabled
+Starting project at G:\codebase\DoloGram\docs\test-results\search\phase-00\runtime-app
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+
+
+TypeScript: A tsconfig.json has been auto-generated
+
+Waiting on http://localhost:8084
+
+Logs for your project will appear below.
+| (node:6420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:6420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Android Bundled 15910ms index.tsx (818 modules)

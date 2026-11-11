@@ -1,0 +1,1204 @@
+--- baseline/apps/mobile/src/search/query.ts
++++ working/apps/mobile/src/search/query.ts
+@@ -1,52 +1,64 @@
+ import type { SQLiteDatabase } from 'expo-sqlite';
+-import { strings, type MediaType } from '@dologram/shared';
++import { strings, type MediaType, type QueueItem, type QueueStatus } from '@dologram/shared';
+ import { attachmentLabel } from '../media/model';
++import { normalizeSearch, searchPreview } from './matching';
++import { readSearch, SEARCH_DEADLINE_MS, SearchFailure } from './request';
+ 
++export { normalizeSearch } from './matching';
+ export type SearchCursor = { createdAt: string; messageId: string };
+-export type MessageMatch = SearchCursor & { chatId: string; sender: string; preview: string };
++export type MatchSource = 'content' | 'sender' | 'attachment';
++export type MessageMatch = SearchCursor & {
++  chatId: string; sender: string; preview: string;
++  sources?: MatchSource[];
++  pendingStatus?: QueueStatus;
++};
++export type MessagePage = { matches: MessageMatch[]; next: SearchCursor | null };
++export type ConversationSummary = { chatId: string; deliveredMatchCount: number; latestMatch: MessageMatch };
++export type SearchScope = { userId: string; allowedChatIds: readonly string[]; chatId?: string };
++export type SearchIdentity = SearchScope & { normalizedQuery: string; generation: number };
+ 
+ type CachedMessage = {
+-  message_id: string;
+-  chat_id: string;
+-  created_at: string;
+-  content: string;
+-  sender: string;
+-  media_types: string | null;
++  message_id: string; chat_id: string; created_at: string;
++  content: string | null; sender: string; media_types: string | null;
+ };
+-
+ const BATCH_SIZE = 200;
+ const PAGE_SIZE = 30;
+ const MEDIA_TYPES: readonly MediaType[] = ['photo', 'video', 'voice', 'file'];
+ 
+-export function normalizeSearch(value: string): string {
+-  return value.normalize('NFKC').trim().toLowerCase();
++function messageMatch(row: CachedMessage, query: string): MessageMatch | null {
++  const labels = MEDIA_TYPES.filter((type) => row.media_types?.split(',').includes(type)).map(attachmentLabel).join(' · ');
++  const fields = { content: row.content ?? '', sender: row.sender, attachment: labels };
++  const sources = (Object.keys(fields) as MatchSource[]).filter((key) => normalizeSearch(fields[key]).includes(query));
++  if (sources.length === 0) return null;
++  const explanation = sources.includes('content') || (!row.content && sources.includes('attachment')) ? '' : sources.includes('attachment')
++    ? strings.search.attachmentMatch(labels) : strings.search.senderMatch(row.sender);
++  const text = row.content || labels || strings.chat.attachmentOnly;
++  return {
++    chatId: row.chat_id, messageId: row.message_id, createdAt: row.created_at,
++    sender: row.sender, sources,
++    preview: explanation ? `${explanation} · ${searchPreview(text, query)}` : searchPreview(text, query),
++  };
+ }
+ 
+-function previewOf(content: string, query: string): string {
+-  const normalized = content.normalize('NFKC').trim();
+-  const match = normalized.toLowerCase().indexOf(query);
+-  const start = Math.max(0, match - 36);
+-  const end = Math.max(start + 160, match + query.length);
+-  return `${start > 0 ? '…' : ''}${normalized.slice(start, end)}${end < normalized.length ? '…' : ''}`;
++function scopeIds(scope: SearchScope): string[] {
++  if (!scope.userId || scope.allowedChatIds.some((id) => typeof id !== 'string' || !id)) throw new SearchFailure('invalid');
++  if (scope.chatId !== undefined && !scope.allowedChatIds.includes(scope.chatId)) throw new SearchFailure('unavailable');
++  return scope.chatId === undefined ? [...new Set(scope.allowedChatIds)] : [scope.chatId];
+ }
+ 
+-/** Walk the synced cache in bounded batches. JS normalization also handles non-ASCII text. */
+-export async function searchCachedMessages(
+-  db: SQLiteDatabase,
+-  userId: string,
+-  chatIds: string,
+-  query: string,
+-  cursor: SearchCursor | null,
+-  signal: AbortSignal,
+-): Promise<{ matches: MessageMatch[]; next: SearchCursor | null }> {
+-  const matches: MessageMatch[] = [];
+-  if (!query) return { matches, next: null };
++/** Only one bounded source batch is retained, irrespective of history size. */
++async function* scanMatches(
++  db: SQLiteDatabase, scope: SearchScope, query: string, cursor: SearchCursor | null,
++  signal: AbortSignal, deadline: number,
++): AsyncGenerator<MessageMatch> {
++  const ids = scopeIds(scope);
++  if (!query || ids.length === 0) return;
+   let after = cursor;
+   while (!signal.aborted) {
+-    const rows = await db.getAllAsync<CachedMessage>(
++    const rows = await readSearch(() => db.getAllAsync<CachedMessage>(
+       `SELECT m.message_id, m.chat_id, m.created_at,
+           json_extract(m.payload, '$.content') AS content,
+-          CASE WHEN m.sender_id = own.user_id THEN 'You'
++          CASE WHEN m.sender_id = own.user_id THEN ?
+             ELSE COALESCE(NULLIF(sender.nickname, ''), profile.display_name, ?) END AS sender,
+           (SELECT group_concat(DISTINCT json_extract(media.payload, '$.media_type'))
+              FROM cache_message_media media
+@@ -60,27 +72,93 @@
+           AND m.deleted_at IS NULL AND m.seq IS NOT NULL
+           ${after ? 'AND (m.created_at, m.message_id) < (?, ?)' : ''}
+         ORDER BY m.created_at DESC, m.message_id DESC LIMIT ?`,
+-      [strings.chatList.unknownMember, userId, chatIds, ...(after ? [after.createdAt, after.messageId] : []), BATCH_SIZE],
+-    );
+-    if (signal.aborted) break;
++      [strings.search.you, strings.chatList.unknownMember, scope.userId, JSON.stringify(ids),
++        ...(after ? [after.createdAt, after.messageId] : []), BATCH_SIZE],
++    ), signal, deadline);
+     for (const row of rows) {
+-      const types = row.media_types?.split(',') ?? [];
+-      const labels = MEDIA_TYPES.filter((type) => types.includes(type)).map(attachmentLabel).join(' · ');
+-      const content = row.content ?? '';
+-      if (![content, row.sender, labels].some((value) => normalizeSearch(value).includes(query))) continue;
+-      if (matches.length === PAGE_SIZE) return { matches, next: matches[PAGE_SIZE - 1] };
+-      const text = normalizeSearch(labels).includes(query) && content ? `${labels} · ${content}` : content || labels;
+-      matches.push({
+-        chatId: row.chat_id,
+-        messageId: row.message_id,
+-        createdAt: row.created_at,
+-        sender: row.sender,
+-        preview: text ? previewOf(text, query) : strings.chat.attachmentOnly,
+-      });
++      if (signal.aborted) throw new SearchFailure('cancelled');
++      if (Date.now() >= deadline) throw new SearchFailure('timeout');
++      const match = messageMatch(row, query);
++      if (match) yield match;
+     }
+-    if (rows.length < BATCH_SIZE) break;
++    if (rows.length < BATCH_SIZE) return;
+     const last = rows[rows.length - 1];
+     after = { createdAt: last.created_at, messageId: last.message_id };
+   }
++}
++
++/** Backward-compatible delivered page API used by the existing global screen. */
++export async function searchCachedMessages(
++  db: SQLiteDatabase, userId: string, chatIds: string, query: string,
++  cursor: SearchCursor | null, signal: AbortSignal,
++): Promise<MessagePage> {
++  const parsed: unknown = JSON.parse(chatIds);
++  if (!Array.isArray(parsed) || !parsed.every((id): id is string => typeof id === 'string')) throw new SearchFailure('invalid');
++  return searchMessagePage(db, { userId, allowedChatIds: parsed }, query, cursor, signal);
++}
++
++export async function searchMessagePage(
++  db: SQLiteDatabase, scope: SearchScope, query: string, cursor: SearchCursor | null,
++  signal: AbortSignal, deadline = Date.now() + SEARCH_DEADLINE_MS,
++): Promise<MessagePage> {
++  const matches: MessageMatch[] = [];
++  if (signal.aborted) return { matches, next: null };
++  for await (const match of scanMatches(db, scope, normalizeSearch(query), cursor, signal, deadline)) {
++    if (matches.length === PAGE_SIZE) return { matches, next: matches[PAGE_SIZE - 1] };
++    matches.push(match);
++  }
++  if (signal.aborted) throw new SearchFailure('cancelled');
+   return { matches, next: null };
+ }
++
++export async function countMessageMatches(
++  db: SQLiteDatabase, scope: SearchScope, query: string, signal: AbortSignal,
++  deadline = Date.now() + SEARCH_DEADLINE_MS,
++): Promise<ConversationSummary[]> {
++  const summaries = new Map<string, ConversationSummary>();
++  for await (const match of scanMatches(db, scope, normalizeSearch(query), null, signal, deadline)) {
++    const previous = summaries.get(match.chatId);
++    if (previous) previous.deliveredMatchCount++;
++    else summaries.set(match.chatId, { chatId: match.chatId, deliveredMatchCount: 1, latestMatch: match });
++  }
++  if (signal.aborted) throw new SearchFailure('cancelled');
++  return [...summaries.values()]; // insertion order follows the latest matching timestamp and ID
++}
++
++export type ScopedMessagePage = MessagePage & { pendingMatches: MessageMatch[] };
++
++/** Pending rows stay separate from delivered pagination/counts and retain their queue ID. */
++export async function searchScopedMessages(
++  db: SQLiteDatabase, scope: SearchScope & { chatId: string }, query: string,
++  cursor: SearchCursor | null, signal: AbortSignal, getUnsent: () => Promise<QueueItem[]>,
++  deadline = Date.now() + SEARCH_DEADLINE_MS,
++): Promise<ScopedMessagePage> {
++  scopeIds(scope);
++  const membership = await readSearch(() => db.getAllAsync<{ user_id: string }>(
++    'SELECT user_id FROM cache_chat_members WHERE chat_id = ? AND user_id = ?', [scope.chatId, scope.userId],
++  ), signal, deadline);
++  if (membership.length === 0) throw new SearchFailure('unavailable');
++  const page = await searchMessagePage(db, scope, query, cursor, signal, deadline);
++  const normalized = normalizeSearch(query);
++  if (!normalized) return { ...page, pendingMatches: [] };
++  const queued = (await readSearch(getUnsent, signal, deadline)).filter((item) =>
++    item.status !== 'sent' && item.chat_id === scope.chatId && item.payload.chat_id === scope.chatId
++    && item.payload.sender_id === scope.userId && Number.isFinite(item.created_at));
++  const echoes = queued.length === 0 ? [] : await readSearch(() => db.getAllAsync<{ message_id: string }>(
++    `SELECT message_id FROM cache_messages WHERE chat_id = ? AND (seq IS NOT NULL OR deleted_at IS NOT NULL)
++       AND message_id IN (SELECT value FROM json_each(?))`,
++    [scope.chatId, JSON.stringify(queued.map((item) => item.temp_id))],
++  ), signal, deadline);
++  const seen = new Set(echoes.map((row) => row.message_id));
++  const pendingMatches: MessageMatch[] = [];
++  for (const item of queued) {
++    if (seen.has(item.temp_id)) continue;
++    seen.add(item.temp_id);
++    const match = messageMatch({ message_id: item.temp_id, chat_id: scope.chatId,
++      created_at: new Date(item.created_at).toISOString(), content: item.payload.content,
++      sender: strings.search.you, media_types: item.payload.attachments.map((attachment) => attachment.media_type).join(',') }, normalized);
++    if (match) pendingMatches.push({ ...match, pendingStatus: item.status });
++  }
++  pendingMatches.sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.messageId.localeCompare(a.messageId));
++  return { ...page, pendingMatches };
++}
+--- baseline/apps/mobile/src/components/SearchField.tsx
++++ working/apps/mobile/src/components/SearchField.tsx
+@@ -13,43 +13,65 @@
+ import { useTheme } from '../theme/ThemeProvider';
+ import { textStyle } from '../theme/typography';
+ import { Icon } from './Icon';
++import { strings } from '@dologram/shared';
+ 
+ export interface SearchFieldProps extends Omit<TextInputProps, 'onChangeText'> {
+   /** Called ~150 ms after the user stops typing. */
+   onSearch: (query: string) => void;
++  /** Immediate notification for controlled fields; onSearch may remain debounced. */
++  onChangeText?: (query: string) => void;
+   debounceMs?: number;
+   inputRef?: React.Ref<TextInput>;
+ }
+ 
+ export function SearchField({
+   onSearch,
++  onChangeText,
+   debounceMs = 150,
+-  placeholder = 'Search',
++  placeholder = strings.search.placeholder,
+   inputRef,
++  value: controlledValue,
++  defaultValue = '',
++  onSubmitEditing,
++  style,
+   ...inputProps
+ }: SearchFieldProps) {
+   const theme = useTheme();
+   const c = theme.colors;
+-  const [value, setValue] = useState('');
++  const [internalValue, setInternalValue] = useState(defaultValue);
++  const value = controlledValue ?? internalValue;
+   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const pendingValue = useRef<string | null>(null);
++  const currentValue = useRef(value);
++  currentValue.current = value;
++  const onSearchRef = useRef(onSearch);
++  onSearchRef.current = onSearch;
+ 
+   useEffect(() => {
+     return () => {
+       if (timerRef.current) clearTimeout(timerRef.current);
+     };
+-  }, []);
++  }, [debounceMs]);
++
++  useEffect(() => {
++    if (controlledValue !== undefined && pendingValue.current !== controlledValue && timerRef.current) {
++      clearTimeout(timerRef.current);
++      timerRef.current = null;
++    }
++  }, [controlledValue]);
+ 
+   const handleChange = (text: string) => {
+-    setValue(text);
++    if (controlledValue === undefined) setInternalValue(text);
++    currentValue.current = text;
++    pendingValue.current = text;
++    onChangeText?.(text);
+     if (timerRef.current) clearTimeout(timerRef.current);
+-    if (debounceMs === 0) onSearch(text);
+-    else timerRef.current = setTimeout(() => onSearch(text), debounceMs);
++    if (!text || debounceMs <= 0) onSearch(text);
++    else timerRef.current = setTimeout(() => { timerRef.current = null; onSearchRef.current(text); }, debounceMs);
+   };
+ 
+   const handleClear = () => {
+-    setValue('');
+-    if (timerRef.current) clearTimeout(timerRef.current);
+-    onSearch('');
++    handleChange('');
+   };
+ 
+   return (
+@@ -57,20 +79,23 @@
+       style={[
+         styles.container,
+         {
+-          height: 40,
++          height: 44,
+           borderRadius: theme.radius.full,
+-          backgroundColor: c.bg.surface,
+-          paddingHorizontal: theme.space[3],
++          paddingLeft: theme.space[3],
+         },
+       ]}
+     >
++      <View pointerEvents="none" style={[StyleSheet.absoluteFill, {
++        top: 2, bottom: 2, borderRadius: theme.radius.full, backgroundColor: c.bg.surface,
++      }]} />
+       <Icon name="action.search" size="sm" color={c.text.muted} />
+ 
+       <TextInput
++        {...inputProps}
+         ref={inputRef}
+         style={[
+           styles.input,
+-          { ...textStyle(theme.typeTokens.bodyMd), color: c.text.primary },
++          { ...textStyle(theme.typeTokens.bodyMd), color: c.text.primary }, style,
+         ]}
+         value={value}
+         onChangeText={handleChange}
+@@ -79,16 +104,21 @@
+         returnKeyType="search"
+         clearButtonMode="never"
+         accessibilityRole="search"
+-        {...inputProps}
++        accessibilityLabel={inputProps.accessibilityLabel ?? placeholder}
++        onSubmitEditing={(event) => {
++          if (timerRef.current) clearTimeout(timerRef.current);
++          timerRef.current = null;
++          onSearch(currentValue.current);
++          onSubmitEditing?.(event);
++        }}
+       />
+ 
+       {value.length > 0 ? (
+         <Pressable
+           onPress={handleClear}
+-          accessibilityLabel="Clear search"
++          accessibilityLabel={strings.search.clear}
+           accessibilityRole="button"
+           style={styles.clearButton}
+-          hitSlop={8}
+         >
+           <Icon name="nav.close" size="sm" color={c.text.muted} />
+         </Pressable>
+@@ -104,5 +134,5 @@
+     gap: 8,
+   },
+   input: { flex: 1 },
+-  clearButton: { padding: 2 },
++  clearButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+ });
+--- baseline/packages/shared/src/strings/index.ts
++++ working/packages/shared/src/strings/index.ts
+@@ -3,6 +3,23 @@
+  * copied unchanged. Later phases add keys here instead of writing inline text in a screen.
+  */
+ export const strings = {
++  search: {
++    placeholder: 'Search',
++    clear: 'Clear search',
++    you: 'You',
++    counting: 'Counting messages…',
++    searching: 'Searching messages…',
++    failed: "Couldn't search messages.",
++    timeout: 'Search took too long. Try again.',
++    unavailable: 'This conversation is unavailable.',
++    retry: 'Retry',
++    showMore: 'Show more messages',
++    senderMatch: (sender: string) => `Matched sender: ${sender}`,
++    attachmentMatch: (label: string) => `Matched attachment: ${label}`,
++    matchedMessages: (count: number) => `${count} matched ${count === 1 ? 'message' : 'messages'}`,
++    pendingMessages: (count: number) => `${count} queued ${count === 1 ? 'match' : 'matches'}`,
++    pendingStatus: { queued: 'Queued', sending: 'Sending', failed: 'Failed', sent: 'Sent' },
++  },
+   toasts: {
+     dismiss: 'Dismiss notification',
+     actions: {
+--- baseline/apps/mobile/src/chatList/query.ts
++++ working/apps/mobile/src/chatList/query.ts
+@@ -94,7 +94,7 @@
+   db: SQLiteDatabase,
+   userId: string,
+ ): Promise<ChatListSourceRow[]> {
+-  const rows = await db.getAllAsync<QueryRow>(CHAT_LIST_SQL, [userId, userId, userId, userId, userId, userId, userId]);
++  const rows = await db.getAllAsync<QueryRow>(CHAT_LIST_SQL, [userId, userId, userId, userId, userId, userId]);
+ 
+   const result: ChatListSourceRow[] = [];
+   for (const row of rows) {
+--- baseline/apps/mobile/src/search/__tests__/query.test.ts
++++ working/apps/mobile/src/search/__tests__/query.test.ts
+@@ -1,6 +1,7 @@
+ import { DatabaseSync } from 'node:sqlite';
+ import type { SQLiteDatabase } from 'expo-sqlite';
+-import { normalizeSearch, searchCachedMessages } from '../query';
++import { normalizeSearch, searchCachedMessages, countMessageMatches, searchScopedMessages } from '../query';
++import type { QueueItem } from '@dologram/shared';
+ 
+ let sqlite: DatabaseSync;
+ let db: SQLiteDatabase;
+@@ -90,3 +91,89 @@
+   await search('');
+   expect(getAll).not.toHaveBeenCalled();
+ });
++
++const scope = { userId: 'me', allowedChatIds: ['chat'], chatId: 'chat' };
++const signal = () => new AbortController().signal;
++function queued(id: string, status: QueueItem['status'] = 'queued'): QueueItem {
++  return { temp_id: id, chat_id: 'chat', status, created_at: 1000, retry_count: 0,
++    next_attempt_at: 0, row_may_exist: false, row_state: 'absent', last_error: null,
++    payload: { kind: 'text', chat_id: 'chat', sender_id: 'me', content: 'needle', reply_to: null, attachment_count: 0, attachments: [] } };
++}
++
++test('completed summaries and scoped pages agree on 35 old matches', async () => {
++  for (let i = 0; i < 260; i++) addMessage(String(i).padStart(3, '0'), i < 35 ? 'needle' : 'unrelated');
++  const counts = await countMessageMatches(db, scope, 'needle', signal());
++  expect(counts).toEqual([{ chatId: 'chat', deliveredMatchCount: 35, latestMatch: expect.objectContaining({ messageId: '034' }) }]);
++  const first = await searchScopedMessages(db, scope, 'needle', null, signal(), async () => []);
++  const second = await searchScopedMessages(db, scope, 'needle', first.next, signal(), async () => []);
++  expect([...first.matches, ...second.matches].map((row) => row.messageId)).toEqual((await search('needle')).matches.map((row) => row.messageId).concat(['004', '003', '002', '001', '000']));
++  expect(await countMessageMatches(db, scope, 'absent', signal())).toEqual([]);
++});
++
++test('pending rows preserve queue IDs/status and exclude foreign, sent, deleted and paged-out echoes', async () => {
++  addMessage('echo', 'needle');
++  addMessage('deleted', 'needle', { deleted: true });
++  const foreign = queued('foreign'); foreign.payload.sender_id = 'someone-else';
++  const otherChat = queued('other-chat'); otherChat.chat_id = 'other';
++  const items = [queued('echo'), queued('deleted'), queued('q'), queued('s', 'sending'), queued('f', 'failed'), queued('sent', 'sent'), foreign, otherChat];
++  const page = await searchScopedMessages(db, scope, 'needle', null, signal(), async () => items);
++  expect(page.matches.map((row) => row.messageId)).toEqual(['echo']);
++  expect(page.pendingMatches.map((row) => [row.messageId, row.pendingStatus])).toEqual([['s', 'sending'], ['q', 'queued'], ['f', 'failed']]);
++  expect((await countMessageMatches(db, scope, 'needle', signal()))[0].deliveredMatchCount).toBe(1);
++  const afterEcho = await searchScopedMessages(db, scope, 'needle', { createdAt: '2026-11-11T00:00:00Z', messageId: 'echo' }, signal(), async () => items);
++  expect(afterEcho.pendingMatches.some((row) => row.messageId === 'echo')).toBe(false);
++});
++
++test('scoped authorization rejects missing membership and disallowed routes before reading the queue', async () => {
++  const getUnsent = jest.fn(async () => []);
++  await expect(searchScopedMessages(db, { ...scope, allowedChatIds: [] }, 'needle', null, signal(), getUnsent)).rejects.toMatchObject({ kind: 'unavailable' });
++  await expect(searchScopedMessages(db, { ...scope, userId: 'foreign' }, 'needle', null, signal(), getUnsent)).rejects.toMatchObject({ kind: 'unavailable' });
++  expect(getUnsent).not.toHaveBeenCalled();
++});
++
++test('source metadata explains independent sender and attachment matches', async () => {
++  addMessage('sender', 'content', { senderId: 'other' });
++  addMessage('attachment', 'content');
++  sqlite.prepare('INSERT INTO cache_message_media VALUES (?, ?)').run('attachment', JSON.stringify({ media_type: 'file' }));
++  expect((await search('josé')).matches[0]).toMatchObject({ sources: ['sender'], preview: 'Matched sender: José · content' });
++  expect((await search('file')).matches[0]).toMatchObject({ sources: ['attachment'], preview: 'Matched attachment: File · content' });
++  expect((await search('josé content')).matches).toEqual([]);
++});
++
++test('read errors stay errors; deadlines and cancellation discard late native reads', async () => {
++  jest.useFakeTimers();
++  try {
++    let settle: (rows: never[]) => void = () => { throw new Error('read did not start'); };
++    jest.spyOn(db, 'getAllAsync').mockImplementationOnce(() => new Promise((resolve) => { settle = resolve; }));
++    const pending = countMessageMatches(db, scope, 'needle', signal(), Date.now() + 100);
++    const rejected = expect(pending).rejects.toMatchObject({ kind: 'timeout' });
++    await jest.advanceTimersByTimeAsync(100);
++    await rejected;
++    settle([]);
++    await Promise.resolve();
++    jest.spyOn(db, 'getAllAsync').mockRejectedValueOnce(new Error('read failed'));
++    await expect(countMessageMatches(db, scope, 'needle', signal())).rejects.toThrow('read failed');
++    const controller = new AbortController();
++    jest.spyOn(db, 'getAllAsync').mockImplementationOnce(async () => { controller.abort(); return []; });
++    await expect(countMessageMatches(db, scope, 'needle', controller.signal)).rejects.toMatchObject({ kind: 'cancelled' });
++    expect(jest.getTimerCount()).toBe(0);
++  } finally { jest.useRealTimers(); }
++});
++
++test('10,000-message/100-chat scan retains summaries and batches at most 200 source rows', async () => {
++  sqlite.exec('BEGIN');
++  const ids = Array.from({ length: 100 }, (_, i) => `scope-${i}`);
++  for (const id of ids) sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, NULL)').run(id, 'me');
++  for (let i = 0; i < 10000; i++) addMessage(`stress-${String(i).padStart(5, '0')}`, 'needle', { chatId: ids[i % 100] });
++  sqlite.exec('COMMIT');
++  const read = jest.spyOn(db, 'getAllAsync');
++  const result = await countMessageMatches(db, { userId: 'me', allowedChatIds: ids }, 'needle', signal());
++  expect(result).toHaveLength(100);
++  expect(result.every((summary) => summary.deliveredMatchCount === 100)).toBe(true);
++  expect(result.reduce((total, summary) => total + summary.deliveredMatchCount, 0)).toBe(10000);
++  for (const call of read.mock.calls) {
++    const params: unknown = call[1];
++    expect(Array.isArray(params) ? params.at(-1) : null).toBe(200);
++  }
++  expect(read).toHaveBeenCalledTimes(51);
++});
+--- baseline/Plans/DoloGram_Search_Implementation_Plan.md
++++ working/Plans/DoloGram_Search_Implementation_Plan.md
+@@ -175,6 +175,22 @@
+ 
+ **Acceptance gate.** Query/count/cursor assertions from V01, SearchField assertions from V02, candidate/ranking assertions from V03, scoped-data/pending assertions from V04, and request-lifecycle assertions from V07 pass. Global-screen and navigation assertions from those verification groups are due in Phases 2–3. Relevant callers typecheck and data contracts are ready for both screens. Search introduces no migration or dependency installation.
+ 
++**Phase 1 progress/status — 2026-11-11, Asia/Manila: Complete, 3/3 items (100%).** Phase 0 source/unit prerequisites were confirmed against recoverable snapshots, actual code and check evidence. This execution record supersedes earlier planning-only/not-started statements for Phase 1. Search-plan progress is 6/12 predefined items (50% by item count); broader project progress has no defined denominator. Phases 2–4 were not started.
++
++| Item | Entry classification | Verified completion |
++|---|---|---|
++| P1.1 | Partially done — existing delivered batch/page search only | Complete — shared matching/source metadata, completed conversation counts, scoped pagination and account-scoped pending compatibility, deadline/cancellation/generation/focus/event lifecycle. V01/V04/V07 foundation assertions pass, including 10,000 messages/100 chats with 200-row source batches and one retained summary per chat. |
++| P1.2 | Partially done — uncontrolled field only | Complete — controlled/uncontrolled/prefilled field, immediate changes/clear, default forward debounce and submit flush, themed reusable rows/highlighted text, original-text Unicode ranges and shared strings. V02 field/V08 pure helper assertions and existing caller/accessibility regressions pass. |
++| P1.3 | Not started — existing broad contact read unsuitable for search | Complete — separate membership/allowlist people adapter, cross-group blocked-person exclusion, deduplication, canonical/nickname matching, Saved Messages shortcut, existing direct lookup and deterministic name ranking. V03 candidate/ranking assertions pass. Opening/creation/username UI remains Phase 2. |
++
++**Dated verification note.** Fresh pre-edit baseline: workspace typecheck passed; existing four targeted suites passed (23 tests); shared tests passed (20 files/149 tests); lint failed with 13 errors/3 warnings in existing unrelated files. Final workspace typecheck passed. Foundation suites passed (6 suites/36 tests); expanded existing search/chat/Markdown regression command passed (4 suites/29 tests, including query tests also in foundation); accessibility passed (2 suites/6 tests); chat-list/preferences passed (2 suites/9 tests); shared tests passed (20 files/149 tests). Final lint remains failed with the same 13 errors/3 warnings and zero new findings. Strict evidence-fixture typecheck, snapshot/restore/packet/hash audit passed. Initial implementation/test failures and their diagnosed corrections remain in the evidence; no assertion was skipped or suppressed.
++
++**Native observation and limits.** Confirmed MuMu `dologram` / `127.0.0.1:16480` exercised the updated source in a network-fenced, in-memory fixture: 30+5 delivered matches, completed total 35, scoped page 30 plus one pending match retaining its queue ID/failed status, zero fixture-process JavaScript errors/warnings. First-page/two-page query wall time was 104.45/110.42 ms; separate count scan 31.29 ms. This is one query sample, not UI latency or a Phase 4 performance pass. The raw cancellation metric includes subsequent reads; its immediate zero-read assertion passed, and the evidence-source bookkeeping correction is explicitly not claimed rerun. Task servers/activity stopped, only added 8085 reverse removed, existing mappings/services preserved.
++
++**Decisions/discrepancies.** A real in-memory SQL fixture exposed seven bound values for six placeholders in the existing chat-list loader. Removing the one extra binding was strictly necessary for the adapter's shared direct-chat lookup; the SQL and ordinary callers retain their contracts and relevant regressions pass. Mobile AGENTS' route-location wording remains stale, but Phase 1 creates/changes no routes. No dependency, migration, backend/configuration change, commit, push, build or deployment was performed. The reusable foundation exports await screen/Markdown integration in the authorized later phases; those integrations were not started.
++
++Evidence: [Phase 1 report](../docs/test-results/search/phase-01/report.md), [check and recovery identities](../docs/test-results/search/phase-01/validation.json), and [central context index](context/DoloGram_Search_Context_Index.md). **Next phase ready to start: yes on source/unit prerequisites.** Connected fixtures, full product navigation/theme/large-font observation and native 10k stress remain later-phase gates, not pending Phase 1 criteria.
++
+ ### Phase 2 — Global search and recent history
+ 
+ **Scope and prerequisites.** Depends on Phase 1 contracts. Inputs are global search/header routes, Avatar/Button/Dialog/theme components, the history conventions, and direct-chat/New Chat flows.
+--- baseline/Plans/context/DoloGram_Search_Context_Index.md
++++ working/Plans/context/DoloGram_Search_Context_Index.md
+@@ -1,4 +1,90 @@
+ # DoloGram search planning context index
++
++## Phase 1 execution context — 2026-11-11
++
++This supplement is current for Phase 1 and supersedes planning-only statements
++below where they concern the completed foundation. Phase 2–4 work was not started.
++The [Phase 1 report](../../docs/test-results/search/phase-01/report.md) maps each
++owned assertion to checks, actual limitations and recovery instructions.
++
++Phase checklist:
++
++- [x] Scope P1.1–P1.3 only; verify P0 source/snapshot/test prerequisites against
++  actual artifacts and sources, not status labels. Global/scoped screens remain
++  unchanged. No new dependency, schema, migration or external mutation.
++- [x] Git status/tracked/staged baselines; identify untracked user-owned app and
++  plan inputs; 28 recoverable pre-edit source/config snapshots and SHA-256.
++- [x] Narrow ripgrep/instruction/caller/schema discovery and prior-context
++  validation; no fresh Repowise index was needed or assumed.
++- [x] Repomix 1.18.1 scoped XML, security on/no compression; all 15 selected entries
++  included; all six bounded Reader extractions completely read and analyzed;
++  original source resolves excluded dependency contracts.
++- [x] Fresh baseline typecheck/lint/existing four mobile suites/shared tests;
++  exact output/exit/time retained. Added feature suites only after implementation.
++- [x] V01/V02-field/V03-candidates-ranking/V04-data/V07-lifecycle/V08-pure-ranges
++  gates pass; caller/accessibility/shared/strict-fixture checks and native query
++  observation complete. Lint remains failed at the captured unrelated baseline.
++- [x] Owned diff reviewed, rollback rehearsal and unchanged-user-input audit;
++  task fixture servers/activity stopped, only added port mapping removed.
++
++Context identities and read coverage:
++
++| Input | Verified identity/coverage and finding |
++|---|---|
++| Git/source baseline | `phase-01/baseline/status.txt`, tracked/staged patches and `sources.json`; most app sources remain untracked user work. All 28 saved hashes and restore-to-scratch verified. No blanket restore or staging performed. |
++| Packet | `phase-01/context.xml`, SHA-256 `0881fcfc4b627994e297ad2838312945279d83247a49deb9d6776865dae88797`; selectors/actual paths/source hashes in packet.json + baseline/sources.json. Includes mobile instructions/manifests, query/tests/field, contact/direct/queue contracts, preferences and event modules. No missing selectors or compressed bodies. |
++| Complete Reader boundaries | packet-read-1..6: 195/195/195/195/195/80 lines, respectively 6552/6387/9646/8781/6665/2951 characters. Each read fully, in order; continuation crosses entries without omitting text. Original query/field/test contracts match saved packet bytes; current source changes supersede their baseline packet entries. No generated guidance overrides instructions. |
++| Original-source dependency verification | `queue/db.ts` cache columns/indexes; `chat/query.ts` pending conversion/merge and queued temp IDs; `queue/localQueue.ts::getUnsentItems`; complete `chatList/query.ts`, `useChatList.ts`, preferences; `chats/directChat.ts` outcomes/preflight failure behavior; shared contact/direct types; `Avatar`, theme color/type tokens, field callers in forward/global/scoped routes. Baseline source hashes identify complete source files; relevant ranges were read directly before editing. |
++| Instructions/conflicts | Repository/ancestor/hidden discovery found mobile AGENTS and Supabase migration AGENTS; both read fully. No applicable CLAUDE.md found. Actual routes are app rather than AGENTS' src/app wording, but this phase changes no route. Existing native/calling/account/organization work is preserved. |
++| Final source identity | `phase-01/final-identities.json` marks changed/unchanged/owned originals and hashes all new application/test files. `owned.diff` compares against working-copy snapshots rather than HEAD. New dependency/lockfile identities unchanged. |
++| Check baseline and final | Baseline checks JSON/logs; final-after-field (foundation 36 tests and existing regressions 29 tests, overlapping query suite), field-correction typecheck, regression-checks (shared149/accessibility6), prerequisite-regressions (chat-list9). All required assertions pass; lint remains identical 13 errors/3 warnings in seven untouched sources. |
++| Native environment | Fresh MuMu name/config port confirms dologram / 127.0.0.1:16480. `native.log` shows network-fence probe, in-memory SQLite, 35 delivered matches/count, scoped30+pending1 and no exercised-process JS warnings/errors. Native timing and the raw cancellation-metric bookkeeping limitation are detailed in report.md. No full product UI/native10k pass inferred. |
++
++Material discovery: the shared chat-list SQL has six placeholders but previously
++received seven positional bindings. This prevented the required people adapter's
++reuse on real SQLite. The single extra bind was removed; real-SQL people and
++existing chat-list/preferences regressions pass. No broader SQL/contact-picker
++refactor was performed. Deleted direct-chat reuse is permitted only as the
++explicit-person reopening shortcut; searchable sources still exclude deleted
++chat content. Blocked targets never re-enter through group candidates.
++
++New lifecycle consumer contract: pass a stable loader that revalidates current
++scope before reading, account/query/scope snapshots, screen focus as `active`,
++and candidate IDs (including currently excluded targets) as `observedChatIds`
++when needed for preference invalidation. Pending results stay separate from
++delivered pages/counts and preserve message IDs/status. The old global page API
++and initial-cancel zero-read behavior remain compatible. UI integration, history,
++creation/opening locks, Markdown leaf ranges and full Back behavior remain the
++next phases' obligations.
++
++Framework contracts read this session:
++
++- [Expo 57 index](https://docs.expo.dev/versions/v57.0.0/),
++  [SQLite 57](https://docs.expo.dev/versions/v57.0.0/sdk/sqlite/) and
++  [Router 57](https://docs.expo.dev/versions/v57.0.0/sdk/router/): typed async bound
++  reads and API compatibility; default app route root confirmed, no routing edit.
++- [Expo documentation index](https://docs.expo.dev/llms.txt).
++- React Native 0.86 [TextInput](https://reactnative.dev/docs/0.86/textinput),
++  [Text](https://reactnative.dev/docs/0.86/text),
++  [Pressable](https://reactnative.dev/docs/0.86/pressable),
++  [StyleSheet](https://reactnative.dev/docs/0.86/stylesheet): value/defaultValue,
++  change/submit, nested text and touch bounds. Installed declarations plus
++  typecheck confirmed absoluteFill; the removed absoluteFillObject was corrected.
++- React 19 [effects](https://react.dev/reference/react/useEffect) and
++  [version policy](https://react.dev/versions): docs are maintained per major,
++  not per 19.2 patch; effect subscription/cleanup and stale-response rules used.
++- [Jest29.7 timers](https://jestjs.io/docs/29.7/timer-mocks),
++  [RNTL13 renderHook](https://oss.callstack.com/react-native-testing-library/13.x/docs/api/misc/render-hook),
++  [Node24.13.1 SQLite](https://nodejs.org/download/release/v24.13.1/docs/api/sqlite.html).
++  Installed RNTL13.3.3 signatures/implementation were also read to resolve its
++  NoInfer prop typing and test-root behavior. No test dependency was changed.
++
++No unresolved Phase 1 requirement or blocker remains. Search-plan progress is
++6/12 items (50%); Phase 1 is 3/3 (100%). Broader project progress is undefined.
++Phase 2 is ready but not started. Remaining integrated runtime/connected-data/
++Markdown/navigation/performance gates stay assigned to Phases 2–4. Historical
++packets remain baseline evidence; do not reuse their old query/field bodies as
++current implementation without checking final-identities.json and fresh hashes.
+ 
+ Prepared 2026-11-11, Asia/Manila. Scope is the [search implementation plan](../DoloGram_Search_Implementation_Plan.md). This is the single context index for this feature. Verified denotes source inspection, reported denotes old evidence, and proposed work remains unimplemented.
+ 
+--- baseline/apps/mobile/src/search/matching.ts
++++ working/apps/mobile/src/search/matching.ts
+@@ -0,0 +1,71 @@
++export function normalizeSearch(value: string): string {
++  return value.normalize('NFKC').trim().toLowerCase();
++}
++
++export type HighlightRange = { start: number; end: number };
++
++/** UTF-16 display ranges, including composition, compatibility and lowercase expansions. */
++export function highlightRanges(text: string, query: string): HighlightRange[] {
++  const needle = normalizeSearch(query);
++  if (!needle) return [];
++  if (/^[\x00-\x7F]*$/.test(text)) {
++    const lower = text.toLowerCase();
++    const ranges: HighlightRange[] = [];
++    for (let from = 0; from < lower.length;) {
++      const found = lower.indexOf(needle, from);
++      if (found < 0) break;
++      const previous = ranges[ranges.length - 1];
++      if (previous && found <= previous.end) previous.end = Math.max(previous.end, found + needle.length);
++      else ranges.push({ start: found, end: found + needle.length });
++      from = found + 1;
++    }
++    return ranges;
++  }
++  // Normalize prefixes to retain provenance when a later combining character composes or
++  // reorders earlier code points. Lowercase the complete string for contextual Greek sigma.
++  let prefix = '';
++  let normalized = '';
++  let offsets: HighlightRange[] = [];
++  let sourceOffset = 0;
++  for (const point of text) {
++    prefix += point;
++    const next = prefix.normalize('NFKC');
++    let common = 0;
++    while (common < normalized.length && common < next.length && normalized[common] === next[common]) common++;
++    const start = offsets[common]?.start ?? sourceOffset;
++    offsets = offsets.slice(0, common);
++    for (let index = common; index < next.length; index++) offsets.push({ start, end: sourceOffset + point.length });
++    sourceOffset += point.length;
++    normalized = next;
++  }
++  const lower = normalized.toLowerCase();
++  const lowerOffsets: HighlightRange[] = [];
++  let index = 0;
++  for (const point of normalized) {
++    const span = { start: offsets[index].start, end: offsets[index + point.length - 1].end };
++    for (let count = 0; count < point.toLowerCase().length; count++) lowerOffsets.push(span);
++    index += point.length;
++  }
++  const ranges: HighlightRange[] = [];
++  let from = 0;
++  for (;;) {
++    const found = lower.indexOf(needle, from);
++    if (found < 0) break;
++    const span = { start: lowerOffsets[found].start, end: lowerOffsets[found + needle.length - 1].end };
++    const previous = ranges[ranges.length - 1];
++    if (previous && span.start <= previous.end) previous.end = Math.max(previous.end, span.end);
++    else ranges.push(span);
++    from = found + 1;
++  }
++  return ranges;
++}
++
++export function searchPreview(content: string, query: string): string {
++  const match = highlightRanges(content, query)[0];
++  let start = Math.max(0, (match?.start ?? 0) - 36);
++  let end = Math.min(content.length, Math.max(start + 160, match?.end ?? 0));
++  // Never cut a surrogate pair or detach a combining mark from its base.
++  while (start > 0 && /[\p{M}\uDC00-\uDFFF]/u.test(content[start])) start--;
++  while (end < content.length && /[\p{M}\uDC00-\uDFFF]/u.test(content[end])) end++;
++  return `${start > 0 ? '…' : ''}${content.slice(start, end)}${end < content.length ? '…' : ''}`;
++}
+--- baseline/apps/mobile/src/search/request.ts
++++ working/apps/mobile/src/search/request.ts
+@@ -0,0 +1,32 @@
++import { strings } from '@dologram/shared';
++
++export class SearchFailure extends Error {
++  constructor(public readonly kind: 'timeout' | 'cancelled' | 'unavailable' | 'invalid') {
++    super(kind === 'timeout' ? strings.search.timeout : strings.search.unavailable);
++    this.name = 'SearchFailure';
++  }
++}
++
++export const SEARCH_DEADLINE_MS = 15_000;
++
++/** Logical cancellation: late native settlements are observed but cannot publish results. */
++export function readSearch<T>(read: () => Promise<T>, signal: AbortSignal, deadline: number): Promise<T> {
++  if (signal.aborted) return Promise.reject(new SearchFailure('cancelled'));
++  const remaining = deadline - Date.now();
++  if (remaining <= 0) return Promise.reject(new SearchFailure('timeout'));
++  return new Promise<T>((resolve, reject) => {
++    const cleanup = () => { clearTimeout(timer); signal.removeEventListener('abort', cancel); };
++    const cancel = () => { cleanup(); reject(new SearchFailure('cancelled')); };
++    const timer = setTimeout(() => { cleanup(); reject(new SearchFailure('timeout')); }, remaining);
++    signal.addEventListener('abort', cancel, { once: true });
++    Promise.resolve().then(() => {
++      if (signal.aborted) throw new SearchFailure('cancelled');
++      return read();
++    }).then((value) => {
++      cleanup();
++      if (signal.aborted) reject(new SearchFailure('cancelled'));
++      else if (Date.now() >= deadline) reject(new SearchFailure('timeout'));
++      else resolve(value);
++    }, (error: unknown) => { cleanup(); reject(error); });
++  });
++}
+--- baseline/apps/mobile/src/search/people.ts
++++ working/apps/mobile/src/search/people.ts
+@@ -0,0 +1,73 @@
++import type { SQLiteDatabase } from 'expo-sqlite';
++import { findDirectChatId, strings, type ContactCandidate } from '@dologram/shared';
++import { loadChatListRows } from '../chatList/query';
++import { loadChatListPreferences } from '../chatList/preferences';
++import { loadChatPreferences } from '../chats/preferences';
++import { normalizeSearch } from './matching';
++import { readSearch, SEARCH_DEADLINE_MS } from './request';
++
++export type SearchPerson = ContactCandidate & {
++  kind: 'person' | 'saved'; chatId: string | null; title: string; sortMs: number;
++  aliases: readonly string[];
++};
++type NamedResult = { id: string; title: string; sortMs: number; aliases?: readonly string[] };
++
++function rank(title: string, query: string): number {
++  const name = normalizeSearch(title);
++  return name === query ? 0 : name.startsWith(query) ? 1 : name.includes(query) ? 2 : 3;
++}
++
++/** Exact, prefix, substring; ties use activity, normalized title, then stable entity ID. */
++export function rankSearchNames<T extends NamedResult>(items: readonly T[], query: string): T[] {
++  const normalized = normalizeSearch(query);
++  const score = (item: T) => Math.min(...[item.title, ...(item.aliases ?? [])].map((name) => rank(name, normalized)));
++  const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
++  return items.filter((item) => !normalized || score(item) < 3).sort((a, b) =>
++    score(a) - score(b) || b.sortMs - a.sortMs || compare(normalizeSearch(a.title), normalizeSearch(b.title)) || compare(a.id, b.id));
++}
++
++/** Search-only adapter. Group-picker contact reads retain their existing contract. */
++export async function loadSearchPeople(
++  db: SQLiteDatabase, userId: string, allowedChatIds: readonly string[], query: string,
++  signal: AbortSignal, deadline = Date.now() + SEARCH_DEADLINE_MS,
++): Promise<SearchPerson[]> {
++  if (!userId) return [];
++  const rows = await readSearch(() => loadChatListRows(db, userId), signal, deadline);
++  const organization = await readSearch(() => loadChatListPreferences(userId), signal, deadline);
++  const preferences = await readSearch(() => Promise.all(rows.map((row) => loadChatPreferences(userId, row.chat.chat_id))), signal, deadline);
++  const blockedPeople = new Set(rows.filter((row, index) => row.chat.type === 'direct' && preferences[index].blocked)
++    .map((row) => row.otherMemberId).filter((id): id is string => id !== null));
++  const unblocked = rows.filter((row, index) => row.myMember.user_id === userId && !preferences[index].blocked);
++  const allowed = new Set(allowedChatIds);
++  const eligible = unblocked.filter((row) => allowed.has(row.chat.chat_id) && !organization.deleted.includes(row.chat.chat_id));
++  const contacts = await readSearch(() => db.getAllAsync<{ user_id: string; display_name: string | null }>(
++    `SELECT DISTINCT member.user_id, profile.display_name
++       FROM cache_chat_members member
++       JOIN cache_chat_members own ON own.chat_id = member.chat_id AND own.user_id = ?
++       LEFT JOIN cache_profiles profile ON profile.user_id = member.user_id
++       WHERE member.chat_id IN (SELECT value FROM json_each(?)) AND member.user_id <> ?`,
++    [userId, JSON.stringify(eligible.map((row) => row.chat.chat_id)), userId],
++  ), signal, deadline);
++  const candidates = new Map<string, SearchPerson>();
++  for (const contact of contacts) {
++    if (blockedPeople.has(contact.user_id) || candidates.has(contact.user_id)) continue;
++    // Deleted direct chats can be explicitly reopened, but cannot supply searchable content.
++    const chatId = findDirectChatId(unblocked, { userId, otherUserId: contact.user_id });
++    const direct = unblocked.find((row) => row.chat.chat_id === chatId);
++    const pref = rows.findIndex((row) => row.chat.chat_id === chatId);
++    const displayName = contact.display_name || strings.chatList.unknownMember;
++    const title = (pref >= 0 ? preferences[pref].nickname : '') || direct?.otherMemberName || displayName;
++    const activity = direct?.lastMessage?.created_at ?? direct?.chat.created_at;
++    const parsedTime = activity ? Date.parse(activity) : 0;
++    candidates.set(contact.user_id, { kind: 'person', userId: contact.user_id, displayName, chatId,
++      title, aliases: [displayName, direct?.otherMemberName ?? ''], sortMs: Number.isFinite(parsedTime) ? parsedTime : 0 });
++  }
++  const savedId = findDirectChatId(eligible, { userId, otherUserId: userId });
++  if (savedId) {
++    const saved = eligible.find((row) => row.chat.chat_id === savedId);
++    const time = Date.parse(saved?.lastMessage?.created_at ?? saved?.chat.created_at ?? '');
++    candidates.set(userId, { kind: 'saved', userId, displayName: strings.chatList.savedMessages,
++      title: strings.chatList.savedMessages, aliases: [], chatId: savedId, sortMs: Number.isFinite(time) ? time : 0 });
++  }
++  return rankSearchNames([...candidates.values()].map((item) => ({ ...item, id: item.userId })), query);
++}
+--- baseline/apps/mobile/src/search/useMessageSearch.ts
++++ working/apps/mobile/src/search/useMessageSearch.ts
+@@ -0,0 +1,72 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { subscribeCacheChange } from '../sync/cacheEvents';
++import { subscribeQueueChange } from '../queue/events';
++import { subscribeChatPreferenceChanges } from '../chats/preferences';
++import { normalizeSearch } from './matching';
++import type { SearchIdentity, SearchScope } from './query';
++import { readSearch, SEARCH_DEADLINE_MS, SearchFailure } from './request';
++
++type SearchState<T> = { key: string; revision: number; generation: number; lifetime: { valid: boolean }; data: T | null; error: 'read' | 'timeout' | 'unavailable' | null };
++
++/** Shared lifecycle for summary and scoped-page readers. `active` follows screen focus.
++ * Readers revalidate eligibility on every invocation; request identities are immutable snapshots.
++ */
++export function useMessageSearch<T>(
++  scope: SearchScope, query: string, active: boolean,
++  load: (identity: SearchIdentity, signal: AbortSignal) => Promise<T>,
++  observedChatIds: readonly string[] = scope.allowedChatIds,
++) {
++  const normalizedQuery = normalizeSearch(query);
++  const ids = JSON.stringify([...new Set(scope.allowedChatIds)].sort());
++  const observedIds = JSON.stringify([...new Set(observedChatIds)].sort());
++  const key = JSON.stringify([scope.userId, ids, scope.chatId, normalizedQuery, active]);
++  const [revision, setRevision] = useState(0);
++  const [state, setState] = useState<SearchState<T> | null>(null);
++  const generation = useRef(0);
++  const controller = useRef<AbortController | null>(null);
++  const invalidate = useCallback(() => {
++    controller.current?.abort();
++    setRevision((previous) => previous + 1);
++  }, []);
++
++  useEffect(() => {
++    if (!active || !scope.userId) return;
++    const chatIds: string[] = JSON.parse(observedIds);
++    const changed = () => {
++      // Hide results immediately; coalesce the ensuing scan behind one debounce timer.
++      invalidate();
++    };
++    const stops = [subscribeCacheChange(changed), subscribeQueueChange(changed),
++      ...chatIds.map((id) => subscribeChatPreferenceChanges(scope.userId, id, changed))];
++    return () => { stops.forEach((stop) => stop()); };
++  }, [active, observedIds, invalidate, scope.userId]);
++
++  useEffect(() => {
++    if (!active || !scope.userId || !normalizedQuery) return;
++    const request = new AbortController();
++    controller.current = request;
++    const currentGeneration = ++generation.current;
++    const lifetime = { valid: true };
++    const identity: SearchIdentity = { userId: scope.userId, allowedChatIds: JSON.parse(ids),
++      chatId: scope.chatId, normalizedQuery, generation: currentGeneration };
++    const timer = setTimeout(() => {
++      void readSearch(() => load(identity, request.signal), request.signal, Date.now() + SEARCH_DEADLINE_MS).then((data) => {
++        if (!request.signal.aborted && generation.current === currentGeneration) setState({ key, revision, generation: currentGeneration, lifetime, data, error: null });
++      }, (error: unknown) => {
++        if (request.signal.aborted || generation.current !== currentGeneration) return;
++        request.abort();
++        const kind = error instanceof SearchFailure ? error.kind : 'read';
++        setState({ key, revision, generation: currentGeneration, lifetime, data: null, error: kind === 'timeout' ? 'timeout' : kind === 'unavailable' ? 'unavailable' : 'read' });
++      });
++    }, 150);
++    return () => {
++      clearTimeout(timer); request.abort();
++      lifetime.valid = false;
++      if (controller.current === request) controller.current = null;
++    };
++  }, [active, ids, key, load, normalizedQuery, revision, scope.chatId, scope.userId]);
++
++  const enabled = active && !!scope.userId && !!normalizedQuery;
++  const current = enabled && state?.key === key && state.revision === revision && state.lifetime.valid ? state : null;
++  return { data: current?.data ?? null, error: current?.error ?? null, loading: enabled && !current, retry: invalidate };
++}
+--- baseline/apps/mobile/src/search/HighlightedText.tsx
++++ working/apps/mobile/src/search/HighlightedText.tsx
+@@ -0,0 +1,19 @@
++import React from 'react';
++import { Text, type TextProps } from 'react-native';
++import { useTheme } from '../theme/ThemeProvider';
++import { highlightRanges } from './matching';
++
++/** Plain-text snippets only. Markdown integration belongs to MessageText's renderer. */
++export function HighlightedText({ text, query, style, ...props }: TextProps & { text: string; query: string }) {
++  const theme = useTheme();
++  const ranges = highlightRanges(text, query);
++  const parts: React.ReactNode[] = [];
++  let offset = 0;
++  for (const range of ranges) {
++    if (range.start > offset) parts.push(text.slice(offset, range.start));
++    parts.push(<Text key={range.start} style={{ backgroundColor: theme.colors.brand.primary, color: theme.colors.text.inverse }}>{text.slice(range.start, range.end)}</Text>);
++    offset = range.end;
++  }
++  parts.push(text.slice(offset));
++  return <Text {...props} style={[{ color: theme.colors.text.primary }, style]}>{parts}</Text>;
++}
+--- baseline/apps/mobile/src/search/SearchResultRow.tsx
++++ working/apps/mobile/src/search/SearchResultRow.tsx
+@@ -0,0 +1,33 @@
++import React from 'react';
++import { Pressable, StyleSheet, Text, View } from 'react-native';
++import { useTheme } from '../theme/ThemeProvider';
++import { textStyle } from '../theme/typography';
++import { Avatar } from '../components/Avatar';
++import { HighlightedText } from './HighlightedText';
++
++export type SearchResultRowProps = {
++  title: string; subtitle: string; query: string; onPress: () => void;
++  avatarId?: string; savedMessages?: boolean; metadata?: string; disabled?: boolean;
++};
++
++/** Shared name, conversation-summary and scoped-snippet presentation. */
++export function SearchResultRow({ title, subtitle, query, onPress, avatarId, savedMessages, metadata, disabled = false }: SearchResultRowProps) {
++  const theme = useTheme();
++  return (
++    <Pressable accessibilityRole="button" accessibilityLabel={[title, metadata, subtitle].filter(Boolean).join(', ')}
++      accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
++      style={({ pressed }) => [styles.row, { backgroundColor: pressed ? theme.colors.bg.pressed : theme.colors.bg.app }]}>
++      {avatarId ? <Avatar id={avatarId} displayName={title} size={48} isSavedMessages={savedMessages} /> : null}
++      <View style={styles.body}>
++        <HighlightedText text={title} query={query} style={textStyle(theme.typeTokens.titleSm)} />
++        {metadata ? <Text style={[textStyle(theme.typeTokens.labelMd), { color: theme.colors.text.secondary }]}>{metadata}</Text> : null}
++        <HighlightedText text={subtitle} query={query} numberOfLines={2} style={[textStyle(theme.typeTokens.bodyMd), { color: theme.colors.text.secondary }]} />
++      </View>
++    </Pressable>
++  );
++}
++
++const styles = StyleSheet.create({
++  row: { minHeight: 72, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
++  body: { flex: 1, gap: 4 },
++});
+--- baseline/apps/mobile/src/search/__tests__/matching.test.ts
++++ working/apps/mobile/src/search/__tests__/matching.test.ts
+@@ -0,0 +1,25 @@
++import { highlightRanges, searchPreview } from '../matching';
++
++test.each([
++  ['Hello hello', 'HELLO', [[0, 5], [6, 11]]],
++  ['banana', 'ana', [[1, 6]]],
++  ['ﬃ next', 'ffi', [[0, 1]]],
++  ['e\u0301 next', 'é', [[0, 2]]],
++  ['İX', 'i', [[0, 1]]],
++  ['İX', 'x', [[1, 2]]],
++  ['ΟΣ ΟΣΑ', 'οσ', [[3, 5]]],
++  ['ΟΣ ΟΣΑ', 'ος', [[0, 2]]],
++  ['🙂ＣＡＦÉ!', 'café', [[2, 6]]],
++  ['abc', ' ', []],
++  ['가X', '가', [[0, 2]]],
++])('maps %s / %s to original UTF-16 text', (text, query, expected) => {
++  expect(highlightRanges(text, query).map(({ start, end }) => [start, end])).toEqual(expected);
++});
++
++test('snippets preserve original text and surround the original normalized match', () => {
++  const content = `${'a'.repeat(190)} 🙂ＣＡＦÉ ${'z'.repeat(190)}`;
++  const preview = searchPreview(content, 'café');
++  expect(preview.startsWith('…')).toBe(true);
++  expect(preview.endsWith('…')).toBe(true);
++  expect(preview).toContain('🙂ＣＡＦÉ');
++});
+--- baseline/apps/mobile/src/search/__tests__/people.test.ts
++++ working/apps/mobile/src/search/__tests__/people.test.ts
+@@ -0,0 +1,76 @@
++import { DatabaseSync } from 'node:sqlite';
++import type { SQLiteDatabase } from 'expo-sqlite';
++import AsyncStorage from '@react-native-async-storage/async-storage';
++import { loadSearchPeople, rankSearchNames } from '../people';
++import { DEFAULT_CHAT_PREFERENCES, saveChatPreferences } from '../../chats/preferences';
++import { setChatListPreference } from '../../chatList/preferences';
++
++let sqlite: DatabaseSync;
++let db: SQLiteDatabase;
++beforeEach(async () => {
++  await AsyncStorage.clear();
++  sqlite = new DatabaseSync(':memory:');
++  sqlite.exec(`CREATE TABLE cache_chats (chat_id TEXT PRIMARY KEY, payload TEXT);
++    CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, payload TEXT, nickname TEXT, last_read_seq INTEGER);
++    CREATE TABLE cache_profiles (user_id TEXT, display_name TEXT);
++    CREATE TABLE cache_messages (message_id TEXT, chat_id TEXT, sender_id TEXT, seq INTEGER, deleted_at TEXT, created_at TEXT, payload TEXT);
++    CREATE TABLE cache_message_media (message_id TEXT, payload TEXT);`);
++  db = { getAllAsync: async (sql: string, params: (string | number)[]) => sqlite.prepare(sql).all(...params) } as unknown as SQLiteDatabase;
++});
++afterEach(() => sqlite.close());
++
++function chat(id: string, members: string[], group = true) {
++  sqlite.prepare('INSERT INTO cache_chats VALUES (?, ?)').run(id, JSON.stringify({ chat_id: id,
++    created_at: '2026-11-01T00:00:00Z', created_by: members[0], direct_key: members.length === 1 ? members[0] : id,
++    next_seq: 0, title: group ? id : null, type: group ? 'group' : 'direct' }));
++  for (const userId of members) sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, ?, NULL, 0)').run(id, userId,
++    JSON.stringify({ chat_id: id, user_id: userId, archived: false, joined_at: '2026-11-01', last_read_seq: 0, muted_until: null, role: 'member' }));
++}
++function person(id: string, name: string) { sqlite.prepare('INSERT INTO cache_profiles VALUES (?, ?)').run(id, name); }
++const signal = () => new AbortController().signal;
++
++test('membership plus allowlist isolates accounts; group-only people dedupe and Saved Messages is a shortcut', async () => {
++  chat('group', ['me', 'known', 'group-only']); chat('ignored', ['me', 'known']);
++  chat('foreign', ['other-account', 'stranger']); chat('deleted', ['me', 'deleted-only']);
++  chat('saved', ['me'], false);
++  person('known', 'Ada'); person('group-only', 'Grace'); person('stranger', 'Secret');
++  await setChatListPreference('me', 'ignored', 'ignored', true);
++  await setChatListPreference('me', 'deleted', 'deleted', true);
++  const result = await loadSearchPeople(db, 'me', ['group', 'ignored', 'foreign', 'deleted', 'saved'], '', signal());
++  expect(result.map((item) => item.userId).sort()).toEqual(['group-only', 'known', 'me']);
++  expect(result.find((item) => item.userId === 'group-only')).toMatchObject({ kind: 'person', chatId: null });
++  expect(result.find((item) => item.userId === 'me')).toMatchObject({ kind: 'saved', chatId: 'saved' });
++  expect((await loadSearchPeople(db, 'other-account', ['group', 'foreign'], '', signal())).map((item) => item.userId)).toEqual(['stranger']);
++});
++
++test('blocked direct targets cannot reappear through a group; direct nickname and canonical name both match', async () => {
++  chat('group', ['me', 'blocked', 'known']); chat('blocked-direct', ['me', 'blocked'], false);
++  chat('direct', ['me', 'known'], false); person('known', 'Ada'); person('blocked', 'Blocked');
++  await saveChatPreferences('me', 'blocked-direct', { ...DEFAULT_CHAT_PREFERENCES, blocked: true });
++  await saveChatPreferences('me', 'direct', { ...DEFAULT_CHAT_PREFERENCES, nickname: 'Captain' });
++  const result = await loadSearchPeople(db, 'me', ['group', 'direct'], '', signal());
++  expect(result.map((item) => item.userId)).toEqual(['known']);
++  for (const query of ['ada', 'captain']) expect(await loadSearchPeople(db, 'me', ['group', 'direct'], query, signal())).toEqual([
++    expect.objectContaining({ userId: 'known', title: 'Captain', displayName: 'Ada', chatId: 'direct' }),
++  ]);
++  await setChatListPreference('me', 'direct', 'deleted', true);
++  expect((await loadSearchPeople(db, 'me', ['group'], 'ada', signal()))[0].chatId).toBe('direct');
++});
++
++test('ranking is exact/prefix/substring, activity/name/id, independent of input order', () => {
++  const input = [
++    { id: 'substring', title: 'The Ada', sortMs: 999 }, { id: 'prefix', title: 'Adam', sortMs: 999 },
++    { id: 'b', title: 'Ada', sortMs: 2 }, { id: 'a', title: 'ＡＤＡ', sortMs: 2 },
++    { id: 'old', title: 'Ada', sortMs: 1 }, { id: 'none', title: 'Grace', sortMs: 9999 },
++  ];
++  expect(rankSearchNames(input, 'ada').map((item) => item.id)).toEqual(['a', 'b', 'old', 'prefix', 'substring']);
++  expect(rankSearchNames([...input].reverse(), 'ada')).toEqual(rankSearchNames(input, 'ada'));
++});
++
++test('preflight read failure/cancellation/deadline never returns success or attempts a mutation', async () => {
++  jest.spyOn(db, 'getAllAsync').mockRejectedValueOnce(new Error('cache failed'));
++  await expect(loadSearchPeople(db, 'me', ['group'], '', signal())).rejects.toThrow('cache failed');
++  const controller = new AbortController(); controller.abort();
++  await expect(loadSearchPeople(db, 'me', [], '', controller.signal)).rejects.toMatchObject({ kind: 'cancelled' });
++  await expect(loadSearchPeople(db, 'me', [], '', signal(), Date.now() - 1)).rejects.toMatchObject({ kind: 'timeout' });
++});
+--- baseline/apps/mobile/src/search/__tests__/useMessageSearch.test.tsx
++++ working/apps/mobile/src/search/__tests__/useMessageSearch.test.tsx
+@@ -0,0 +1,77 @@
++import { act, renderHook } from '@testing-library/react-native';
++import { useMessageSearch } from '../useMessageSearch';
++import { notifyCacheChange } from '../../sync/cacheEvents';
++import { notifyQueueChange } from '../../queue/events';
++import { updateChatPreferences } from '../../chats/preferences';
++import type { SearchIdentity } from '../query';
++
++const scope = { userId: 'me', allowedChatIds: ['chat'], chatId: 'chat' };
++beforeEach(() => jest.useFakeTimers());
++afterEach(() => jest.useRealTimers());
++async function advance(ms = 150) { await act(async () => { await jest.advanceTimersByTimeAsync(ms); }); }
++function deferred<T>() {
++  let resolve: (value: T) => void = () => { throw new Error('not initialized'); };
++  let reject: (error: Error) => void = () => { throw new Error('not initialized'); };
++  const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
++  return { promise, resolve, reject };
++}
++
++test('rapid queries/account/chat changes suppress late results; clearing cancels immediately', async () => {
++  const old = deferred<string>();
++  const load = jest.fn<Promise<string>, [SearchIdentity, AbortSignal]>().mockReturnValueOnce(old.promise).mockResolvedValue('new');
++  const hook = renderHook(({ query, userId, chatId }: { query: string; userId: string; chatId: string }) => useMessageSearch({ userId, chatId, allowedChatIds: [chatId] }, query, true, load),
++    { initialProps: { query: 'old', userId: 'me', chatId: 'chat' } });
++  await advance();
++  const oldSignal = load.mock.calls[0][1];
++  hook.rerender({ query: 'new', userId: 'other', chatId: 'other-chat' });
++  expect(oldSignal.aborted).toBe(true);
++  expect(hook.result.current.data).toBeNull();
++  await advance(); expect(hook.result.current.data).toBe('new');
++  await act(async () => old.resolve('stale')); expect(hook.result.current.data).toBe('new');
++  hook.rerender({ query: '', userId: 'other', chatId: 'other-chat' });
++  expect(hook.result.current).toMatchObject({ loading: false, data: null, error: null });
++  hook.unmount(); await advance(0); expect(jest.getTimerCount()).toBe(0);
++});
++
++test('cache/queue/preference bursts invalidate immediately, coalesce, refresh on focus and unsubscribe', async () => {
++  const load = jest.fn(async () => 'value');
++  const hook = renderHook(({ active }: { active: boolean }) => useMessageSearch(scope, 'needle', active, load), { initialProps: { active: true } });
++  await advance(); expect(load).toHaveBeenCalledTimes(1);
++  act(() => { notifyCacheChange(); notifyCacheChange(); notifyQueueChange(); });
++  expect(hook.result.current.data).toBeNull();
++  await advance(); expect(load).toHaveBeenCalledTimes(2);
++  await act(async () => { await updateChatPreferences('me', 'chat', { blocked: true }); });
++  expect(hook.result.current.data).toBeNull();
++  await advance(); expect(load).toHaveBeenCalledTimes(3);
++  hook.rerender({ active: false });
++  act(() => { notifyCacheChange(); notifyQueueChange(); });
++  await advance(); expect(load).toHaveBeenCalledTimes(3);
++  hook.rerender({ active: true }); expect(hook.result.current.data).toBeNull();
++  await advance(); expect(load).toHaveBeenCalledTimes(4);
++  hook.unmount(); act(() => { notifyCacheChange(); notifyQueueChange(); });
++  expect(jest.getTimerCount()).toBe(0);
++});
++
++test('deadline is explicit, late rejection is consumed and only explicit retry starts another read', async () => {
++  const pending = deferred<string>();
++  const load = jest.fn().mockReturnValueOnce(pending.promise).mockResolvedValue('recovered');
++  const hook = renderHook(() => useMessageSearch(scope, 'needle', true, load));
++  await advance(); await advance(15000);
++  expect(hook.result.current).toMatchObject({ data: null, loading: false, error: 'timeout' });
++  expect(load.mock.calls[0][1].aborted).toBe(true);
++  await act(async () => pending.reject(new Error('late')));
++  await advance(15000); expect(load).toHaveBeenCalledTimes(1);
++  act(() => hook.result.current.retry()); await advance();
++  expect(hook.result.current).toMatchObject({ data: 'recovered', error: null, loading: false });
++  hook.unmount(); expect(jest.getTimerCount()).toBe(0);
++});
++
++test('read failures do not look like successful empty results; permission loss hides old data', async () => {
++  const load = jest.fn().mockResolvedValueOnce(['match']).mockRejectedValueOnce(new Error('read failed'));
++  const hook = renderHook(({ allowedChatIds }: { allowedChatIds: string[] }) => useMessageSearch({ ...scope, allowedChatIds }, 'needle', true, load),
++    { initialProps: { allowedChatIds: ['chat'] } });
++  await advance(); expect(hook.result.current.data).toEqual(['match']);
++  hook.rerender({ allowedChatIds: [] }); expect(hook.result.current.data).toBeNull();
++  await advance(); expect(hook.result.current).toMatchObject({ data: null, error: 'read', loading: false });
++  hook.unmount();
++});
+--- baseline/apps/mobile/src/search/__tests__/SearchResultRow.test.tsx
++++ working/apps/mobile/src/search/__tests__/SearchResultRow.test.tsx
+@@ -0,0 +1,26 @@
++import React from 'react';
++import { fireEvent, render } from '@testing-library/react-native';
++import { StyleSheet, Text } from 'react-native';
++import { SearchResultRow } from '../SearchResultRow';
++import { color } from '@dologram/shared';
++
++let mockMode: 'light' | 'dark' = 'light';
++jest.mock('../../theme/ThemeProvider', () => ({ useTheme: () => {
++  const tokens = jest.requireActual('@dologram/shared');
++  return { ...tokens, colors: tokens.color[mockMode] };
++} }));
++jest.mock('../../components/Avatar', () => ({ Avatar: () => null }));
++
++test.each(['light', 'dark'] as const)('rows expose labels, disabled state, growing layout and theme highlights in %s mode', (mode) => {
++  mockMode = mode;
++  const open = jest.fn();
++  const screen = render(<SearchResultRow title="Ada" subtitle="needle text" metadata="2026" query="needle" onPress={open} avatarId="ada" />);
++  const button = screen.getByRole('button', { name: 'Ada, 2026, needle text' });
++  expect(StyleSheet.flatten(button.props.style).minHeight).toBe(72);
++  fireEvent.press(button); expect(open).toHaveBeenCalledTimes(1);
++  const highlight = screen.UNSAFE_getAllByType(Text).find((node) => node.props.children === 'needle');
++  expect(StyleSheet.flatten(highlight?.props.style)).toMatchObject({ backgroundColor: color[mode].brand.primary, color: color[mode].text.inverse });
++  screen.rerender(<SearchResultRow title="Ada" subtitle="needle text" query="needle" onPress={open} disabled />);
++  expect(screen.getByRole('button').props.accessibilityState.disabled).toBe(true);
++  fireEvent.press(screen.getByRole('button')); expect(open).toHaveBeenCalledTimes(1);
++});
+--- baseline/apps/mobile/src/components/__tests__/SearchField.test.tsx
++++ working/apps/mobile/src/components/__tests__/SearchField.test.tsx
+@@ -0,0 +1,66 @@
++import React, { useState } from 'react';
++import { act, fireEvent, render } from '@testing-library/react-native';
++import { StyleSheet } from 'react-native';
++import { SearchField } from '../SearchField';
++
++jest.mock('../../theme/ThemeProvider', () => ({ useTheme: () => {
++  const tokens = jest.requireActual('@dologram/shared');
++  return { ...tokens, colors: tokens.color.light };
++} }));
++jest.mock('../Icon', () => ({ Icon: () => null }));
++
++beforeEach(() => jest.useFakeTimers());
++afterEach(() => jest.useRealTimers());
++
++test('uncontrolled prefill, default forwarding debounce, immediate deletion/clear, timer cleanup', () => {
++  const onSearch = jest.fn();
++  const screen = render(<SearchField defaultValue="prefill" onSearch={onSearch} />);
++  const input = screen.getByRole('search');
++  expect(input.props.value).toBe('prefill');
++  fireEvent.changeText(input, 'new');
++  expect(input.props.value).toBe('new');
++  act(() => jest.advanceTimersByTime(149)); expect(onSearch).not.toHaveBeenCalled();
++  act(() => jest.advanceTimersByTime(1)); expect(onSearch).toHaveBeenLastCalledWith('new');
++  fireEvent.changeText(input, 'pending');
++  fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
++  expect(onSearch).toHaveBeenLastCalledWith(''); expect(input.props.value).toBe('');
++  expect(screen.queryByRole('button')).toBeNull();
++  act(() => jest.advanceTimersByTime(200)); expect(onSearch).toHaveBeenCalledTimes(2);
++  fireEvent.changeText(input, 'more'); fireEvent.changeText(input, '');
++  expect(onSearch).toHaveBeenLastCalledWith('');
++  fireEvent.changeText(input, 'unmount'); screen.unmount();
++  expect(jest.getTimerCount()).toBe(0);
++});
++
++test('controlled immediate updates preserve debounce; external prefill cancels stale callbacks', () => {
++  const onSearch = jest.fn();
++  function Controlled() {
++    const [value, setValue] = useState('initial');
++    return <SearchField value={value} onChangeText={setValue} onSearch={onSearch} />;
++  }
++  const screen = render(<Controlled />);
++  fireEvent.changeText(screen.getByRole('search'), 'typed');
++  expect(screen.getByRole('search').props.value).toBe('typed');
++  act(() => jest.advanceTimersByTime(150)); expect(onSearch).toHaveBeenLastCalledWith('typed');
++  fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
++  expect(screen.getByRole('search').props.value).toBe('');
++  screen.unmount();
++  const external = render(<SearchField value="external" onSearch={onSearch} />);
++  fireEvent.changeText(external.getByRole('search'), 'stale');
++  external.rerender(<SearchField value="replacement" onSearch={onSearch} />);
++  act(() => jest.advanceTimersByTime(150));
++  expect(onSearch).not.toHaveBeenCalledWith('stale');
++  expect(external.getByRole('search').props.value).toBe('replacement');
++});
++
++test('submit flushes current text once and clear has a 44px target without horizontal overlap', () => {
++  const onSearch = jest.fn(); const onSubmitEditing = jest.fn();
++  const screen = render(<SearchField onSearch={onSearch} onSubmitEditing={onSubmitEditing} />);
++  fireEvent.changeText(screen.getByRole('search'), 'latest');
++  fireEvent(screen.getByRole('search'), 'submitEditing', { nativeEvent: { text: 'latest' } });
++  expect(onSearch).toHaveBeenCalledWith('latest'); expect(onSubmitEditing).toHaveBeenCalledTimes(1);
++  act(() => jest.advanceTimersByTime(150)); expect(onSearch).toHaveBeenCalledTimes(1);
++  const button = screen.getByRole('button');
++  expect(StyleSheet.flatten(button.props.style).width).toBe(44);
++  expect(StyleSheet.flatten(button.props.style).height).toBe(44);
++});

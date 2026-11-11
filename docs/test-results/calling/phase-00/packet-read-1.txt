@@ -1,0 +1,140 @@
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: apps/mobile/AGENTS.md, supabase/AGENTS.md, package.json, apps/mobile/package.json, packages/shared/package.json, apps/mobile/app.json, apps/mobile/app.config.js, apps/mobile/eas.json, apps/mobile/jest.config.js, packages/shared/vitest.config.ts, supabase/config.toml, docs/versions.md, docs/builds.md, scripts/scan-mobile-bundle.ps1
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure>apps/
+  mobile/
+    AGENTS.md
+    app.config.js
+    app.json
+    eas.json
+    jest.config.js
+    package.json
+docs/
+  builds.md
+  versions.md
+packages/
+  shared/
+    package.json
+    vitest.config.ts
+scripts/
+  scan-mobile-bundle.ps1
+supabase/
+  AGENTS.md
+  config.toml
+package.json</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/mobile/AGENTS.md">This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+
+## Expo has changed — do not trust your training data
+
+Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+
+1. Read the major version of the `expo` package in `package.json`.
+2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v&lt;major&gt;.0.0/`
+3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+
+## Commands
+
+Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+
+```bash
+npx expo install &lt;package&gt;  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+npx expo start              # start the dev server
+npx expo lint               # lint
+npx tsc --noEmit            # typecheck
+npx expo-doctor             # diagnose dependency and config issues
+npx expo install --fix      # fix incompatible package versions
+```
+
+Run lint and typecheck before declaring any task done.
+
+## Navigation &amp; Routing
+
+- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
+- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
+- Docs: https://docs.expo.dev/router/introduction.md
+
+## Building with EAS
+
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli &lt;command&gt;` in Bun projects, or `npx eas-cli@latest &lt;command&gt;` otherwise; substitute that for bare `eas` in docs examples.
+Docs: https://docs.expo.dev/eas/index.md
+
+## Rules
+
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md</file><file path="apps/mobile/app.config.js">const { existsSync } = require(&apos;node:fs&apos;);
+const { join } = require(&apos;node:path&apos;);
+
+module.exports = ({ config, projectRoot }) =&gt; {
+  const localFile = join(projectRoot, &apos;google-services.json&apos;);
+  const googleServicesFile = process.env.GOOGLE_SERVICES_JSON || (existsSync(localFile) ? localFile : undefined);
+  if (!googleServicesFile) return config;
+  return { ...config, android: { ...config.android, googleServicesFile } };
+};</file><file path="apps/mobile/app.json">{
+  &quot;expo&quot;: {
+    &quot;name&quot;: &quot;DoloGram&quot;,
+    &quot;slug&quot;: &quot;dologram&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;orientation&quot;: &quot;portrait&quot;,
+    &quot;scheme&quot;: &quot;dologram&quot;,
+    &quot;icon&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+    &quot;userInterfaceStyle&quot;: &quot;automatic&quot;,
+    &quot;ios&quot;: {
+      &quot;supportsTablet&quot;: true
+    },
+    &quot;android&quot;: {
+      &quot;package&quot;: &quot;com.dologram.app&quot;,
+      &quot;adaptiveIcon&quot;: {
+        &quot;foregroundImage&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+        &quot;backgroundColor&quot;: &quot;#0B6E69&quot;
+      },
+      &quot;predictiveBackGestureEnabled&quot;: false
+    },
+    &quot;web&quot;: {
+      &quot;favicon&quot;: &quot;./assets/logo/dologram_logo.png&quot;
+    },
+    &quot;plugins&quot;: [
+      &quot;expo-router&quot;,
+      &quot;expo-status-bar&quot;,
+      &quot;expo-splash-screen&quot;,
+      &quot;expo-sqlite&quot;,
+      &quot;expo-audio&quot;,
+      &quot;expo-video&quot;,
+      &quot;expo-sharing&quot;,
+      &quot;expo-notifications&quot;,
+      [
+        &quot;expo-media-library&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to show them in the attachment tray.&quot;,
+          &quot;granularPermissions&quot;: [&quot;photo&quot;, &quot;video&quot;]
+        }
+      ],
+      &quot;expo-font&quot;,
+      [
+        &quot;expo-image-picker&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to attach them.&quot;
+        }
+      ]
+    ],
+    &quot;extra&quot;: {
+      &quot;router&quot;: {},
+      &quot;eas&quot;: {
+        &quot;projectId&quot;: &quot;95bc3ce9-004a-43f2-97c1-05f9c609b466&quot;

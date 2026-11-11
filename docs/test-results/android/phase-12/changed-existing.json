@@ -1,0 +1,11 @@
+[
+  "packages/shared/src\\validation\\attachment.ts",
+  "packages/shared/src\\strings\\index.ts",
+  "apps/mobile/app\\chat\\[chatId]\\media\\[mediaId].tsx",
+  "apps/mobile/app\\chat\\[chatId]\\index.tsx",
+  "apps/mobile/src\\chat\\query.ts",
+  "apps/mobile/src\\queue\\attachments.ts",
+  "apps/mobile/src\\components\\MessageBubble.tsx",
+  "apps/mobile/src\\components\\ChatComposer.tsx",
+  "Plans/DoloGram_Android_Implementation_Plan.md"
+]

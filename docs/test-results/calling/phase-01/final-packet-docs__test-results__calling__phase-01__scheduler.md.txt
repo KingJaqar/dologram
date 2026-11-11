@@ -1,0 +1,28 @@
+# Phase 1 scheduler procedure
+
+The migration installs a bounded `public.call_worker_tick(integer)` service-only RPC. It
+expires ringing/accepted calls, enforces the logical duration cap, creates reconciliation
+work, and claims at most 100 jobs with a ten-second fenced lease. It does not make provider
+HTTP requests; Phase 2's reconcile worker owns those effects.
+
+No scheduler was installed during this execution because the target project, its migration
+history, and its Cron/Vault configuration are not available. The following is the target-only
+procedure to run after the isolated migration is applied and the project URL/secret references
+are confirmed:
+
+1. Confirm `pg_cron`, `pg_net`, and Vault are enabled on the disposable target. Do not add or
+   enable extensions on a shared or production project from this repository task.
+2. Store the function URL and the dedicated scheduler credential in Vault. Do not put either
+   secret in a migration, this report, a job row, or logs.
+3. Install one named job at ten-second cadence, using `net.http_post` to the Phase 2
+   `reconcile-calls` Edge Function. The function must authenticate with the dedicated
+   scheduler credential and call `public.call_worker_tick(100)` through the service client.
+4. Verify `cron.job` has one active job and measure `cron.job_run_details` lag and duration
+   over at least 20 consecutive runs. The acceptance budget is a 10-second sweep cadence,
+   no overlapping claims, and no task-created run longer than the function/provider budget.
+5. Disable without deleting the named job during rollback with `cron.alter_job(..., active := false)`;
+   keep call history, reconciliation, and cleanup available through the controlled worker.
+
+The current Supabase documentation recommends Vault for function auth tokens and confirms
+that `pg_cron` plus `pg_net` are the hosted scheduling path. The live extension, Vault,
+credential, and timing checks remain pending target verification.

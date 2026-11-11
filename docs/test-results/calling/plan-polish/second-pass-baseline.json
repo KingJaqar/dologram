@@ -1,0 +1,15 @@
+{
+  "plan_before_sha256": "f6627108fb9867ae1a912e921dce2d7549e9e7fb2812c92ecf4cac3722937178",
+  "source_changes_since_first_pass": {
+    "apps/mobile/src/components/DoloGramHeader.tsx": {
+      "expected": "40ca07c6be3ec62ef839c7dd09ed4463fb36191c4e41d372bfe2a2801208d00d",
+      "current": "3d95129126ae0adb726efcad73edd54fe6a3b53f1cce97ddb72a914266f014d8"
+    },
+    "apps/mobile/src/components/HeaderNavActions.tsx": {
+      "expected": "7a701a8a8d098252032d46c1cd67769aba05219a0b9e2d60a90dec5bab0880f1",
+      "current": "cca5ceaf9639d07700c6acde2cbd9f45a3bb660582b1f82385c5226344151749"
+    }
+  },
+  "instructions_unchanged": true,
+  "scope": "second-pass planning audit; no runtime or operational verification"
+}

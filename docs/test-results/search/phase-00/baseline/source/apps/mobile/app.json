@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "DoloGram",
+    "slug": "dologram",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dologram",
+    "icon": "./assets/logo/dologram_logo.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.dologram.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo/dologram_logo.png",
+        "backgroundColor": "#0B6E69"
+      },
+      "permissions": ["BLUETOOTH_CONNECT"],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/logo/dologram_logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-splash-screen",
+      "expo-sqlite",
+      "expo-audio",
+      "expo-video",
+      "expo-sharing",
+      "expo-notifications",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "DoloGram needs access to your photos and videos to show them in the attachment tray.",
+          "granularPermissions": ["photo", "video"]
+        }
+      ],
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DoloGram needs access to your photos and videos to attach them."
+        }
+      ],
+      [
+        "@livekit/react-native-expo-plugin",
+        {
+          "android": {
+            "audioType": "communication",
+            "enableScreenShareService": false
+          }
+        }
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "DoloGram uses your camera for video calls.",
+          "microphonePermission": "DoloGram uses your microphone for calls."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "95bc3ce9-004a-43f2-97c1-05f9c609b466"
+      }
+    },
+    "owner": "alex123superman"
+  }
+}

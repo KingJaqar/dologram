@@ -1,0 +1,1248 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand
+
+FAIL src/notifications/__tests__/actionScreens.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3021251841' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/signIn.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1022231004' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/ChatOrganizationActions.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4066591212' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/accountSwitch.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1184435553' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/Toast.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1194855215' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/signUp.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2647856041' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaPickerPanel.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2695255548' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/changePassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1880001582' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaPickerPanel.native.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2982035019' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/pushNotifications.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2214633202' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/useChatList.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3585627510' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/resetPassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4021209254' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaComposer.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.952638186' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/VoiceRecordButton.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2569375622' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/query.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1162856820' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/FolderListTransition.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.732702073' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/pickers.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1150849925' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/queue/__tests__/db.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1762241398' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatRow.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.503348041' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/forgotPassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3361801713' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/queue/__tests__/worker.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1891242327' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/authProvider.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.385150051' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/ChatListLoadingTransition.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3077894308' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/toastCopy.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1393344549' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/PeopleRows.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3220264408' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/preferences.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.778486190' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/notificationScreen.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1994611454' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/enqueue.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2444642733' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/MainSectionNavigation.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.14494994' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chats/__tests__/useChatInfo.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.761426006' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/mediaSource.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3488374707' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MessageText.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2756191135' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatOrganizationSheet.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4211637990' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/net/__tests__/lowSignal.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1372041685' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/a11yLabels.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.80155708' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/a11yPressableSource.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.308795406' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/DoloGramHeader.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3878750762' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MainHeader.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1684320582' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/metrics/__tests__/latency.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2117585008' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatFilterTabs.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1257320583' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/hooks/__tests__/useDelayedFlag.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2255529033' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+Summary of all failing tests
+FAIL src/notifications/__tests__/actionScreens.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3021251841' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/signIn.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1022231004' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/ChatOrganizationActions.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4066591212' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/accountSwitch.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1184435553' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/Toast.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1194855215' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/signUp.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2647856041' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaPickerPanel.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2695255548' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/changePassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1880001582' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaPickerPanel.native.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2982035019' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/pushNotifications.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2214633202' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/useChatList.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3585627510' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/resetPassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4021209254' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MediaComposer.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.952638186' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/VoiceRecordButton.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2569375622' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/query.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1162856820' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/FolderListTransition.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.732702073' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/pickers.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1150849925' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/queue/__tests__/db.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1762241398' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatRow.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.503348041' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/forgotPassword.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3361801713' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/queue/__tests__/worker.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1891242327' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/authProvider.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.385150051' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/ChatListLoadingTransition.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3077894308' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/toastCopy.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1393344549' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/PeopleRows.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3220264408' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/preferences.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.778486190' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/notifications/__tests__/notificationScreen.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1994611454' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/enqueue.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2444642733' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chatList/__tests__/MainSectionNavigation.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.14494994' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/chats/__tests__/useChatInfo.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.761426006' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/media/__tests__/mediaSource.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3488374707' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MessageText.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2756191135' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatOrganizationSheet.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.4211637990' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/net/__tests__/lowSignal.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1372041685' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/a11yLabels.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.80155708' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/__tests__/a11yPressableSource.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.308795406' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/DoloGramHeader.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.3878750762' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/MainHeader.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1684320582' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/metrics/__tests__/latency.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2117585008' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/components/__tests__/ChatFilterTabs.test.tsx
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.1257320583' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+FAIL src/hooks/__tests__/useDelayedFlag.test.ts
+  ● Test suite failed to run
+
+    jest: failed to cache transform results in: C:/Users/User/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/AC/#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}/Temp/jest/jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338/2b/reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map
+    Failure message: EPERM: operation not permitted, rename 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map.2255529033' -> 'C:\Users\User\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{4cd0377d-fb90-45d0-a9de-7fbec3d4df74}\Temp\jest\jest-transform-cache-0bf8783bcf88e409e4fa39ef1b51d4ee-79ef2876fae7ca75eedb2aa53dc48338\2b\reactnativeenv_2bdb7f8e2b10050d4181ceadae9979b6.map'
+
+      at writeFileSync (node_modules/write-file-atomic/lib/index.js:252:8)
+      at writeCacheFile (node_modules/@jest/transform/build/ScriptTransformer.js:908:33)
+      at ScriptTransformer._buildTransformResult (node_modules/@jest/transform/build/ScriptTransformer.js:510:7)
+      at ScriptTransformer.transformSource (node_modules/@jest/transform/build/ScriptTransformer.js:554:17)
+      at revertHook.exts (node_modules/@jest/transform/build/ScriptTransformer.js:776:18)
+      at Module._compile (../../node_modules/pirates/lib/index.js:124:29)
+      at Object.newLoader (../../node_modules/pirates/lib/index.js:134:7)
+      at ScriptTransformer.requireAndTranspileModule (node_modules/@jest/transform/build/ScriptTransformer.js:798:66)
+
+
+Test Suites: 41 failed, 41 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        4.886 s
+Ran all test suites.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c jest --runInBand

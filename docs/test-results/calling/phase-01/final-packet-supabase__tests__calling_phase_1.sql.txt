@@ -1,0 +1,177 @@
+-- Phase 1 V1 integration test. Run against an isolated migrated Supabase target with
+-- at least three Auth users. Every fixture and assertion rolls back.
+-- The service-role test below models the verified actor forwarded by call-action; it
+-- does not make a client-supplied actor safe by itself.
+
+begin;
+
+do $$
+declare
+  people uuid[];
+  chat_id uuid := extensions.gen_random_uuid();
+begin
+  select array_agg(id order by id) into people
+  from (select id from auth.users order by id limit 3) users;
+  if cardinality(people) < 3 then
+    raise exception 'Requires three isolated Auth users';
+  end if;
+  perform set_config('test.caller', people[1]::text, true);
+  perform set_config('test.callee', people[2]::text, true);
+  perform set_config('test.outsider', people[3]::text, true);
+  perform set_config('test.chat_id', chat_id::text, true);
+  perform set_config('test.caller_session', extensions.gen_random_uuid()::text, true);
+  perform set_config('test.callee_session', extensions.gen_random_uuid()::text, true);
+  perform set_config('test.request_id', extensions.gen_random_uuid()::text, true);
+  perform set_config('test.transition_id', extensions.gen_random_uuid()::text, true);
+end;
+$$;
+
+set local role service_role;
+select set_config('request.jwt.claim.role', 'service_role', true);
+
+update private.call_settings
+set calling_enabled = true, pilot_user_ids = '{}', ring_seconds = 30,
+    connect_seconds = 30, reconcile_seconds = 10;
+
+do $$
+declare
+  response jsonb;
+  duplicate jsonb;
+  call_id uuid;
+begin
+  insert into public.chats(chat_id, type, title, created_by)
+  values (current_setting('test.chat_id')::uuid, 'direct', null, current_setting('test.caller')::uuid);
+  insert into public.chat_members(chat_id, user_id, role)
+  values
+    (current_setting('test.chat_id')::uuid, current_setting('test.caller')::uuid, 'owner'),
+    (current_setting('test.chat_id')::uuid, current_setting('test.callee')::uuid, 'member');
+
+  response := public.call_create(
+    current_setting('test.caller')::uuid,
+    current_setting('test.chat_id')::uuid,
+    'voice',
+    current_setting('test.request_id')::uuid,
+    current_setting('test.caller_session')::uuid
+  );
+  call_id := (response->'call'->>'callId')::uuid;
+  if call_id is null or response->'call'->>'status' <> 'ringing' then
+    raise exception 'Create did not return a ringing call snapshot';
+  end if;
+  if (select count(*) from private.call_user_reservations r where r.call_id = call_id) <> 2 then
+    raise exception 'Create did not reserve both users';
+  end if;
+
+  duplicate := public.call_create(
+    current_setting('test.caller')::uuid,
+    current_setting('test.chat_id')::uuid,
+    'voice',
+    current_setting('test.request_id')::uuid,
+    current_setting('test.caller_session')::uuid
+  );
+  if (duplicate->'call'->>'callId') <> call_id::text then
+    raise exception 'Duplicate create did not replay the original call';
+  end if;
+
+  -- The public mutation surface is service-only even when the actor is a real user.
+  begin
+    perform public.call_snapshot(current_setting('test.caller')::uuid, current_setting('test.caller_session')::uuid, call_id);
+    raise exception 'A service-only call RPC was callable unexpectedly';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+set local role authenticated;
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select set_config('request.jwt.claim.sub', current_setting('test.caller'), true);
+
+do $$
+declare
+  test_call_id uuid := (select c.call_id from public.calls c order by c.created_at desc limit 1);
+begin
+  if (select count(*) from public.calls c where c.call_id = test_call_id) <> 1 then
+    raise exception 'Participant cannot read the call row';
+  end if;
+  begin
+    insert into public.calls(call_id, chat_id, caller_id, callee_id, media_type, status, ring_expires_at, request_id)
+    values (extensions.gen_random_uuid(), current_setting('test.chat_id')::uuid,
+      current_setting('test.caller')::uuid, current_setting('test.callee')::uuid,
+      'voice', 'ringing', timezone('utc'::text, now()) + interval '30 seconds', extensions.gen_random_uuid());
+    raise exception 'Authenticated client inserted a call row';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+select set_config('request.jwt.claim.sub', current_setting('test.outsider'), true);
+do $$
+begin
+  if exists (select 1 from public.calls) or exists (select 1 from public.call_participants) then
+    raise exception 'Outsider can read call rows';
+  end if;
+end;
+$$;
+
+set local role service_role;
+select set_config('request.jwt.claim.role', 'service_role', true);
+
+do $$
+declare
+  test_call_id uuid := (select c.call_id from public.calls c order by c.created_at desc limit 1);
+  response jsonb;
+  provisioned jsonb;
+  prepared jsonb;
+  op_id uuid;
+  epoch bigint;
+begin
+  response := public.call_transition(
+    current_setting('test.callee')::uuid, test_call_id, 'accept',
+    current_setting('test.transition_id')::uuid,
+    current_setting('test.callee_session')::uuid
+  );
+  if response->'call'->>'status' <> 'accepted' then
+    raise exception 'Accept did not persist accepted state';
+  end if;
+
+  prepared := public.call_prepare_admission(
+    current_setting('test.caller')::uuid, test_call_id, current_setting('test.caller_session')::uuid
+  );
+  if prepared->>'readiness' <> 'provisioning' or prepared->>'admission_id' is not null then
+    raise exception 'Unready room issued an admission';
+  end if;
+  op_id := (prepared->>'operation_id')::uuid;
+  epoch := (prepared->>'epoch')::bigint;
+  provisioned := public.call_finalize_provisioning(test_call_id, op_id, epoch, 'RM_PHASE1_TEST');
+  if provisioned->>'roomSid' <> 'RM_PHASE1_TEST' or provisioned->>'roomGeneration' <> '2' then
+    raise exception 'Fenced provisioning did not make the room ready';
+  end if;
+
+  prepared := public.call_prepare_admission(
+    current_setting('test.caller')::uuid, test_call_id, current_setting('test.caller_session')::uuid
+  );
+  if prepared->>'readiness' <> 'ready' or prepared->>'admission_id' is null then
+    raise exception 'Ready room did not issue an admission lease';
+  end if;
+
+  response := public.call_transition(
+    current_setting('test.caller')::uuid, test_call_id, 'end',
+    extensions.gen_random_uuid(), current_setting('test.caller_session')::uuid
+  );
+  if response->'call'->>'status' <> 'ended' or response->'call'->>'endReason' <> 'hangup' then
+    raise exception 'Bound participant end did not terminate the call';
+  end if;
+  if exists (select 1 from private.call_user_reservations r where r.call_id = test_call_id) then
+    raise exception 'Terminal call retained a user reservation';
+  end if;
+  if not exists (select 1 from private.call_jobs j where j.diagnostic_call_id = test_call_id and j.kind = 'cleanup') then
+    raise exception 'Terminal call did not enqueue cleanup';
+  end if;
+
+  if jsonb_array_length(public.call_worker_tick(50)) < 0 then
+    raise exception 'Worker tick returned invalid JSON';
+  end if;
+end;
+$$;
+
+select 'calling phase 1 security, lifecycle, reservation, admission and cleanup checks passed' as result;
+rollback;

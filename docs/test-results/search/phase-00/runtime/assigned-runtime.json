@@ -1,0 +1,30 @@
+{
+  "serial": "127.0.0.1:16480",
+  "instance": "MuMuPlayerGlobal-12.0-3",
+  "name": "dologram",
+  "package": "com.dologram.app",
+  "apk_path": "/data/app/~~yaTJdkARNMnUt5z7KpNbwg==/com.dologram.app-H2s52UrYGikQNwfTB6k7dA==/base.apk",
+  "apk_sha256": "fb5aef22cee1a524e1e8063e11335c9a86df606ac93213b82808e6e30f090331",
+  "reverse_mappings": [
+    "host-13 tcp:8082 tcp:8082",
+    "host-13 tcp:8305 tcp:8305",
+    "host-13 tcp:8081 tcp:8081",
+    "host-13 tcp:8083 tcp:8083",
+    "host-13 tcp:8311 tcp:8311",
+    ""
+  ],
+  "diagnostic_counts": {
+    "Unable to resolve module": 0,
+    "Cannot find native module": 0,
+    "WorkletsError": 0,
+    "ReanimatedError": 0,
+    "React Native version mismatch": 0,
+    "Invariant Violation": 0,
+    "TurboModuleRegistry": 0,
+    "Call-native-unavailable": 0,
+    "Error:": 0
+  },
+  "diagnostic_messages": [],
+  "metro_8082": "packager-status:running",
+  "metro_8083": "TimeoutError"
+}

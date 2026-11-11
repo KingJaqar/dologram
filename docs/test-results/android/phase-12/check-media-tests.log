@@ -1,0 +1,10 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand src/media/__tests__
+
+
+Test Suites: 3 passed, 3 total
+Tests:       15 passed, 15 total
+Snapshots:   0 total
+Time:        6.45 s
+Ran all test suites matching src/media/__tests__.

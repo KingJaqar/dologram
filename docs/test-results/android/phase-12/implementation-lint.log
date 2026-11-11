@@ -1,0 +1,65 @@
+
+> @dologram/mobile@1.0.0 lint
+> expo lint
+
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\index.tsx
+   34:28  warning  'G:\codebase\DoloGram\apps\mobile\src\components\Button.tsx' imported multiple times                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                import/no-duplicates
+   54:24  warning  'G:\codebase\DoloGram\apps\mobile\src\components\Button.tsx' imported multiple times                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                import/no-duplicates
+  276:28  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `replyTarget`, but the source dependencies were [attachments, chatId, draft, refreshLatest, replyTarget?.messageId, toast, userId]. Inferred less specific property than source.
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\index.tsx:276:28
+  274 |   };
+  275 |
+> 276 |   const send = useCallback(async () => {
+      |                            ^^^^^^^^^^^^^
+> 277 |     const content = dgTrim(draft);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 278 |     if (sendLock.current || pickLock.current || !validateMessageText(content, attachments.length).ok) return;
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 302 |     requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 303 |   }, [attachments, chatId, draft, refreshLatest, replyTarget?.messageId, toast, userId]);
+      | ^^^^ Could not preserve existing manual memoization
+  304 |
+  305 |   const saveEdit = useCallback(async () => {
+  306 |     if (!editingMessage) return;  react-hooks/preserve-manual-memoization
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\media\[mediaId].tsx
+  68:6  warning  React Hook useCallback has an unnecessary dependency: 'retry'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+G:\codebase\DoloGram\apps\mobile\app\sign-up.tsx
+   55:33  error    Use a color token from packages/shared/src/theme/tokens.ts via useTheme()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-restricted-syntax
+  221:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\sign-up.tsx:221:7
+  219 |
+  220 |     if (!validateUsername(username)) {
+> 221 |       setUsernameStatus(username.length === 0 ? 'idle' : 'invalid');
+      |       ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  222 |       return;
+  223 |     }
+  224 |  react-hooks/set-state-in-effect
+  287:15  warning  'data' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+
+✖ 7 problems (3 errors, 4 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c expo lint

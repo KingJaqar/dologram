@@ -1,0 +1,54 @@
+[
+  {
+    "path": "docs/test-results/calling/phase-00/compatibility.md",
+    "sha256": "03a905c48351cc896f6e618227a811e7b7449882a458c0493feb04d9a511fcb5"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/config-probe.cjs",
+    "sha256": "6b705454b1d19e7f44bd380614b979c5080b39e0cc8635a4d2cd713fb46d5436"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/context-index.md",
+    "sha256": "12d1e7bf20791caf1362d02d0e9452bb8e4c951a2e8e49d8ffb717ef33548718"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/contracts.md",
+    "sha256": "decf56b734d974c7f6b851bf30e41d9e4d3253b254b101669c3d5e28fbf253ae"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/deno.lock",
+    "sha256": "499f61d7f09d8342c2e631fb8c0c9da4dd3803a4477e1ae2f738d1146ab86017"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/prepare-sdk-sources.py",
+    "sha256": "adefd7a4d1b5e53ec34345fde3fb79808547909ede37fdbed0615173734f3563"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/procedures.md",
+    "sha256": "eb8c66adb8a29ff0cb98a52b3fbc17a54fb29240b6fbe4597028489f89e4b644"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/run-checks.py",
+    "sha256": "d713a8098136a2d6e4b99088354ca2af538176e282186b0861fdf3cbd10a0070"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/sdk-contract.test.ts",
+    "sha256": "51807a525039754cb3079e0b06b92c9338323bcf3aa1dfd6b1f2921ede637406"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00/validation.json",
+    "sha256": "5c2d8c2c4a46878f2d7f40580bbced5aeeb3996dab39eaceb248a5f03c5629a1"
+  },
+  {
+    "path": "docs/test-results/calling/phase-00.md",
+    "sha256": "c35b87a9ebe92d8a1f4d2f747ee479e9ae80b876f14fe21b8b2a778a8d085d39"
+  },
+  {
+    "path": "docs/versions.md",
+    "sha256": "a5b9fb913edbe12c817e521537c0364fa204983eeb2e8474a9ad765e20ca4985"
+  },
+  {
+    "path": "Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md",
+    "sha256": "3a9730dc43fa1fd897e4b3307ac6a0e7367ce02738e3b350e5c1737a34a497c3"
+  }
+]

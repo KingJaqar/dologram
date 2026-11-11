@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.*
+!.env.example
+apps/mobile/.expo/
+apps/mobile/dist-android/
+apps/mobile/*.log
+*.apk
+
+# Local Jest transform cache
+apps/mobile/.jest-cache/

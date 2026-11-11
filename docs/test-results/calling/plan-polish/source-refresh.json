@@ -1,0 +1,29 @@
+{
+  "reason": "Concurrent working-copy edits, not writes by this plan-polishing task. Relevant UI sources re-inspected; folder-only work excluded.",
+  "files": {
+    "apps/mobile/app/(main)/folders.tsx": {
+      "before_sha256": "5cf84ae5980e4d7b93c62b73e322512d3edf7718992c2a9f0f9839c329b1a214",
+      "current_sha256": "4adc0bf822ab8842bcc6630e544ddd65befd694ca4d3a810cbd989b9bc3a2413"
+    },
+    "apps/mobile/src/components/ChatFilterTabs.tsx": {
+      "before_sha256": "ea7def4920737548d5e1b3586dedbb6685e32a95bcc4a7b034b013c54154a22d",
+      "current_sha256": "657d0a9b7ba5465d5bd47baf72c7210c388648813032ece3f80b0092a347b89f"
+    },
+    "apps/mobile/src/components/Icon.tsx": {
+      "before_sha256": "c4deba8b2d4bc09ac2932c0596862d14fb43f4440a9a9b65919a2b7287be2b5c",
+      "current_sha256": "237ab2456cb87960a8d2d3aa000a6bb43defa3cab7de77da0792845a1d790397"
+    },
+    "packages/shared/src/db/repositories/folders.ts": {
+      "before_sha256": "0d9cea8989c100c8dca26332b57c784b1c4d90d3daa8b175a17f6c5be3d62998",
+      "current_sha256": "0b14d1a3f3506afe558e04d7fd19e329fc5d0120bb166976d7ee079f1f78d0bf"
+    },
+    "packages/shared/src/strings/index.ts": {
+      "before_sha256": "151082cc7d7289c2776be4bf836ad3ee0683030fa4cc7e07a360e8bea0eaeee8",
+      "current_sha256": "304c623fb78609c731122e35f41e3b08f066097adf736f2bc509b0a8bb7ee506"
+    },
+    "packages/shared/src/theme/icons.ts": {
+      "before_sha256": "3074c16d36fcbfa91c1f4ad42d5991d7bd4700a898d4fd94b0c35811889659ee",
+      "current_sha256": "0487e98dc2265e078a9501e510aa08ae9208fb189d565912e25e5cdeefbe5e30"
+    }
+  }
+}

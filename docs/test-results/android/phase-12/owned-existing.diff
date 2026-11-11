@@ -1,0 +1,596 @@
+--- baseline/packages/shared/src\validation\attachment.ts
++++ current/packages/shared/src\validation\attachment.ts
+@@ -8,13 +8,16 @@
+ 
+ export type AttachmentResult =
+   | { ok: true }
+-  | { ok: false; reason: 'unsupportedType' | 'tooLarge' };
++  | { ok: false; reason: 'unsupportedType' | 'tooLarge' | 'invalidSize' };
+ 
+ /**
+  * Photos and voice notes go to the 10 MiB bucket, videos and files to the 50 MiB bucket (D-29, D-75),
+  * and only the types of 5.5 are accepted (D-90, D-116).
+  */
+ export function validateAttachment(input: AttachmentInput): AttachmentResult {
++  if (!Number.isSafeInteger(input.sizeBytes) || input.sizeBytes <= 0) {
++    return { ok: false, reason: 'invalidSize' };
++  }
+   const mime = input.mime.trim().toLowerCase();
+   const allowed: readonly string[] = config.media.allowedTypes[
+     input.mediaType as 'photo' | 'video' | 'voice' | 'file'
+--- baseline/packages/shared/src\strings\index.ts
++++ current/packages/shared/src\strings\index.ts
+@@ -3,6 +3,38 @@
+  * copied unchanged. Later phases add keys here instead of writing inline text in a screen.
+  */
+ export const strings = {
++  media: {
++    title: 'Media',
++    cameraPhoto: 'Take photo',
++    cameraVideo: 'Record video',
++    gallery: 'Gallery',
++    file: 'File',
++    photo: 'Photo',
++    video: 'Video',
++    voice: 'Voice note',
++    holdToRecord: 'Hold to record voice note',
++    recording: 'Recording… Release to attach',
++    cancelRecording: 'Cancel recording',
++    permissionDenied: 'Permission denied. Allow access in your device settings to use this feature.',
++    pickerFailed: "Couldn't open the picker. Try again.",
++    recordingFailed: "Couldn't record a voice note. Try again.",
++    queueFailed: "Couldn't queue attachments. Your message is still here. Try again.",
++    tooMany: 'You can attach up to 10 files.',
++    tooLarge: (name: string) => `${name} is too large. Photos and voice notes up to 10 MB, videos and files up to 50 MB.`,
++    unsupported: (name: string) => `${name} can't be sent. This file type isn't allowed.`,
++    unreadable: (name: string) => `${name} can't be read or is empty. Choose another file.`,
++    remove: (name: string) => `Remove ${name}`,
++    uploading: 'Uploading',
++    waitingUpload: 'Waiting for upload',
++    unavailable: 'This attachment is no longer available.',
++    openFile: 'Open in another app',
++    shareUnavailable: 'No app is available to open this file.',
++    play: 'Play voice note',
++    pause: 'Pause voice note',
++    restart: 'Restart voice note',
++    zoomIn: 'Zoom in',
++    zoomOut: 'Zoom out',
++  },
+   common: {
+     noConnection: 'No connection',
+     retry: 'Retry',
+--- baseline/apps/mobile/app\chat\[chatId]\media\[mediaId].tsx
++++ current/apps/mobile/app\chat\[chatId]\media\[mediaId].tsx
+@@ -1,24 +1,78 @@
+-/**
+- * AND-09: Media viewer screen placeholder.
+- * Phase 12 will complete this screen.
+- */
+-import React from 'react';
+-import { useLocalSearchParams, useRouter } from 'expo-router';
+-import { View, Text, StyleSheet } from 'react-native';
++/** AND-09: member cache reads and authenticated Storage URLs. */
++import React, { useCallback, useState } from 'react';
++import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
++import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
++import { strings } from '@dologram/shared';
+ import { useTheme } from '../../../../src/theme/ThemeProvider';
+ import { TopBar } from '../../../../src/components/TopBar';
++import { textStyle } from '../../../../src/theme/typography';
++import { useAuth } from '../../../../src/auth/AuthProvider';
++import { Button } from '../../../../src/components/Button';
++import { PhotoViewer } from '../../../../src/components/PhotoViewer';
++import { VideoPlayback } from '../../../../src/components/VideoPlayback';
++import { VoiceNotePlayer } from '../../../../src/components/VoiceNotePlayer';
++import { getLocalDatabase } from '../../../../src/queue/db';
++import { subscribeCacheChange } from '../../../../src/sync/cacheEvents';
++import { loadMediaAttachment } from '../../../../src/media/query';
++import type { ChatAttachment } from '../../../../src/media/model';
++import { useMediaSource } from '../../../../src/media/useMediaSource';
++import { shareMediaFile } from '../../../../src/media/shareFile';
++
++function MediaContent({ attachment }: { attachment: ChatAttachment }) {
++  const theme = useTheme();
++  const source = useMediaSource(attachment);
++  const [sharing, setSharing] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++  const share = async () => {
++    if (!source.uri || sharing) return;
++    setSharing(true);
++    setError(null);
++    try { await shareMediaFile(attachment, source.uri, source.mime); }
++    catch (failure) { setError(failure instanceof Error ? failure.message : strings.common.couldNotLoad); }
++    finally { setSharing(false); }
++  };
++  if (source.error) return <Button label={source.error} variant="text" onPress={source.retry} />;
++  if (!source.uri || source.loading) return <ActivityIndicator color={theme.colors.brand.primary} accessibilityLabel="Loading media" />;
++  if (attachment.mediaType === 'photo') return <PhotoViewer uri={source.uri} onError={source.fail} />;
++  if (attachment.mediaType === 'video') return <VideoPlayback uri={source.uri} onError={source.fail} />;
++  if (attachment.mediaType === 'voice') return <VoiceNotePlayer uri={source.uri} onError={source.fail} />;
++  return <View><Button label={strings.media.openFile} onPress={() => void share()} loading={sharing} />{error ? <Text style={[textStyle(theme.typeTokens.bodyMd), { color: theme.colors.error.text }]}>{error}</Text> : null}</View>;
++}
+ 
+ export default function MediaViewerScreen() {
+-  const { chatId, mediaId } = useLocalSearchParams<{ chatId: string; mediaId: string }>();
++  const params = useLocalSearchParams<{ chatId?: string; mediaId?: string }>();
++  const { session } = useAuth();
++  const userId = session?.user.id;
++  const chatId = typeof params.chatId === 'string' ? params.chatId : '';
++  const mediaId = typeof params.mediaId === 'string' ? params.mediaId : '';
+   const theme = useTheme();
+   const router = useRouter();
++  const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
++  const [error, setError] = useState<string | null>(null);
++  const reloadRef = React.useRef<() => void>(() => {});
++  useFocusEffect(useCallback(() => {
++    let alive = true;
++    async function load() {
++      try {
++        if (!userId || !chatId || !mediaId) throw new Error(strings.media.unavailable);
++        const db = await getLocalDatabase();
++        const media = await loadMediaAttachment(db, chatId, mediaId, userId);
++        if (alive) { setAttachment(media); setError(null); }
++      } catch {
++        if (alive) { setAttachment(null); setError(strings.media.unavailable); }
++      }
++    }
++    void Promise.resolve().then(load);
++    reloadRef.current = () => { void load(); };
++    const unsubscribe = subscribeCacheChange(() => { void load(); });
++    return () => { alive = false; reloadRef.current = () => {}; unsubscribe(); };
++  }, [chatId, mediaId, userId]));
+   return (
+     <View style={[styles.container, { backgroundColor: theme.colors.bg.app }]}>
+-      <TopBar title="Media" onBack={() => router.back()} />
++      <TopBar title={strings.media.title} onBack={() => router.back()} />
+       <View style={styles.body}>
+-        <Text style={[styles.text, { color: theme.colors.text.secondary }]}>
+-          {`chatId: ${chatId} mediaId: ${mediaId} — Phase 12`}
+-        </Text>
++        {error ? <View><Text style={[textStyle(theme.typeTokens.bodyMd), { color: theme.colors.error.text }]}>{error}</Text><Button label={strings.common.retry} variant="text" onPress={() => { setError(null); reloadRef.current(); }} /></View>
++          : attachment ? <MediaContent key={attachment.mediaId} attachment={attachment} /> : <ActivityIndicator color={theme.colors.brand.primary} accessibilityLabel="Loading media" />}
+       </View>
+     </View>
+   );
+@@ -27,5 +81,4 @@
+ const styles = StyleSheet.create({
+   container: { flex: 1 },
+   body: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+-  text: { fontSize: 14 },
+ });
+--- baseline/apps/mobile/app\chat\[chatId]\index.tsx
++++ current/apps/mobile/app\chat\[chatId]\index.tsx
+@@ -31,7 +31,7 @@
+ import { useTheme } from '../../../src/theme/ThemeProvider';
+ import { useToast } from '../../../src/components/Toast';
+ import { TopBar } from '../../../src/components/TopBar';
+-import { IconButton } from '../../../src/components/Button';
++import { Button, IconButton } from '../../../src/components/Button';
+ import { OfflineBanner } from '../../../src/components/ConnectionBanner';
+ import { EmptyState } from '../../../src/components/EmptyState';
+ import { DateSeparator, JumpToBottom, UnreadDivider } from '../../../src/components/DateSeparator';
+@@ -47,6 +47,10 @@
+ import { subscribeQueueChange } from '../../../src/queue/events';
+ import { notifyCacheChange, subscribeCacheChange } from '../../../src/sync/cacheEvents';
+ import { createSqliteCacheStore } from '../../../src/sync/cacheStore';
++import { enqueueAttachmentMessage } from '../../../src/queue/attachments';
++import { pickAttachments, type PickerKind } from '../../../src/media/pickers';
++import { remainingAttachments, type DraftAttachment } from '../../../src/media/model';
++import { BottomSheet } from '../../../src/components/BottomSheet';
+ 
+ type TypingEntry = { name: string; expiresAt: number };
+ 
+@@ -95,6 +99,11 @@
+   const lastTypingSentRef = useRef(0);
+   const [snapshot, setSnapshot] = useState<ChatScreenSnapshot | null>(null);
+   const [draft, setDraft] = useState('');
++  const [attachments, setAttachments] = useState<DraftAttachment[]>([]);
++  const [attachMenu, setAttachMenu] = useState(false);
++  const [mediaBusy, setMediaBusy] = useState(false);
++  const sendLock = useRef(false);
++  const pickLock = useRef(false);
+   const [loading, setLoading] = useState(true);
+   const [refreshing, setRefreshing] = useState(false);
+   const [loadingOlder, setLoadingOlder] = useState(false);
+@@ -251,16 +260,37 @@
+     }
+   }, [chatId, loadingOlder, snapshot, toast, userId]);
+ 
++  const pickMedia = async (kind: PickerKind) => {
++    if (pickLock.current || sendLock.current) return;
++    pickLock.current = true;
++    setAttachMenu(false);
++    setMediaBusy(true);
++    try {
++      const picked = await pickAttachments(kind, remainingAttachments(attachments.length));
++      setAttachments((current) => [...current, ...picked.attachments].slice(0, config.media.maxAttachments));
++      for (const message of picked.errors) toast.showToast({ message });
++    } finally { pickLock.current = false; setMediaBusy(false); }
++  };
++
+   const send = useCallback(async () => {
+     const content = dgTrim(draft);
+-    if (!validateMessageText(content, 0).ok) return;
+-    const result = await enqueueTextMessage({ chatId, senderId: userId, content, replyTo: replyTarget?.messageId ?? null });
+-    if (!result.ok) {
+-      toast.showToast({ message: strings.queue.full });
+-      return;
+-    }
+-    setDraft('');
+-    setReplyTarget(null);
++    if (sendLock.current || pickLock.current || !validateMessageText(content, attachments.length).ok) return;
++    sendLock.current = true;
++    setMediaBusy(true);
++    try {
++      const input = { chatId, senderId: userId, content, replyTo: replyTarget?.messageId ?? null };
++      const result = attachments.length > 0 ? await enqueueAttachmentMessage({ ...input, attachments }) : await enqueueTextMessage(input);
++      if (!result.ok) {
++        toast.showToast({ message: result.reason === 'queueFull' ? strings.queue.full : strings.media.queueFailed });
++        return;
++      }
++      setDraft('');
++      setAttachments([]);
++      setReplyTarget(null);
++    } catch {
++      toast.showToast({ message: strings.media.queueFailed });
++      return;
++    } finally { sendLock.current = false; setMediaBusy(false); }
+     await realtimeRef.current?.sendTyping({ user_id: userId, active: false });
+     setTyping((current) => {
+       const next = new Map(current);
+@@ -269,7 +299,7 @@
+     });
+     await refreshLatest();
+     requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
+-  }, [chatId, draft, refreshLatest, replyTarget?.messageId, toast, userId]);
++  }, [attachments, chatId, draft, refreshLatest, replyTarget, toast, userId]);
+ 
+   const saveEdit = useCallback(async () => {
+     if (!editingMessage) return;
+@@ -377,6 +407,7 @@
+           own={item.senderId === userId}
+           userId={userId}
+           status={status}
++          onAttachmentPress={(attachment) => router.push({ pathname: '/chat/[chatId]/media/[mediaId]', params: { chatId, mediaId: attachment.mediaId } })}
+           showTime={showTimeId === item.messageId}
+           onPress={() => setShowTimeId((current) => current === item.messageId ? null : item.messageId)}
+           onLongPress={() => {
+@@ -397,7 +428,7 @@
+         />
+       </React.Fragment>
+     );
+-  }, [discard, lastOwnMessageId, net.isConnected, retry, showTimeId, snapshot, toggleReaction, userId]);
++  }, [chatId, discard, lastOwnMessageId, net.isConnected, retry, router, showTimeId, snapshot, toggleReaction, userId]);
+ 
+   if (!chatId || !userId) {
+     return <EmptyState iconName="action.info" title={strings.chatInfo.unavailable} message={strings.chatInfo.unavailableBody} />;
+@@ -441,6 +472,14 @@
+           {loadingOlder ? <ActivityIndicator style={styles.olderSpinner} color={theme.colors.brand.primary} /> : null}
+           <ChatComposer
+             value={draft}
++            sending={mediaBusy}
++            attachments={attachments}
++            onRemoveAttachment={(id) => setAttachments((current) => current.filter((attachment) => attachment.id !== id))}
++            onCamera={() => setAttachMenu(true)}
++            onGallery={() => void pickMedia('gallery')}
++            onAttach={() => setAttachMenu(true)}
++            onRecorded={(attachment) => setAttachments((current) => [...current, attachment].slice(0, config.media.maxAttachments))}
++            onMediaError={(message) => toast.showToast({ message })}
+             onChangeText={(value) => {
+               setDraft(value);
+               if (net.isConnected && Date.now() - lastTypingSentRef.current >= config.typing.sendEveryMs) {
+@@ -459,6 +498,14 @@
+           />
+         </>
+       )}
++      <BottomSheet visible={attachMenu} onClose={() => setAttachMenu(false)}>
++        <View style={{ padding: theme.space[4], gap: theme.space[2] }}>
++          <Button label={strings.media.cameraPhoto} onPress={() => void pickMedia('photo')} />
++          <Button label={strings.media.cameraVideo} onPress={() => void pickMedia('video')} />
++          <Button label={strings.media.gallery} onPress={() => void pickMedia('gallery')} />
++          <Button label={strings.media.file} onPress={() => void pickMedia('file')} />
++        </View>
++      </BottomSheet>
+       <MessageFocusOverlay
+         visible={focusMessage !== null}
+         item={focusMessage}
+--- baseline/apps/mobile/src\chat\query.ts
++++ current/apps/mobile/src\chat\query.ts
+@@ -9,6 +9,7 @@
+   type ReactionRow,
+ } from '@dologram/shared';
+ import { getUnsentItems } from '../queue/localQueue';
++import { parseCachedAttachment, type ChatAttachment } from '../media/model';
+ 
+ export type ChatMessageItem = {
+   messageId: string;
+@@ -18,6 +19,7 @@
+   content: string;
+   replyTo: string | null;
+   attachmentCount: number;
++  attachments: ChatAttachment[];
+   createdAt: string;
+   editedAt: string | null;
+   deletedAt: string | null;
+@@ -130,6 +132,10 @@
+     content: item.payload.content,
+     replyTo: item.payload.reply_to,
+     attachmentCount: item.payload.attachment_count,
++    attachments: item.payload.attachments.map((attachment) => ({
++      mediaId: attachment.media_id, mediaType: attachment.media_type, localUri: attachment.local_uri,
++      mime: attachment.mime, sizeBytes: attachment.size_bytes,
++    })),
+     createdAt: new Date(item.created_at).toISOString(),
+     editedAt: null,
+     deletedAt: null,
+@@ -151,7 +157,13 @@
+   const byId = new Map<string, ChatMessageItem>();
+   for (const item of delivered) byId.set(item.messageId, item);
+   for (const item of pending) {
+-    if (!byId.has(item.messageId)) byId.set(item.messageId, item);
++    const deliveredItem = byId.get(item.messageId);
++    if (!deliveredItem) byId.set(item.messageId, item);
++    else if (deliveredItem.deletedAt === null) {
++      const attachments = new Map(item.attachments.map((attachment) => [attachment.mediaId, attachment]));
++      for (const attachment of deliveredItem.attachments) attachments.set(attachment.mediaId, attachment);
++      byId.set(item.messageId, { ...deliveredItem, attachments: [...attachments.values()], pending: item.pending });
++    }
+   }
+   return [...byId.values()].sort((a, b) => {
+     if (a.seq !== null && b.seq !== null) return a.seq - b.seq;
+@@ -232,6 +244,18 @@
+     .filter(isMessageRow);
+   const hasMoreBefore = newestFirst.length > limit;
+   const deliveredRows = newestFirst.slice(0, limit).reverse();
++  const mediaRows = deliveredRows.length === 0 ? [] : await db.getAllAsync<{ message_id: string; payload: string }>(
++    `SELECT message_id, payload FROM cache_message_media WHERE chat_id = ? AND message_id IN (${deliveredRows.map(() => '?').join(',')}) ORDER BY media_id`,
++    [chatId, ...deliveredRows.map((row) => row.message_id)],
++  );
++  const mediaByMessage = new Map<string, ChatAttachment[]>();
++  for (const row of mediaRows) {
++    const attachment = parseCachedAttachment(row.payload);
++    if (!attachment) continue;
++    const media = mediaByMessage.get(row.message_id) ?? [];
++    media.push(attachment);
++    mediaByMessage.set(row.message_id, media);
++  }
+ 
+   const reactionRows = await db.getAllAsync<ReactionPayloadRow>(
+     `SELECT message_id, payload FROM cache_reactions
+@@ -255,6 +279,7 @@
+     content: row.content,
+     replyTo: row.reply_to,
+     attachmentCount: row.attachment_count,
++    attachments: row.deleted_at === null ? mediaByMessage.get(row.message_id) ?? [] : [],
+     createdAt: row.created_at,
+     editedAt: row.edited_at,
+     deletedAt: row.deleted_at,
+--- baseline/apps/mobile/src\queue\attachments.ts
++++ current/apps/mobile/src\queue\attachments.ts
+@@ -56,8 +56,7 @@
+     for (const source of input.attachments) {
+       const mediaId = ids.mediaId();
+       const destination = attachmentCopyPath(messageId, mediaId);
+-      destination.parentDirectory.create({ intermediates: true });
+-      await new File(source.uri).copy(destination);
++      destination.parentDirectory.create({ intermediates: true, idempotent: true });
+       copied.push({
+         media_id: mediaId,
+         media_type: source.mediaType,
+@@ -66,6 +65,7 @@
+         local_uri: destination.uri,
+         compressed: false,
+       });
++      await new File(source.uri).copy(destination);
+     }
+ 
+     const result = await core.enqueue({
+--- baseline/apps/mobile/src\components\MessageBubble.tsx
++++ current/apps/mobile/src\components\MessageBubble.tsx
+@@ -7,6 +7,8 @@
+ import { Icon } from './Icon';
+ import { MessageText } from './MessageText';
+ import type { ChatMessageItem } from '../chat/query';
++import type { ChatAttachment } from '../media/model';
++import { AttachmentTile } from './AttachmentTile';
+ 
+ export type BubbleStatus = 'sent' | 'seen' | null;
+ 
+@@ -27,6 +29,7 @@
+   onRetry?: () => void;
+   onDiscard?: () => void;
+   discardDisabled?: boolean;
++  onAttachmentPress?: (attachment: ChatAttachment) => void;
+ };
+ 
+ function formatTime(value: string): string {
+@@ -68,6 +71,7 @@
+   onRetry,
+   onDiscard,
+   discardDisabled = false,
++  onAttachmentPress,
+ }: MessageBubbleProps) {
+   const theme = useTheme();
+   const c = theme.colors;
+@@ -111,7 +115,8 @@
+         {deleted ? (
+           <View style={styles.deletedRow}><Icon name="chat.deleted" size="xs" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodyMd), styles.deleted, { color: contentColor }]}>{strings.chat.deletedMessage}</Text></View>
+         ) : item.content ? <MessageText content={item.content} color={contentColor} /> : null}
+-        {item.attachmentCount > 0 ? <View style={[styles.attachment, { backgroundColor: own ? c.bubble.join : c.bg.surface }]}><Icon name="action.file" size="md" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]}>Waiting for upload</Text></View> : null}
++        {!deleted ? item.attachments.map((attachment, index) => <AttachmentTile key={attachment.mediaId} attachment={attachment} index={index} total={item.attachmentCount} pending={Boolean(item.pending && attachment.localUri)} onOpen={() => onAttachmentPress?.(attachment)} />) : null}
++        {!deleted ? Array.from({ length: Math.max(0, item.attachmentCount - item.attachments.length) }, (_, index) => <View key={`upload-${index}`} style={[styles.attachment, { backgroundColor: own ? c.bubble.join : c.bg.surface }]} accessibilityLabel={`${strings.media.waitingUpload}, ${item.attachments.length + index + 1} of ${item.attachmentCount}`}><Icon name="action.file" size="md" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]}>{strings.media.waitingUpload}</Text></View>) : null}
+         {item.editedAt && !deleted ? <Text style={[textStyle(theme.typeTokens.bodySm), { color: c.text.muted }]}>{strings.chat.edited}</Text> : null}
+         {reactions.length > 0 ? (
+           <View style={styles.reactions}>
+--- baseline/apps/mobile/src\components\ChatComposer.tsx
++++ current/apps/mobile/src\components\ChatComposer.tsx
+@@ -1,10 +1,12 @@
+-/** CMP-10: the Phase 9 text composer. Media actions remain present for later attachment phases. */
++/** CMP-10/11: text and attachment drafts. */
+ import React from 'react';
+-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+ import { config, strings } from '@dologram/shared';
+ import { useTheme } from '../theme/ThemeProvider';
+ import { textStyle } from '../theme/typography';
+ import { Icon } from './Icon';
++import type { DraftAttachment } from '../media/model';
++import { VoiceRecordButton } from './VoiceRecordButton';
+ 
+ export type ChatComposerProps = {
+   value: string;
+@@ -14,13 +16,20 @@
+   replyPreview?: { senderName: string; content: string; deleted: boolean };
+   editing?: boolean;
+   onCancelMode?: () => void;
++  attachments?: DraftAttachment[];
++  onRemoveAttachment?: (id: string) => void;
++  onCamera?: () => void;
++  onGallery?: () => void;
++  onAttach?: () => void;
++  onRecorded?: (attachment: DraftAttachment) => void;
++  onMediaError?: (message: string) => void;
+ };
+ 
+-export function ChatComposer({ value, onChangeText, onSend, sending = false, replyPreview, editing = false, onCancelMode }: ChatComposerProps) {
++export function ChatComposer({ value, onChangeText, onSend, sending = false, replyPreview, editing = false, onCancelMode, attachments = [], onRemoveAttachment, onCamera, onGallery, onAttach, onRecorded, onMediaError }: ChatComposerProps) {
+   const theme = useTheme();
+   const c = theme.colors;
+   const length = Array.from(value).length;
+-  const canSend = value.trim().length > 0 && length <= config.message.maxChars && !sending;
++  const canSend = (value.trim().length > 0 || !editing && attachments.length > 0) && length <= config.message.maxChars && !sending;
+   const showCounter = length >= config.message.counterFromChars;
+   const handleChangeText = (next: string) => {
+     // TextInput maxLength counts native string units; the contract counts Unicode code points.
+@@ -29,6 +38,16 @@
+ 
+   return (
+     <View style={[styles.container, { backgroundColor: c.bg.chat }]}>
++      {!editing && attachments.length > 0 ? <View style={styles.strip}>
++        <ScrollView horizontal accessibilityLabel="Selected attachments" contentContainerStyle={styles.tiles}>
++          {attachments.map((attachment) => <View key={attachment.id} style={[styles.tile, { backgroundColor: c.bg.surface, borderRadius: theme.radius.sm }]}>
++            {attachment.mediaType === 'photo' ? <Image source={{ uri: attachment.uri }} resizeMode="cover" style={styles.preview} accessibilityLabel={attachment.name} /> : <Icon name={attachment.mediaType === 'video' ? 'media.video' : attachment.mediaType === 'voice' ? 'action.microphone' : 'action.file'} color={c.brand.primary} accessibilityLabel="" />}
++            <Text numberOfLines={1} style={[textStyle(theme.typeTokens.labelMd), { color: c.text.primary }]}>{attachment.name}</Text>
++            <Pressable onPress={() => onRemoveAttachment?.(attachment.id)} disabled={sending} accessibilityRole="button" accessibilityLabel={strings.media.remove(attachment.name)} style={styles.remove}><Icon name="nav.close" size="xs" color={c.text.primary} accessibilityLabel="" /></Pressable>
++          </View>)}
++        </ScrollView>
++        <Text style={[textStyle(theme.typeTokens.labelMd), { color: c.text.secondary }]}>{attachments.length} / {config.media.maxAttachments}</Text>
++      </View> : null}
+       {replyPreview || editing ? (
+         <View style={[styles.modeBar, { backgroundColor: c.bg.surface, borderLeftColor: c.brand.primary }]}>
+           <View style={styles.modeCopy}>
+@@ -47,7 +66,8 @@
+       ) : null}
+       <View style={[styles.pill, { backgroundColor: c.bg.surface, borderRadius: length > 80 ? theme.radius.xl : theme.radius.full }]}>
+         <Pressable
+-          disabled
++          disabled={editing || sending || !onCamera}
++          onPress={onCamera}
+           accessibilityRole="button"
+           accessibilityLabel="Camera"
+           style={styles.iconButton}
+@@ -56,6 +76,7 @@
+         </Pressable>
+         <TextInput
+           value={value}
++          editable={!sending}
+           onChangeText={handleChangeText}
+           placeholder={editing ? strings.chat.editPlaceholder : 'Message'}
+           placeholderTextColor={c.text.muted}
+@@ -77,13 +98,11 @@
+           </Pressable>
+         ) : (
+           <View style={styles.trailingActions}>
+-            <Pressable disabled accessibilityRole="button" accessibilityLabel="Record voice note" style={styles.iconButton}>
+-              <Icon name="action.microphone" size="md" color={c.text.muted} accessibilityLabel="" />
+-            </Pressable>
+-            <Pressable disabled accessibilityRole="button" accessibilityLabel="Gallery" style={styles.iconButton}>
++            {onRecorded && onMediaError && !editing ? <VoiceRecordButton onRecorded={onRecorded} onError={onMediaError} disabled={sending || attachments.length >= config.media.maxAttachments} /> : null}
++            <Pressable disabled={editing || sending || !onGallery} onPress={onGallery} accessibilityRole="button" accessibilityLabel="Gallery" style={styles.iconButton}>
+               <Icon name="action.gallery" size="md" color={c.text.muted} accessibilityLabel="" />
+             </Pressable>
+-            <Pressable disabled accessibilityRole="button" accessibilityLabel="Attach" style={styles.iconButton}>
++            <Pressable disabled={editing || sending || !onAttach} onPress={onAttach} accessibilityRole="button" accessibilityLabel="Attach" style={styles.iconButton}>
+               <Icon name="action.attach" size="md" color={c.text.muted} accessibilityLabel="" />
+             </Pressable>
+           </View>
+@@ -94,6 +113,11 @@
+ }
+ 
+ const styles = StyleSheet.create({
++  strip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingBottom: 8 },
++  tiles: { gap: 8 },
++  tile: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
++  preview: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
++  remove: { position: 'absolute', top: 0, right: 0, width: 48, height: 48, alignItems: 'flex-end', justifyContent: 'flex-start', padding: 4 },
+   container: { paddingHorizontal: 8, paddingTop: 8, paddingBottom: 8 },
+   modeBar: { minHeight: 48, borderLeftWidth: 3, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', marginBottom: 6, borderRadius: 6 },
+   modeCopy: { flex: 1, gap: 2 },
+--- baseline/Plans/DoloGram_Android_Implementation_Plan.md
++++ current/Plans/DoloGram_Android_Implementation_Plan.md
+@@ -931,3 +931,65 @@
+ - Not completed: `npx expo export --platform android` was stopped after Metro startup with no bundle progress, matching the existing Phase 8/9/10 limitation. `adb devices` could not start its daemon, so T-07/T-20 live emulator verification remains optional and pending.
+ 
+ **Phase status (2026-11-10): Complete.** Phase 11 implementation, source validation, documentation and available automated checks are complete. Optional hosted-backend/device verification remains pending and does not block Phase 12.
++
++### Phase 12: Media UI
++
++- **Goal:** Users attach photos, videos, voice notes and files and open them in the media viewer.
++- **Depends on:** Phase 11. Its durable queue payload, private copies, text-first upload/link order, idempotent delivery and signed-URL helper were verified in source before implementation.
++- **Implements:** M3-03, F5, AND-08, AND-09, CMP-11, D-29, D-35, D-75, D-90, D-100, D-113, D-116, T-11 and T-52; T-20's Android UI entry point.
++- **Scope:** Android only. Low Signal classification, compression and Wi-Fi deferral remain Phase 13; no later phase was started.
++
++**Reconstruction and conflicts (2026-11-10)**
++
++The supplied plan ended after Phase 11 and contained only the Phase 12 overview row. This section reconstructs that phase from the cited v14 requirements, including the AND-05/CMP-10 composer and CMP-11 specifications. `apps/mobile/AGENTS.md` was the only applicable instruction file; no `CLAUDE.md` was found. Its `src/app` description is stale relative to the established `apps/mobile/app` Expo Router root, so the existing media route was completed in place. The plan's required Expo Audio/Video modules supersede v14's obsolete expo-av fallback. AND-08's Low Signal compression reference belongs to Phase 13 in this plan and is deliberately left there.
++
++**Phase checklist and required workflow**
++
++- [x] Establish Git working-copy ownership and save recoverable source snapshots and hashes before editing.
++- [x] Discover scope with ripgrep; validate the complete scoped Repomix 1.18.1 XML packet and resolve compressed implementation bodies against original sources.
++- [x] Read version-matched Expo SDK 57, React Native 0.86 and installed library interfaces before implementation; record baseline typecheck, lint, tests and Android export.
++- [x] Connect camera photo/video, multi-select gallery and document picking with permission refusal and per-item count/type/size errors.
++- [x] Add the draft strip, removal/count controls, attachment-only send, safe enqueue failure handling and hold/release/cancel voice recording.
++- [x] Display cached and queued attachments, one placeholder per missing media row, and preserve sending state across an early server echo.
++- [x] Complete photo zoom, video playback, inline voice position/1x/2x/restart controls, Android file sharing and authenticated signed-URL expiry/retry handling.
++- [x] Finish available device acceptance observations and record the final verification results below.
++
++**Acceptance criteria**
++
++| Criterion | Status and evidence |
++|---|---|
++| AND-08 camera, gallery and file entry points, permission refusals, validation and cancellation | Met in implementation and targeted picker tests; MuMu attach menu and system gallery opening observed. Native camera/video permission and capture checks are optional, pending manual verification. |
++| CMP-10/11 draft previews, remove controls, count and attachment-only Send | Met in render tests; MuMu gallery selection displayed the preview, filename, removal label, `1 / 10` and Send. |
++| Durable multi-attachment enqueue with text/reply, retained draft on failure | Met in enqueue/composer tests and source review. Private directory reuse and partial-copy cleanup defects in the Phase 11 prerequisite were fixed. Native offline restart observation is recorded in the final dated note. |
++| CMP-11 individual placeholders, cached media and pending previews/status | Met in source/query tests, including early server echo, deleted message and non-member cases. |
++| AND-09 photo zoom, video, voice playback and Android file share | Met in code and source/type validation. Full native media-playback/share checks remain optional, pending manual verification where not recorded below. |
++| D-113 signed URL renewal, visible failure/retry and cleanup | Met in targeted fake-clock tests: expiry renewal, no failure retry loop, explicit retry and timer cleanup on unmount. Playback position is restored on source renewal. |
++| T-11, T-20 and T-52 hosted/cross-client and bucket-limit integration | Optional, pending manual verification. Requires authenticated A/B/C fixtures, hosted media schema/Storage policies and another client. Shared byte-boundary tests pass. |
++
++**Schema and environment discrepancies**
++
++- The verified `message_media` schema has no original filename, MIME or size columns. The UI reads actual MIME/size from authenticated Storage metadata and displays the stored object identifier as the received file name; draft strips preserve picker filenames. Original sender filenames across clients would require a separately agreed metadata contract and are not invented here.
++- The current MuMu instance named `dologram` is instance 3, ADB `127.0.0.1:16480`, rather than the historical `emulator-5554` identifier. Its configuration and installed package were verified before testing; no other instance was operated.
++- Hosted Auth currently reports `mailer_autoconfirm=false`, contrary to the plan's earlier confirmation-off note. An example-domain test signup was rejected with `email_address_invalid`; no replacement session was installed and no external Auth setting was changed. Device checks use only a removable, offline local fixture.
++
++**Progress (2026-11-10): Phase 12 complete for implementation, available automated checks and documentation; optional manual checks remain.**
++
++- `npm run typecheck`: passes both workspaces. Shared tests: 18 files, 137/137 pass (baseline 130/130), with the existing Vite configuration warning.
++- Phase 12 mobile tests: 6 suites, 24/24 pass. The focused recorder suite also passes 4/4 after the final stationary-button layout fix.
++- Full mobile tests: 13 suites pass, 2 fail; 70 tests pass and the same 6 baseline sign-in/sign-up tests fail. These are pre-existing failures, not waived Phase 12 regressions.
++- Full mobile lint retains exactly the baseline sign-up findings: 2 errors and 1 warning. Scoped lint for changed/new mobile source passes without findings.
++- Android production JavaScript/Hermes export passes using the host environment; the sandbox baseline failed only because Hermes could not write its temporary output. No native build or deployment was needed.
++- ADB on MuMu verified the offline chat/composer, attach menu, gallery opening and folder navigation, selection of a test PNG, preview/name/count/remove controls, attachment-only enqueue, queued local preview/status, photo viewer, zoom button and attachment survival across force-stop/reopen. Screenshots and UI XML are retained in the phase evidence folder.
++- Native voice recording was attempted but did not produce a verified recording with the available ADB gesture checks; camera/video capture, voice playback, file sharing, pinch gestures and hosted T-11/T-20/T-52 remain **optional, pending manual verification**. No unperformed flow is marked passed.
++- Source review fixed two strictly necessary Phase 11 prerequisite defects: idempotent private-directory creation for multiple attachments, and tracking/removing a partially copied file after a failed copy. Recorder status now appears above a stationary hold button. No later-phase behavior was added.
++- MuMu Android services stalled during the optional offline mobile-data command; no unchanged retry was made. The supported MuMu CLI restarted only instance 3 successfully. Test fixture cleanup and Wi-Fi restoration are recorded in the phase report.
++
++**Optional remaining verification**
++
++1. On MuMu `dologram`, open a member chat, deny camera access and confirm the permission message; then allow it and send a photo and a video. Hold/release a voice note, cancel one, deny microphone permission, and confirm each result.
++2. Send/open a permitted file through the Android share sheet; play video and voice notes, switch voice speed between 1x/2x, inspect position/restart behavior, and verify cleanup when navigating away or backgrounding. Use two fingers to verify photo pinch/pan at the zoom limits.
++3. With authenticated A/B/C fixtures and hosted media policies ready, run T-52 for all four media types and bucket limits (10,485,760 accepted photo bytes; 10,485,761 rejected photo bytes; 52,428,801 rejected file bytes; executable MIME refused). Run T-11 as C and expiry with a short injected lifetime. Run T-20 with throttling and a second client, and T-07 during upload.
++
++**Phase status (2026-11-10): Complete.** Current-phase implementation progress: **100%**. Overall Android phase progress: **13 of 20, 65%**. Phase 13 client work is ready; its separately listed M3-08 hosted prerequisite still needs verification. No Phase 13 work was started. The earlier overview status is a historical snapshot; only this selected phase's progress/status was updated.
++
++Full evidence, baseline comparisons, context identities and exact optional manual steps: `docs/test-results/android/phase-12.md` and `docs/test-results/android/phase-12/context-index.md`. No dependencies were added. No commit, push, deployment, remote migration or external configuration change was made.

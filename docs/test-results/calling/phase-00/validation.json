@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-11",
+  "phase": "0",
+  "status": "passed",
+  "plan_edit_confined_to_phase_0": true,
+  "later_phase_text_unchanged": true,
+  "versions_append_only": true,
+  "local_markdown_links_checked": 62,
+  "missing_links": [],
+  "python_scripts_parse": true,
+  "baseline_files": 54,
+  "changed_inputs": [
+    {
+      "path": "apps/mobile/src/components/MediaPickerPanel.tsx",
+      "before": "6681528B905F12622C845C1D24AA761763EF572D467ED181A5015093013E0305",
+      "after": "0bf34bfb098f1998644985b6347cdf4101a512165277518a91fa1116c2c8a510"
+    },
+    {
+      "path": "docs/versions.md",
+      "before": "61FE08C96886211EAE965D70EEADEE51460EC130D625D3EC9FAC383923ED1520",
+      "after": "a5b9fb913edbe12c817e521537c0364fa204983eeb2e8474a9ad765e20ca4985"
+    },
+    {
+      "path": "Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md",
+      "before": "2EEBF93DDB906131EB3FF4FD8CE2C99FB789225706908C68F9971061B1A34729",
+      "after": "3a9730dc43fa1fd897e4b3307ac6a0e7367ce02738e3b350e5c1737a34a497c3"
+    }
+  ],
+  "user_change_preserved": "MediaPickerPanel sendPreview diff",
+  "application_manifest_lockfile_and_migrations_unchanged": true,
+  "packet_identity": "136f4ed3074495fcfcde0d976122e5cee5580f1d0c9298179248e3db8fdcf7b4",
+  "plan_sha256": "3a9730dc43fa1fd897e4b3307ac6a0e7367ce02738e3b350e5c1737a34a497c3",
+  "locked_sdk_probe": "4 passed, 0 failed",
+  "final_review": "phase-only plan/versions diff and newly authored contracts/procedures/probes reviewed; no production writes"
+}

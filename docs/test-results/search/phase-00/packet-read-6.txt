@@ -1,0 +1,90 @@
+    &quot;expo-media-library&quot;: &quot;~57.0.6&quot;,
+    &quot;expo-notifications&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-router&quot;: &quot;~57.0.30&quot;,
+    &quot;expo-sharing&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-splash-screen&quot;: &quot;~57.0.11&quot;,
+    &quot;expo-sqlite&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-status-bar&quot;: &quot;~57.0.1&quot;,
+    &quot;expo-video&quot;: &quot;~57.0.5&quot;,
+    &quot;livekit-client&quot;: &quot;2.23.0&quot;,
+    &quot;lucide-react-native&quot;: &quot;1.70.0&quot;,
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-native&quot;: &quot;0.86.3&quot;,
+    &quot;react-native-gesture-handler&quot;: &quot;3.5.0&quot;,
+    &quot;react-native-markdown-display&quot;: &quot;7.0.2&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-safe-area-context&quot;: &quot;~5.7.0&quot;,
+    &quot;react-native-screens&quot;: &quot;~4.26.0&quot;,
+    &quot;react-native-svg&quot;: &quot;15.15.4&quot;,
+    &quot;react-native-url-polyfill&quot;: &quot;4.0.0&quot;,
+    &quot;tus-js-client&quot;: &quot;4.3.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;,
+    &quot;@testing-library/react-native&quot;: &quot;13.3.3&quot;,
+    &quot;@types/jest&quot;: &quot;29.5.14&quot;,
+    &quot;@types/react&quot;: &quot;~19.2.2&quot;,
+    &quot;eslint&quot;: &quot;^9.0.0&quot;,
+    &quot;eslint-config-expo&quot;: &quot;~57.0.2&quot;,
+    &quot;jest&quot;: &quot;~29.7.0&quot;,
+    &quot;jest-expo&quot;: &quot;57.0.6&quot;,
+    &quot;react-test-renderer&quot;: &quot;19.2.3&quot;,
+    &quot;typescript&quot;: &quot;~6.0.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;expo start&quot;,
+    &quot;android&quot;: &quot;expo run:android&quot;,
+    &quot;ios&quot;: &quot;expo run:ios&quot;,
+    &quot;web&quot;: &quot;expo start --web&quot;,
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;jest&quot;,
+    &quot;lint&quot;: &quot;expo lint&quot;
+  },
+  &quot;private&quot;: true
+}</file><file path="packages/shared/package.json">{
+  &quot;name&quot;: &quot;@dologram/shared&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;private&quot;: true,
+  &quot;main&quot;: &quot;src/index.ts&quot;,
+  &quot;types&quot;: &quot;src/index.ts&quot;,
+  &quot;scripts&quot;: {
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;vitest run&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;typescript&quot;: &quot;6.0.3&quot;,
+    &quot;vite&quot;: &quot;6.3.5&quot;,
+    &quot;vitest&quot;: &quot;5.1.0&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;
+  }
+}</file><file path="supabase/AGENTS.md"># Supabase migrations
+
+- Name files in `supabase/migrations/` with the next zero-padded sequential version and a descriptive snake_case name, for example `022_add_push_tokens.sql`. Rename files generated with a timestamp before applying them.
+- Keep applied migration versions stable. Check the target&apos;s migration history before reconciling any version mismatch.</file><file path="package.json">{
+  &quot;name&quot;: &quot;dologram&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;private&quot;: true,
+  &quot;workspaces&quot;: [
+    &quot;apps/*&quot;,
+    &quot;packages/*&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;typecheck&quot;: &quot;npm run typecheck --workspaces --if-present&quot;,
+    &quot;test&quot;: &quot;npm run test --workspaces --if-present&quot;,
+    &quot;gen:types&quot;: &quot;supabase gen types typescript --project-id dologram --ref none&quot;,
+    &quot;scan:mobile-bundle&quot;: &quot;powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1&quot;
+  },
+  &quot;overrides&quot;: {
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-dom&quot;: &quot;19.2.3&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-worklets&quot;: &quot;0.10.1&quot;,
+    &quot;expo-asset&quot;: &quot;57.0.21&quot;,
+    &quot;expo-constants&quot;: &quot;57.0.23&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;
+  }
+}</file></files></repomix>

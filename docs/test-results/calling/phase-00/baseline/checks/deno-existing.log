@@ -1,0 +1,9 @@
+Check supabase/functions/send-push-notifications/payload_test.ts
+running 4 tests from ./supabase/functions/send-push-notifications/payload_test.ts
+Android uses the registered channel, including silent vibration and badge choices ... ok (1ms)
+private, legacy and unsupported chat previews contain no sender or message text ... ok (339µs)
+iOS sets the real unread badge count and respects sound and badge opt-outs ... ok (235µs)
+previews truncate Unicode safely and give attachment-only messages a label ... ok (312µs)
+
+ok | 4 passed | 0 failed (10ms)
+

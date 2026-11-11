@@ -1,0 +1,102 @@
+[
+  {
+    "Path": "apps/mobile/app/chat/[chatId]/index.tsx",
+    "SHA256": "4307141ECA3F53A097CE17996B41C609A09AB2150824458FC21C4E8DDC6156BD"
+  },
+  {
+    "Path": "apps/mobile/app/chat/[chatId]/media/[mediaId].tsx",
+    "SHA256": "D9A625798F9A293730F020470E3CC7DEB579767CF6699C24F46CF64168AB0391"
+  },
+  {
+    "Path": "apps/mobile/src/chat/query.ts",
+    "SHA256": "9C8DC8DE447E798410973086BFC700F83D3CF183D82833EE464A0E8E8C8328F4"
+  },
+  {
+    "Path": "apps/mobile/src/components/ChatComposer.tsx",
+    "SHA256": "752B438B4B1D59844591E18246734B7C5F6DE0B48B4440183455DB11DAD03547"
+  },
+  {
+    "Path": "apps/mobile/src/components/MessageBubble.tsx",
+    "SHA256": "2379792E728537C9DA6FCC978E3A6A96D145A20F101FFA8452E76E955977BCF5"
+  },
+  {
+    "Path": "apps/mobile/src/components\\__tests__\\MediaComposer.test.tsx",
+    "SHA256": "836266AF34204A9283CD645DF236B1538E0A2B21FF31CD91477C010F1FF59A14"
+  },
+  {
+    "Path": "apps/mobile/src/components\\__tests__\\VoiceRecordButton.test.tsx",
+    "SHA256": "0DEAD591B93798909B624C4BA0BB6954CE27D29582464CFCA715BB92D5F029B7"
+  },
+  {
+    "Path": "apps/mobile/src/components\\AttachmentTile.tsx",
+    "SHA256": "4BC1DB25915594684C0B2509FD840960D56B73A96D717017D5A39476A5A81612"
+  },
+  {
+    "Path": "apps/mobile/src/components\\PhotoViewer.tsx",
+    "SHA256": "8C30DAB13EA8A38293F34A346E00DF3BDA6C43D1C76FC0678F14D0647316CA90"
+  },
+  {
+    "Path": "apps/mobile/src/components\\VideoPlayback.tsx",
+    "SHA256": "E21EA4D24BAC419598DE7774ADCE71A4389EF3DF49882C723C49BFB607F44277"
+  },
+  {
+    "Path": "apps/mobile/src/components\\VoiceNotePlayer.tsx",
+    "SHA256": "CD74A98D8B959DAFFA1372DBBA90D73AFA45F9D1D0665C2628B546B0063205F8"
+  },
+  {
+    "Path": "apps/mobile/src/components\\VoiceRecordButton.tsx",
+    "SHA256": "5400A0ED6CC06B78C1B1DE7CADA7FE4430F7807E842C32BA63CDA74425B661EA"
+  },
+  {
+    "Path": "apps/mobile/src/media\\__tests__\\enqueue.test.ts",
+    "SHA256": "BFD7C7867C90F04C71DB86B97F8CF9DE31AAD28517DDF14420C704B4868C6B70"
+  },
+  {
+    "Path": "apps/mobile/src/media\\__tests__\\mediaSource.test.tsx",
+    "SHA256": "FAFA960814E706806AD615C5F01C67E636F70482A708E78291A5FB891948CA4C"
+  },
+  {
+    "Path": "apps/mobile/src/media\\__tests__\\pickers.test.ts",
+    "SHA256": "7F7C07D4692A182C1AB8888AB58516E53175581E37CE908B4CB76EC96D5B9BB2"
+  },
+  {
+    "Path": "apps/mobile/src/media\\__tests__\\query.test.ts",
+    "SHA256": "075A6D0BDCCCE1059EB5429ABD5964F3BF8987A6DE8168FC585F72264BBE00C8"
+  },
+  {
+    "Path": "apps/mobile/src/media\\model.ts",
+    "SHA256": "53610C2742481AE13451BA3739EECFC4388472B25DDA010B80D0524F8DB12353"
+  },
+  {
+    "Path": "apps/mobile/src/media\\pickers.ts",
+    "SHA256": "D86CAB51E9E17B77E37965CC94D052730B162FB5B96F4025879239587FEDD00B"
+  },
+  {
+    "Path": "apps/mobile/src/media\\query.ts",
+    "SHA256": "B33BB34EC592CFC4CCBCA49B9FD17AA7647FABF5CDF53ED75A972D6BC7D196B8"
+  },
+  {
+    "Path": "apps/mobile/src/media\\shareFile.ts",
+    "SHA256": "B2DFE9BBDF3F0D9B612E6C66C36DD03DCFC535321E587D43782467A7275A318A"
+  },
+  {
+    "Path": "apps/mobile/src/media\\useMediaSource.ts",
+    "SHA256": "8A07E82F8E2B5459AC621E341041226EC13BD31FEAFF4377A66060858235576B"
+  },
+  {
+    "Path": "apps/mobile/src/queue/attachments.ts",
+    "SHA256": "31D7771B9B3536CA5D0A01F885D69CF4E2D685D5AC8A7A8A3552034315819BE8"
+  },
+  {
+    "Path": "packages/shared/src/strings/index.ts",
+    "SHA256": "B45C8FCD4AE12EE7387C7C684883B53E7F808AFFC0F690F70C5DE4CA9B1ED890"
+  },
+  {
+    "Path": "packages/shared/src/validation/__tests__/media-boundaries.test.ts",
+    "SHA256": "35DA5BFCE34BEDE22CF3A09B85E1E87430C7881874B2F632A4A99FD81ACA0AF7"
+  },
+  {
+    "Path": "packages/shared/src/validation/attachment.ts",
+    "SHA256": "478FF070F544D41EBE9B49E795DDB3448B6A797D243609BEC5B25CAB730E0709"
+  }
+]

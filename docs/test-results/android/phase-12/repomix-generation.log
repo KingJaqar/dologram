@@ -1,0 +1,114 @@
+
+📦 Repomix v1.18.1
+
+No custom config found at repomix.config.ts, repomix.config.mts, repomix.config.cts, repomix.config.js, repomix.config.mjs, repomix.config.cjs, repomix.config.json5, repomix.config.jsonc, repomix.config.json or global config at C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.ts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.mts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.cts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.js, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.mjs, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.cjs, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.json5, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.jsonc, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{17795ec1-cceb-42d2-91c8-06f8bf99df0a}\Repomix\repomix.config.json.
+You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
+
+[K[?25l⠋ Initializing...
+
+[K[1A
+[K[?25l⠙ Searching for files...
+
+[K[1A
+[K[?25l⠹ Searching for files...
+
+[K[1A
+[K[?25l⠸ Searching for files...
+
+[K[1A
+[K[?25l⠼ Searching for files...
+
+[K[1A
+[K[?25l⠴ Searching for files...
+
+[K[1A
+[K[?25l⠦ Searching for files...
+
+[K[1A
+[K[?25l⠧ Collecting files...
+
+[K[1A
+[K[?25l⠇ Processing files...
+
+[K[1A
+[K[?25l⠏ Processing files...
+
+[K[1A
+[K[?25l⠋ Processing files...
+
+[K[1A
+[K[?25l⠙ Processing files...
+
+[K[1A
+[K[?25l⠹ Processing files...
+
+[K[1A
+[K[?25l⠸ Processing files...
+
+[K[1A
+[K[?25l⠼ Processing files...
+
+[K[1A
+[K[?25l⠴ Processing files...
+
+[K[1A
+[K[?25l⠦ Processing files...
+
+[K[1A
+[K[?25l⠧ Processing files...
+
+[K[1A
+[K[?25l⠇ Processing file... (1/20) apps/mobile/app/chat/[chatId]/media/[mediaId].tsx
+
+[K[1A
+[K[?25l⠏ Processing file... (1/20) apps/mobile/app/chat/[chatId]/media/[mediaId].tsx
+
+[K[1A
+[K[?25l⠋ Processing file... (6/20) apps/mobile/src/components/MessageBubble.tsx
+
+[K[1A
+[K[?25l⠙ Processing file... (20/20) packages/shared/package.json
+
+[K[1A
+[K[?25l⠹ Running security check... (20/20) packages/shared/package.json
+
+[K[1A
+[K[?25l⠸ Running security check... (20/20) packages/shared/package.json
+
+[K[1A
+[K[?25l⠼ Writing output file...
+
+[K[1A
+[K[?25l⠴ Calculating metrics... (20/20) packages/shared/package.json
+
+[K[1A
+[K[?25l⠦ Calculating metrics... (20/20) packages/shared/package.json
+
+[K[1A
+[K[?25l✔ Packing completed successfully!
+[?25h
+📈 Top 5 Files by Token Count:
+──────────────────────────────
+1.  docs/test-results/android/phase-12/requirements-v14.txt (3,689 tokens, 13,316 chars, 25.9%)
+2.  packages/shared/src/queue/types.ts (1,446 tokens, 5,513 chars, 10.2%)
+3.  apps/mobile/package.json (716 tokens, 1,921 chars, 5%)
+4.  apps/mobile/src/chat/query.ts (669 tokens, 2,538 chars, 4.7%)
+5.  apps/mobile/app/chat/[chatId]/index.tsx (633 tokens, 2,706 chars, 4.4%)
+
+🔎 Security Check:
+──────────────────
+✔ No suspicious files detected.
+
+
+📊 Pack Summary:
+────────────────
+  Total Files: 20 files
+ Total Tokens: 14,243 tokens
+  Total Chars: 52,421 chars
+       Output: repomix-phase12.xml
+     Security: ✔ No suspicious files detected
+
+🎉 All Done!
+Your repository has been successfully packed.
+
+💡 Repomix is now available in your browser! Try it at https://repomix.com

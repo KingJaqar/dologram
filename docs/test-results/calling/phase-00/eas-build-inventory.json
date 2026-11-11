@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "builds": [
+    {
+      "id": "76224190-109e-4596-87bf-979a45a8654f",
+      "status": "FINISHED",
+      "createdAt": "2026-11-08T08:31:14.862Z",
+      "buildProfile": "development",
+      "sdkVersion": "57.0.0",
+      "appVersion": "1.0.0",
+      "appBuildVersion": "1",
+      "gitCommitHash": "96d0fcac275f6195944e19c1c97376d1c4b79a26",
+      "fingerprint": {
+        "id": "01a1ba48-7be2-72ae-8d2b-477f84f3d057",
+        "hash": "b89cf35f6e987cbcc89706b931f2b46b503be573"
+      }
+    }
+  ]
+}

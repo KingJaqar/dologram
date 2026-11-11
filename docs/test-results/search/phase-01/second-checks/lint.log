@@ -1,0 +1,167 @@
+
+> @dologram/mobile@1.0.0 lint
+> expo lint
+
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\group-name.tsx
+  33:24  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\group-name.tsx:33:24
+  31 |
+  32 |   useEffect(() => {
+> 33 |     if (info?.isGroup) setTitle(info.title);
+     |                        ^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |   }, [info?.isGroup, info?.title]);
+  35 |
+  36 |   const save = async () => {  react-hooks/set-state-in-effect
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\info.tsx
+  177:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\info.tsx:177:7
+  175 |     const storagePath = info?.isGroup ? info.avatarUrl : null;
+  176 |     if (!storagePath) {
+> 177 |       setSignedAvatarUrl(null);
+      |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  178 |       return () => { active = false; };
+  179 |     }
+  180 |     if (storagePath.startsWith('http')) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/set-state-in-effect
+  192:45  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `info`, but the source dependencies were [avatarUploading, chatId, info?.isGroup, info?.isOwner, net.isConnected, showToast]. Inferred less specific property than source.
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\info.tsx:192:45
+  190 |   }, [info?.avatarUrl, info?.isGroup]);
+  191 |
+> 192 |   const handleGroupAvatarPick = useCallback(async (source: 'camera' | 'library') => {
+      |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 193 |     if (!chatId || !info?.isGroup || !info.isOwner || avatarUploading || !net.isConnected) return;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 194 |     setAvatarSheetVisible(false);
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 238 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 239 |   }, [avatarUploading, chatId, info?.isGroup, info?.isOwner, net.isConnected, showToast]);
+      | ^^^^ Could not preserve existing manual memoization
+  240 |
+  241 |   useFocusEffect(
+  242 |     useCallback(() => {  react-hooks/preserve-manual-memoization
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\nicknames.tsx
+  31:9   warning  The 'members' logical expression could make the dependencies of useMemo Hook (at line 38) change on every render. To fix this, wrap the initialization of 'members' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  31:9   warning  The 'members' logical expression could make the dependencies of useEffect Hook (at line 42) change on every render. To fix this, wrap the initialization of 'members' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  41:58  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\nicknames.tsx:41:58
+  39 |
+  40 |   useEffect(() => {
+> 41 |     if (selectedMemberId === null && members.length > 0) setSelectedMemberId(members[0]?.userId ?? null);
+     |                                                          ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |   }, [members, selectedMemberId]);
+  43 |
+  44 |   useEffect(() => {  react-hooks/set-state-in-effect
+  51:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\chat\[chatId]\nicknames.tsx:51:5
+  49 |     }
+  50 |     const next = selectedMember.nickname ?? '';
+> 51 |     setNickname(next);
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  52 |     setOriginalNickname(next);
+  53 |   }, [chatId, legacyLocalOnly, selectedMember?.nickname, selectedMemberId, session?.user.id, showToast]);
+  54 |                               react-hooks/set-state-in-effect
+  53:6   warning  React Hook useEffect has a missing dependency: 'selectedMember'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+G:\codebase\DoloGram\apps\mobile\app\new-group.tsx
+  58:67  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\app\new-group.tsx:58:67
+  56 |   useEffect(() => {
+  57 |     if (!groupWith || selected.length > 0 || contacts.length === 0) return;
+> 58 |     if (contacts.some((contact) => contact.userId === groupWith)) setSelected([groupWith]);
+     |                                                                   ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  59 |   }, [contacts, groupWith, selected.length]);
+  60 |
+  61 |   const titleValid = validateGroupTitle(title);  react-hooks/set-state-in-effect
+
+G:\codebase\DoloGram\apps\mobile\src\chats\preferences.ts
+  19:45  error  Use a color token from packages/shared/src/theme/tokens.ts via useTheme()  no-restricted-syntax
+  20:41  error  Use a color token from packages/shared/src/theme/tokens.ts via useTheme()  no-restricted-syntax
+  21:39  error  Use a color token from packages/shared/src/theme/tokens.ts via useTheme()  no-restricted-syntax
+  22:43  error  Use a color token from packages/shared/src/theme/tokens.ts via useTheme()  no-restricted-syntax
+  23:43  error  Use a color token from packages/shared/src/theme/tokens.ts via useTheme()  no-restricted-syntax
+
+G:\codebase\DoloGram\apps\mobile\src\components\MessageFocusOverlay.tsx
+  121:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\codebase\DoloGram\apps\mobile\src\components\MessageFocusOverlay.tsx:121:7
+  119 |   useEffect(() => {
+  120 |     if (!visible) {
+> 121 |       setMoreVisible(false);
+      |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  122 |       setShowAllReactions(false);
+  123 |     }
+  124 |   }, [visible]);  react-hooks/set-state-in-effect
+
+G:\codebase\DoloGram\apps\mobile\src\components\__tests__\Toast.test.tsx
+  13:20  error  Error: Cannot reassign variables declared outside of the component/hook
+
+Variable `api` is declared outside of the component/hook. Reassigning this value during render is a form of side effect, which can cause unpredictable behavior depending on when the component happens to re-render. If this variable is used in rendering, use useState instead. Otherwise, consider updating it in an effect. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#side-effects-must-run-outside-of-render).
+
+G:\codebase\DoloGram\apps\mobile\src\components\__tests__\Toast.test.tsx:13:20
+  11 | jest.mock('../Icon', () => ({ Icon: () => null }));
+  12 | let api: ReturnType<typeof useToast>;
+> 13 | function Probe() { api = useToast(); return null; }
+     |                    ^^^ `api` cannot be reassigned
+  14 | function setup() { return render(<ToastProvider><Probe /></ToastProvider>); }
+  15 | async function show(options: ToastOptions) { await act(async () => { api.showToast(options); }); }
+  16 | async function advance(ms: number) { await act(async () => { jest.advanceTimersByTime(ms); }); }  react-hooks/globals
+
+✖ 16 problems (13 errors, 3 warnings)
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c expo lint

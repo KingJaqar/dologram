@@ -1,0 +1,23 @@
+{
+  "linked_project": {
+    "id": null,
+    "name": "DoloGram",
+    "region": null,
+    "status": null
+  },
+  "linked_project_keys": [
+    "ref",
+    "name",
+    "organization_id",
+    "organization_slug"
+  ],
+  "project_ref": "jsyqtfsidtfahytcwutp",
+  "credential_env_names_present": [],
+  "mobile_env_variable_names": [
+    "EXPO_PUBLIC_SUPABASE_URL",
+    "EXPO_PUBLIC_SUPABASE_KEY",
+    "EXPO_PUBLIC_DG_DEV_TOOLS",
+    "EXPO_PUBLIC_DG_LATENCY_LOG"
+  ],
+  "postgres_version_cache": "17.11.0.011"
+}

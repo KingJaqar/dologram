@@ -1,0 +1,26 @@
+{
+  "name": "accessibility",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "test",
+    "--",
+    "--runInBand",
+    "--watch=false",
+    "--cacheDirectory",
+    "G:\\codebase\\DoloGram\\.tmp\\search-phase01-jest",
+    "--runTestsByPath",
+    "src/__tests__/a11yPressableSource.test.ts",
+    "src/components/__tests__/a11yLabels.test.tsx"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 67464,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 120,
+  "seconds": 103.64,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-01\\regression-checks\\accessibility.log"
+}

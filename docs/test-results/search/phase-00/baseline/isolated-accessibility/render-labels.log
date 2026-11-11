@@ -1,0 +1,17 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase00-jest-isolated-cache --runTestsByPath src/components/__tests__/a11yLabels.test.tsx
+
+PASS src/components/__tests__/a11yLabels.test.tsx (78.448 s)
+  Accessibility labels
+    √ Button has accessibilityLabel (1145 ms)
+    √ Button loading state sets accessibilityState.busy (7 ms)
+    √ IconButton has accessibilityLabel (21 ms)
+    √ SwitchRow has accessibilityRole=switch (7255 ms)
+    √ SwitchRow checked state is reflected (8 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        81.56 s
+Ran all test suites within paths "src/components/__tests__/a11yLabels.test.tsx".

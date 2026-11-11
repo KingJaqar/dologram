@@ -1,0 +1,28 @@
+{
+  "name": "feature-suites",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "test",
+    "--",
+    "--runInBand",
+    "--watch=false",
+    "--runTestsByPath",
+    "src/search/__tests__/query.test.ts",
+    "src/search/__tests__/SearchScreen.test.tsx",
+    "src/chat/__tests__/query.test.ts",
+    "src/components/__tests__/MessageText.test.tsx",
+    "--cacheDirectory",
+    "G:\\codebase\\DoloGram\\.tmp\\search-phase00-jest-isolated-cache"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 58124,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 120,
+  "seconds": 22.67,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-00\\baseline\\feature-suites\\feature-suites.log"
+}

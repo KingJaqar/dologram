@@ -1,0 +1,434 @@
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: apps/mobile/AGENTS.md, supabase/AGENTS.md, package.json, apps/mobile/package.json, packages/shared/package.json, apps/mobile/app.json, apps/mobile/app.config.js, apps/mobile/eas.json, apps/mobile/jest.config.js, packages/shared/vitest.config.ts, supabase/config.toml, docs/versions.md, docs/builds.md, scripts/scan-mobile-bundle.ps1
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure>apps/
+  mobile/
+    AGENTS.md
+    app.config.js
+    app.json
+    eas.json
+    jest.config.js
+    package.json
+docs/
+  builds.md
+  versions.md
+packages/
+  shared/
+    package.json
+    vitest.config.ts
+scripts/
+  scan-mobile-bundle.ps1
+supabase/
+  AGENTS.md
+  config.toml
+package.json</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/mobile/AGENTS.md">This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+
+## Expo has changed — do not trust your training data
+
+Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+
+1. Read the major version of the `expo` package in `package.json`.
+2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v&lt;major&gt;.0.0/`
+3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+
+## Commands
+
+Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+
+```bash
+npx expo install &lt;package&gt;  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+npx expo start              # start the dev server
+npx expo lint               # lint
+npx tsc --noEmit            # typecheck
+npx expo-doctor             # diagnose dependency and config issues
+npx expo install --fix      # fix incompatible package versions
+```
+
+Run lint and typecheck before declaring any task done.
+
+## Navigation &amp; Routing
+
+- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
+- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
+- Docs: https://docs.expo.dev/router/introduction.md
+
+## Building with EAS
+
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli &lt;command&gt;` in Bun projects, or `npx eas-cli@latest &lt;command&gt;` otherwise; substitute that for bare `eas` in docs examples.
+Docs: https://docs.expo.dev/eas/index.md
+
+## Rules
+
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md</file><file path="apps/mobile/app.config.js">const { existsSync } = require(&apos;node:fs&apos;);
+const { join } = require(&apos;node:path&apos;);
+
+module.exports = ({ config, projectRoot }) =&gt; {
+  const localFile = join(projectRoot, &apos;google-services.json&apos;);
+  const googleServicesFile = process.env.GOOGLE_SERVICES_JSON || (existsSync(localFile) ? localFile : undefined);
+  if (!googleServicesFile) return config;
+  return { ...config, android: { ...config.android, googleServicesFile } };
+};</file><file path="apps/mobile/app.json">{
+  &quot;expo&quot;: {
+    &quot;name&quot;: &quot;DoloGram&quot;,
+    &quot;slug&quot;: &quot;dologram&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;orientation&quot;: &quot;portrait&quot;,
+    &quot;scheme&quot;: &quot;dologram&quot;,
+    &quot;icon&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+    &quot;userInterfaceStyle&quot;: &quot;automatic&quot;,
+    &quot;ios&quot;: {
+      &quot;supportsTablet&quot;: true
+    },
+    &quot;android&quot;: {
+      &quot;package&quot;: &quot;com.dologram.app&quot;,
+      &quot;adaptiveIcon&quot;: {
+        &quot;foregroundImage&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+        &quot;backgroundColor&quot;: &quot;#0B6E69&quot;
+      },
+      &quot;predictiveBackGestureEnabled&quot;: false
+    },
+    &quot;web&quot;: {
+      &quot;favicon&quot;: &quot;./assets/logo/dologram_logo.png&quot;
+    },
+    &quot;plugins&quot;: [
+      &quot;expo-router&quot;,
+      &quot;expo-status-bar&quot;,
+      &quot;expo-splash-screen&quot;,
+      &quot;expo-sqlite&quot;,
+      &quot;expo-audio&quot;,
+      &quot;expo-video&quot;,
+      &quot;expo-sharing&quot;,
+      &quot;expo-notifications&quot;,
+      [
+        &quot;expo-media-library&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to show them in the attachment tray.&quot;,
+          &quot;granularPermissions&quot;: [&quot;photo&quot;, &quot;video&quot;]
+        }
+      ],
+      &quot;expo-font&quot;,
+      [
+        &quot;expo-image-picker&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to attach them.&quot;
+        }
+      ]
+    ],
+    &quot;extra&quot;: {
+      &quot;router&quot;: {},
+      &quot;eas&quot;: {
+        &quot;projectId&quot;: &quot;95bc3ce9-004a-43f2-97c1-05f9c609b466&quot;
+      }
+    },
+    &quot;owner&quot;: &quot;alex123superman&quot;
+  }
+}</file><file path="apps/mobile/eas.json">{
+  &quot;cli&quot;: {
+    &quot;version&quot;: &quot;&gt;= 16.0.0&quot;,
+    &quot;appVersionSource&quot;: &quot;remote&quot;
+  },
+  &quot;build&quot;: {
+    &quot;development&quot;: {
+      &quot;developmentClient&quot;: true,
+      &quot;distribution&quot;: &quot;internal&quot;,
+      &quot;environment&quot;: &quot;development&quot;,
+      &quot;android&quot;: {
+        &quot;buildType&quot;: &quot;apk&quot;
+      }
+    },
+    &quot;preview&quot;: {
+      &quot;distribution&quot;: &quot;internal&quot;,
+      &quot;environment&quot;: &quot;preview&quot;,
+      &quot;android&quot;: {
+        &quot;buildType&quot;: &quot;apk&quot;
+      }
+    }
+  }
+}</file><file path="apps/mobile/jest.config.js">/** @type {import(&apos;jest&apos;).Config} */
+module.exports = {
+  preset: &apos;jest-expo&apos;,
+  testMatch: [
+    &apos;**/__tests__/**/*.test.{ts,tsx}&apos;,
+    &apos;**/*.test.{ts,tsx}&apos;,
+  ],
+  // Allow jest-expo to find @react-native/jest-preset from the workspace node_modules
+  modulePaths: [
+    &apos;&lt;rootDir&gt;/node_modules&apos;,
+    &apos;&lt;rootDir&gt;/../../node_modules&apos;,
+  ],
+  moduleNameMapper: {
+    &apos;^@dologram/shared$&apos;: &apos;&lt;rootDir&gt;/../../packages/shared/src/index.ts&apos;,
+    // Mock AsyncStorage so tests don&apos;t require a native module
+    &apos;^@react-native-async-storage/async-storage$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.js&apos;,
+    // Force lucide-react-native to use the CJS build so Jest doesn&apos;t see ESM
+    &apos;^lucide-react-native$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/lucide-react-native/dist/cjs/lucide-react-native.js&apos;,
+    // Reanimated&apos;s native worklet runtime is unavailable in Jest; use its
+    // official mock while keeping UI-thread animations in the app build.
+    &apos;^react-native-reanimated$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-reanimated.ts&apos;,
+    &apos;^react-native-gesture-handler$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-gesture-handler.tsx&apos;,
+  },
+  // Extend jest-expo&apos;s transformIgnorePatterns to include our packages
+  transformIgnorePatterns: [
+    &apos;/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|standard-navigation|lucide-react-native|react-native-markdown-display|react-native-svg|@dologram))&apos;,
+    &apos;/node_modules/react-native-reanimated/plugin/&apos;,
+    &apos;/node_modules/@react-native/babel-preset/&apos;,
+  ],
+};</file><file path="apps/mobile/package.json">{
+  &quot;name&quot;: &quot;@dologram/mobile&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;main&quot;: &quot;expo-router/entry&quot;,
+  &quot;dependencies&quot;: {
+    &quot;@dologram/shared&quot;: &quot;*&quot;,
+    &quot;@expo-google-fonts/inter&quot;: &quot;0.4.2&quot;,
+    &quot;@expo-google-fonts/jetbrains-mono&quot;: &quot;0.4.1&quot;,
+    &quot;@react-native-async-storage/async-storage&quot;: &quot;2.2.0&quot;,
+    &quot;@react-native-community/netinfo&quot;: &quot;12.0.1&quot;,
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;,
+    &quot;base64-arraybuffer&quot;: &quot;1.0.2&quot;,
+    &quot;expo&quot;: &quot;~57.0.32&quot;,
+    &quot;expo-audio&quot;: &quot;~57.0.5&quot;,
+    &quot;expo-clipboard&quot;: &quot;~57.0.2&quot;,
+    &quot;expo-constants&quot;: &quot;~57.0.23&quot;,
+    &quot;expo-crypto&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-dev-client&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-document-picker&quot;: &quot;~57.0.3&quot;,
+    &quot;expo-file-system&quot;: &quot;~57.0.7&quot;,
+    &quot;expo-font&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-image-manipulator&quot;: &quot;~57.0.22&quot;,
+    &quot;expo-image-picker&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-linking&quot;: &quot;~57.0.13&quot;,
+    &quot;expo-media-library&quot;: &quot;~57.0.6&quot;,
+    &quot;expo-notifications&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-router&quot;: &quot;~57.0.30&quot;,
+    &quot;expo-sharing&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-splash-screen&quot;: &quot;~57.0.11&quot;,
+    &quot;expo-sqlite&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-status-bar&quot;: &quot;~57.0.1&quot;,
+    &quot;expo-video&quot;: &quot;~57.0.5&quot;,
+    &quot;lucide-react-native&quot;: &quot;1.70.0&quot;,
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-native&quot;: &quot;0.86.3&quot;,
+    &quot;react-native-gesture-handler&quot;: &quot;3.5.0&quot;,
+    &quot;react-native-markdown-display&quot;: &quot;7.0.2&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-safe-area-context&quot;: &quot;~5.7.0&quot;,
+    &quot;react-native-screens&quot;: &quot;~4.26.0&quot;,
+    &quot;react-native-svg&quot;: &quot;15.15.4&quot;,
+    &quot;react-native-url-polyfill&quot;: &quot;4.0.0&quot;,
+    &quot;tus-js-client&quot;: &quot;4.3.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;,
+    &quot;@testing-library/react-native&quot;: &quot;13.3.3&quot;,
+    &quot;@types/jest&quot;: &quot;29.5.14&quot;,
+    &quot;@types/react&quot;: &quot;~19.2.2&quot;,
+    &quot;eslint&quot;: &quot;^9.0.0&quot;,
+    &quot;eslint-config-expo&quot;: &quot;~57.0.2&quot;,
+    &quot;jest&quot;: &quot;~29.7.0&quot;,
+    &quot;jest-expo&quot;: &quot;57.0.6&quot;,
+    &quot;react-test-renderer&quot;: &quot;19.2.3&quot;,
+    &quot;typescript&quot;: &quot;~6.0.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;expo start&quot;,
+    &quot;android&quot;: &quot;expo run:android&quot;,
+    &quot;ios&quot;: &quot;expo run:ios&quot;,
+    &quot;web&quot;: &quot;expo start --web&quot;,
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;jest&quot;,
+    &quot;lint&quot;: &quot;expo lint&quot;
+  },
+  &quot;private&quot;: true
+}</file><file path="docs/builds.md"># DoloGram Android builds
+
+EAS Free allows 15 cloud builds per calendar month (6.5). A new build is made only when a native
+dependency or native configuration changes (D-149); JavaScript-only changes do not need one because
+the development client loads JavaScript from Metro.
+
+| Date | Profile | EAS build id | Reason | Builds this month |
+| --- | --- | --- | --- | --- |
+| 2026-11-08 | development | 76224190-109e-4596-87bf-979a45a8654f | Phase 0 first build (dev client, all MVP natives, package `com.dologram.app`) | 1 |
+
+## Android push notifications
+
+1. Add `com.dologram.app` to Firebase. Place its `google-services.json` beside `apps/mobile/app.json` for local builds, or provide it as the `GOOGLE_SERVICES_JSON` file variable in the Expo Build environment. Configure the matching FCM V1 service account in the Expo project&apos;s Android credentials and rebuild the APK.
+2. Apply Supabase migration `023_notification_delivery_preferences.sql` before releasing the mobile bundle. Deploy `send-push-notifications` and set its `PUSH_WEBHOOK_SECRET`. If enhanced push security is enabled in Expo, set `EXPO_ACCESS_TOKEN` in the Edge Function environment.
+3. Create a Supabase Database Webhook for `public.messages` **INSERT**, pointing to the deployed `send-push-notifications` function. Send the same webhook secret in the `Authorization: Bearer` header. Verify on a signed-in Android device by sending a message from a different test account while DoloGram is in the background.
+
+The settings screen reports when push registration needs device permission, Firebase configuration, or a retry. Existing installations must opt in again before message text is included in push previews.</file><file path="docs/versions.md"># DoloGram Android versions
+
+Policy (plan section 1): v14 fixes no package versions except through the Expo SDK pin (M0-08). Every
+package below was pinned to its current stable version at install time and recorded here with its
+install date.
+
+## SDK pin (M0-08)
+
+| Item | Version | Notes |
+| --- | --- | --- |
+| Expo SDK | 57.0.0 | Pinned through `expo@57.0.32`. SDK 58 was released 2026-10-15 and is in its transition period; SDK 57 is the version this plan targets and the version the Expo v57 docs describe. |
+| expo | 57.0.32 | |
+| React Native | 0.86.3 | |
+| React | 19.2.3 | SDK pin from `expo/bundledNativeModules.json`; enforced through a root `overrides` entry so npm hoists exactly one copy. |
+| @types/react | 19.2.18 | |
+| TypeScript | 6.0.3 | |
+| Node.js | 24.13.1 | Meets the SDK 57 minimum of 22.13.x. |
+| npm | 11.8.0 | Workspaces driver (D-100). |
+| vitest | 5.1.0 | `packages/shared` unit tests (D-100). |
+
+## Native and JavaScript packages (Phase 0 step 4)
+
+Installed 2026-11-08. Native packages were added with `npx expo install` inside `apps/mobile`.
+
+| Package | Version | Why |
+| --- | --- | --- |
+| expo-dev-client | 57.0.21 | Development build launcher (D-11). |
+| expo-router | 57.0.30 | Navigation and route tree (12.6). |
+| react-native-safe-area-context | 5.7.0 | Safe areas (12.7). |
+| react-native-screens | 4.26.2 | Native navigation primitives. |
+| expo-linking | 57.0.13 | Deep links, `Linking.openSettings()`. |
+| expo-constants | 57.0.23 | App version for About, EAS project id. |
+| expo-status-bar | 57.0.1 | Status bar (template default, kept). |
+| expo-splash-screen | 57.0.11 | Hold the splash until fonts load (12.10). |
+| expo-sqlite | 57.0.4 | Local queue and cache (D-06). |
+| @react-native-community/netinfo | 12.0.1 | Network state (D-13). |
+| @react-native-async-storage/async-storage | 2.2.0 | Session and device preferences (D-83, M2-04). |
+| expo-crypto | 57.0.4 | UUID v4 ids (D-100). |
+| expo-file-system | 57.0.7 | App-private attachment copies (D-100). |
+| expo-image-picker | 57.0.21 | Photos and videos (F5). |
+| expo-document-picker | 57.0.3 | Files (F5). |
+| expo-audio | 57.0.5 | Voice notes; replaces the removed `expo-av` (D-85 item 10). |
+| expo-video | 57.0.5 | Video playback; replaces the removed `expo-av`. |
+| expo-image-manipulator | 57.0.22 | Photo compression (6.3). |
+| expo-sharing | 57.0.25 | Open a file in another app (AND-09). |
+| expo-clipboard | 57.0.2 | Copy text (AND-06). |
+| expo-font | 57.0.4 | Bundled fonts (D-130). |
+| @expo-google-fonts/inter | 0.4.2 | Inter 400/500/600/700 (D-130). |
+| @expo-google-fonts/jetbrains-mono | 0.4.1 | JetBrains Mono 400 (D-130). |
+| react-native-svg | 15.15.4 | Icon rendering (D-131). |
+| lucide-react-native | 1.70.0 | Icon set (D-131). |
+| @supabase/supabase-js | 2.119.0 | Supabase client (M2-04). |
+| react-native-url-polyfill | 4.0.0 | URL polyfill for supabase-js. |
+| base64-arraybuffer | 1.0.2 | Upload bodies (Phase 11). |
+| tus-js-client | 4.3.1 | Resumable uploads above 6 MB (D-153). |
+| react-native-markdown-display | 7.0.2 | Message text formatting (M2-06). |
+
+## Transitive natives installed as peers
+
+npm installs `expo-router`&apos;s optional peers, so three native modules exist without being direct
+dependencies. They are pinned to the SDK 57 versions through root `overrides` so the native build
+contains one compatible copy of each.
+
+| Package | Version | Source |
+| --- | --- | --- |
+| react-native-reanimated | 4.5.1 | Optional peer of `expo-router`; SDK 57 bundles 4.5.1. |
+| react-native-worklets | 0.10.1 | Peer of `react-native-reanimated`; SDK 57 bundles 0.10.1. |
+| @expo/ui | 57.0.26 | Dependency of `expo-router` 57. |
+
+`overrides` also pin `react`/`react-dom` to 19.2.3 and `expo-asset` 57.0.21 / `expo-constants` 57.0.23,
+because npm otherwise hoists a second, newer React and a second `expo-asset` (SDK 58) next to the SDK
+57 ones. `npx expo-doctor` reports 21/21 checks passing after these pins.</file><file path="packages/shared/package.json">{
+  &quot;name&quot;: &quot;@dologram/shared&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;private&quot;: true,
+  &quot;main&quot;: &quot;src/index.ts&quot;,
+  &quot;types&quot;: &quot;src/index.ts&quot;,
+  &quot;scripts&quot;: {
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;vitest run&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;typescript&quot;: &quot;6.0.3&quot;,
+    &quot;vite&quot;: &quot;6.3.5&quot;,
+    &quot;vitest&quot;: &quot;5.1.0&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;
+  }
+}</file><file path="packages/shared/vitest.config.ts">export default {
+  test: {
+    globals: true,
+    environment: &apos;node&apos;,
+  },
+};</file><file path="scripts/scan-mobile-bundle.ps1">[CmdletBinding()]
+param(
+  [Parameter(Position = 0)]
+  [string]$Path = &apos;apps\mobile\dist&apos;
+)
+
+$resolvedPath = Resolve-Path -LiteralPath $Path -ErrorAction Stop
+$files = @(Get-ChildItem -LiteralPath $resolvedPath -File -Recurse)
+$patterns = @(
+  &apos;\bSUPABASE_SECRET_KEY\b&apos;,
+  &apos;\bSUPABASE_DB_URL\b&apos;,
+  &apos;\bSUPABASE_ACCESS_TOKEN\b&apos;,
+  &apos;\bADMIN_PASSCODE_HASH\b&apos;,
+  &apos;\bsb_secret_[A-Za-z0-9_-]{20,}\b&apos;
+)
+$hits = @()
+
+foreach ($file in $files) {
+  $hits += @(Select-String -LiteralPath $file.FullName -Pattern $patterns -AllMatches)
+}
+
+if ($hits.Count -gt 0) {
+  $locations = $hits | ForEach-Object { &quot;{0}:{1}&quot; -f $_.Path, $_.LineNumber }
+  throw &quot;Forbidden secret material found in mobile bundle: $($locations -join &apos;, &apos;)&quot;
+}
+
+Write-Output &quot;Mobile bundle secret scan passed: scanned $($files.Count) files.&quot;</file><file path="supabase/AGENTS.md"># Supabase migrations
+
+- Name files in `supabase/migrations/` with the next zero-padded sequential version and a descriptive snake_case name, for example `022_add_push_tokens.sql`. Rename files generated with a timestamp before applying them.
+- Keep applied migration versions stable. Check the target&apos;s migration history before reconciling any version mismatch.</file><file path="supabase/config.toml">[functions.sign-in-username]
+verify_jwt = false
+
+[functions.send-push-notifications]
+verify_jwt = false</file><file path="package.json">{
+  &quot;name&quot;: &quot;dologram&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;private&quot;: true,
+  &quot;workspaces&quot;: [
+    &quot;apps/*&quot;,
+    &quot;packages/*&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;typecheck&quot;: &quot;npm run typecheck --workspaces --if-present&quot;,
+    &quot;test&quot;: &quot;npm run test --workspaces --if-present&quot;,
+    &quot;gen:types&quot;: &quot;supabase gen types typescript --project-id dologram --ref none&quot;,
+    &quot;scan:mobile-bundle&quot;: &quot;powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1&quot;
+  },
+  &quot;overrides&quot;: {
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-dom&quot;: &quot;19.2.3&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-worklets&quot;: &quot;0.10.1&quot;,
+    &quot;expo-asset&quot;: &quot;57.0.21&quot;,
+    &quot;expo-constants&quot;: &quot;57.0.23&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;
+  }
+}</file></files></repomix>

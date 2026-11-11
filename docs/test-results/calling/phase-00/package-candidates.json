@@ -1,0 +1,242 @@
+[
+  {
+    "name": "@livekit/react-native",
+    "version": "3.1.0",
+    "engines": {
+      "node": ">=20"
+    },
+    "peerDependencies": {
+      "react": "*",
+      "react-native": "*",
+      "livekit-client": "^2.20.0",
+      "@livekit/react-native-webrtc": "^150.1.0"
+    },
+    "dependencies": {
+      "events": "^3.3.0",
+      "loglevel": "^1.8.0",
+      "base64-js": "1.5.1",
+      "typed-emitter": "^2.1.0",
+      "@livekit/mutex": "^1.1.1",
+      "array.prototype.at": "^1.1.1",
+      "promise.allsettled": "^1.0.5",
+      "well-known-symbols": "^4.1.0",
+      "web-streams-polyfill": "^4.3.0",
+      "@livekit/components-react": "^2.9.17",
+      "react-native-url-polyfill": "^3.0.0"
+    },
+    "dist": {
+      "shasum": "67116375d1ebbfaa3c4236ed915345d3c8c9d6a0",
+      "tarball": "https://registry.npmjs.org/@livekit/react-native/-/react-native-3.1.0.tgz",
+      "fileCount": 225,
+      "integrity": "sha512-5pcVfvnQBQsVxjchivRXAkyp1zeMBOPTVnrAhK425DS4tsMzpKiwTTnUObMAggrpEkb9Oou6VT1RAAZOFZ35FQ==",
+      "signatures": [
+        {
+          "sig": "MEUCIHKnyhA5F9pjrFNJ1lp+X15qWYfBEwaAU57SFEE/FcSkAiEApuYwMTWMl4EZtwGhmIyC1K78gvU/XPrC5IrftVaNjjg=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEYCIQCHQap75BWqufuJDx4TWxh/xbHNHLxpRHExAcjAhsoJPQIhAN5FePs0vueNHnapa5WBZ2gjU9d9XTfvytJ04DkFE8CP",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/@livekit%2freact-native@3.1.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 693612
+    },
+    "repository": {
+      "url": "git+https://github.com/livekit/client-sdk-react-native.git",
+      "type": "git"
+    }
+  },
+  {
+    "name": "@livekit/react-native-expo-plugin",
+    "version": "1.1.0",
+    "engines": null,
+    "peerDependencies": {
+      "expo": "*",
+      "react": "*",
+      "react-native": "*",
+      "@livekit/react-native": "^2.1.0 || ^3.0.0"
+    },
+    "dependencies": null,
+    "dist": {
+      "shasum": "04da13f2c925707dda96604317544b5326f38be0",
+      "tarball": "https://registry.npmjs.org/@livekit/react-native-expo-plugin/-/react-native-expo-plugin-1.1.0.tgz",
+      "fileCount": 29,
+      "integrity": "sha512-/GFXKebMn2VYsMMYcE/JuSPpjD0ghY+aFyvIjqZ/DE7F2AA53G9FDGRDlCzO59ApZk4XI4rEnmlC+w82LWmVXw==",
+      "signatures": [
+        {
+          "sig": "MEYCIQCyg66N/QdeS3a6EIll6oESUp6LhkI0pM8NiHESBcX01QIhAIM1czkTPLmNodvE8sVU/YsugEcnq652VtMQyzXvNmx0",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIQDLHc5rooxLCjiwvO+wIpO+WPaEI6uBxzAmRxEHloRGpwIgIkW30taE80vrT2xjrH2/IYRjhBsimGG/Gp2tkYeMops=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/@livekit%2freact-native-expo-plugin@1.1.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 38875
+    },
+    "repository": {
+      "url": "git+https://github.com/livekit/client-sdk-react-native-expo-plugin.git",
+      "type": "git"
+    }
+  },
+  {
+    "name": "@livekit/react-native-webrtc",
+    "version": "150.1.1",
+    "engines": null,
+    "peerDependencies": {
+      "react-native": ">=0.60.0"
+    },
+    "dependencies": {
+      "debug": "4.3.4",
+      "base64-js": "1.5.1"
+    },
+    "dist": {
+      "shasum": "1b39cf01e4f94f92d2cc370fcf6f52de90411c6d",
+      "tarball": "https://registry.npmjs.org/@livekit/react-native-webrtc/-/react-native-webrtc-150.1.1.tgz",
+      "fileCount": 418,
+      "integrity": "sha512-xF7AUO2S0dy44JAKqT7xn2q8+6fAVsykYfrHZN9BmwI0jB49doWeTMt8XnGTvfX4tMkC2mvUT7AMe+a04xjcRA==",
+      "signatures": [
+        {
+          "sig": "MEYCIQD7leFz2L9ZxEA48gmWAMEnvNTPSmx9Vh70uyn5yfiAdAIhAPFY7x/4sJRGTqCqiUXkld2ong58qio3gU6IjbvEWnzQ",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIQCvIPQyy5AwrDG0dnLUZYaJeRTONmi76aXYJ6s9XR+AjAIgUEvmKy8skmU9xd9T4/oGQO/EyZvfJWUxExSAMjVvJpI=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "unpackedSize": 1980047
+    },
+    "repository": {
+      "url": "git+https://github.com/livekit/react-native-webrtc.git",
+      "type": "git"
+    }
+  },
+  {
+    "name": "@config-plugins/react-native-webrtc",
+    "version": "15.0.2",
+    "engines": null,
+    "peerDependencies": {
+      "expo": ">=56"
+    },
+    "dependencies": null,
+    "dist": {
+      "shasum": "65bd0a45245620cbbe5df6f052e81992c99f04a6",
+      "tarball": "https://registry.npmjs.org/@config-plugins/react-native-webrtc/-/react-native-webrtc-15.0.2.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-sH4T7Z4P2RowV91k9CEwEr0unn+396NBexxCNZwRXuJXwguDU1qZWpE6fcwN0730B8uiS83F7+CLTyhpC7qRHQ==",
+      "signatures": [
+        {
+          "sig": "MEUCIBodeCFN9RBcckSN7B4glb/VrcakBkL83RRHwmtpl+qFAiEAiAW1ZpSyhZnNxUz+H3V5rBwQOapHL7C+UP3ToAx1+Pc=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "unpackedSize": 9992
+    },
+    "repository": {
+      "url": "git+https://github.com/expo/config-plugins.git",
+      "type": "git",
+      "directory": "packages/react-native-webrtc"
+    }
+  },
+  {
+    "name": "livekit-client",
+    "version": "2.23.0",
+    "engines": null,
+    "peerDependencies": {
+      "@types/dom-mediacapture-record": "^1"
+    },
+    "dependencies": {
+      "jose": "^6.1.0",
+      "tslib": "2.8.1",
+      "events": "^3.3.0",
+      "machina": "^7.0.0",
+      "loglevel": "^1.9.2",
+      "sdp-transform": "^2.15.0",
+      "typed-emitter": "^2.1.0",
+      "@livekit/mutex": "1.1.1",
+      "webrtc-adapter": "9.0.6",
+      "@livekit/protocol": "1.52.1"
+    },
+    "dist": {
+      "shasum": "0fa278cf0b69f47476fa088efa1cfb16cdd0709f",
+      "tarball": "https://registry.npmjs.org/livekit-client/-/livekit-client-2.23.0.tgz",
+      "fileCount": 645,
+      "integrity": "sha512-j9Kg86nJjBjNFUD+ukp2jwMCGa0k+YD5gU//RzAM+ZY3pbG631QCte7fQjwqWMmtBzhDJL9nKYuOLMv/9IbAxg==",
+      "signatures": [
+        {
+          "sig": "MEYCIQCgxeQQNDCezBoxKYxTX+9EH0eThUouwy07r2+V9IewcAIhAOSaOFtfRDMy8clIImY6S8LnZ08xh+8EeyvUgw1HeNcz",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIQCzPoA1d/d2pGIP3yfJAr7wQVw1tZY9DKaSnoTjDSAKXwIgVesnh4LmcvF1q6Cf9JeMyuc9GKP7vDOIOKsBnFwDkeY=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/livekit-client@2.23.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 12946924
+    },
+    "repository": {
+      "url": "git+ssh://git@github.com/livekit/client-sdk-js.git",
+      "type": "git"
+    }
+  },
+  {
+    "name": "livekit-server-sdk",
+    "version": "2.19.3",
+    "engines": {
+      "node": ">=19"
+    },
+    "peerDependencies": null,
+    "dependencies": {
+      "jose": "^5.1.2",
+      "@livekit/protocol": "1.53.0",
+      "@bufbuild/protobuf": "^1.10.1"
+    },
+    "dist": {
+      "shasum": "50cba93b58f23f528d65f994c28f60c26226233a",
+      "tarball": "https://registry.npmjs.org/livekit-server-sdk/-/livekit-server-sdk-2.19.3.tgz",
+      "fileCount": 162,
+      "integrity": "sha512-DRcTr/aU2759IW9aJRnM+fL3kRFbDuS7DSfwSRRP7NBByWbD58EsdGkzYFZa1Ka4g7ks1HPvEQaAmE5b6WHNPQ==",
+      "signatures": [
+        {
+          "sig": "MEYCIQCo5eyyQbxis+HzfT0oNCyBbfdxV8RXrES8bqHloK4GIwIhAMruXjjVu9wnLcG1AXRZqs8BTYQRtI5LLdKjPcv6UTBK",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIDwvk98/SAmkKPSKkFAjFcMVOngzKtm3cjIWxrdIXOKMAiEAis2XmpwBOXSALZVkZBkdSJCHp3jw4GaO7+5kvQWWHck=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/livekit-server-sdk@2.19.3",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 861772
+    },
+    "repository": {
+      "url": "git+https://github.com/livekit/node-sdks.git",
+      "type": "git",
+      "directory": "packages/livekit-server-sdk"
+    }
+  }
+]

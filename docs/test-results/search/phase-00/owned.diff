@@ -1,0 +1,106 @@
+--- baseline/Plans/DoloGram_Search_Implementation_Plan.md
++++ current/Plans/DoloGram_Search_Implementation_Plan.md
+@@ -147,6 +147,20 @@
+ 
+ **Acceptance gate.** Snapshots and baseline evidence are recoverable, scope/constraints are explicit, and required code contracts have no material ambiguity. Device/reference gaps are assigned to their affected verification items rather than silently treated as passes.
+ 
++**Phase 0 progress/status — 2026-11-11, Asia/Manila: Complete, 3/3 items (100%).** This execution record supersedes the historical planning-only status above for Phase 0. Phases 1–4 have not started. Search-plan progress is 3/12 predefined items (25% by item count); broader DoloGram project progress is not defined.
++
++| Item | Entry classification | Verified completion |
++|---|---|---|
++| P0.1 | Partially done — prior source/docs audit, no execution snapshots | Complete — instructions/current contracts checked; 72 recoverable source/config snapshots and restore rehearsal; fresh identities; Repomix 1.18.1 scoped XML generated, all 13 entries/980 lines read and original-source matched; relevant Expo 57/RN 0.86 docs read. |
++| P0.2 | Not started — historical checks/device reports only | Complete — exact baseline logs/toolchain; named MuMu mapping and installed/local APK hashes verified; installed client exercised native RN/SQLite with the unchanged query; existing services preserved and task-owned processes/mapping stopped. Baseline capture includes failures, not a clean-check claim. |
++| P0.3 | Partially done — proposed adaptation/public links, no safe runtime fixture | Complete — Section 4 checklist finalized with public-reference limits; wrong-product iPhoneLife link excluded; offline synthetic native SQLite fixture and network fence verified; existing query timing captured. Connected account/chat isolation and full product UI observations remain due with V11. |
++
++**Dated verification note.** Workspace typecheck passed initially and finally. Initial mobile lint returned exit 0; final lint failed with 13 errors/3 warnings in seven application files untouched by this task, with both outputs retained and the differing outcome unexplained. Shared tests passed (20 files/149 tests). Initial targeted Jest failed on sandbox cache rename; the writable-cache combined run timed out at 120 seconds. After config/list discovery, split runs passed all six existing suites (29 tests total). Strict fixture typecheck and explicit fixture lint passed. Final native query sample on MuMu `dologram`/`127.0.0.1:16480` found all 35 old matches: 45.51 ms first page, 51.34 ms two-page total, zero reads for an already-cancelled request, zero final fixture console errors/warnings. These are query wall times, not end-to-end UI latency or the later 10,000-message gate.
++
++**Constraints, discrepancies and remaining gates.** The AGENTS route-location sentence differs from actual `apps/mobile/app` routes; Phase 0 changes no product routes. Concurrent user video-call actions/strings were preserved and refreshed separately. Original Metro 8082 failed to serve the project; the task used and stopped its own offline fixture server. Existing APK compatibility is verified for the exercised search foundation, not the entire product/calling stack. Exact current Messenger parity, connected disposable fixtures and integrated V11 screens/navigation/stress remain unverified later-phase gates. No dependency, application-source, migration, remote configuration, commit, push, build or deployment change was made by this task.
++
++Evidence: [Phase 0 report](../docs/test-results/search/phase-00/report.md), [screen checklist](../docs/test-results/search/phase-00/screen-checklist.md), [recovery/fixture procedure](../docs/test-results/search/phase-00/recovery.md), and the [central context index](context/DoloGram_Search_Context_Index.md). **Next phase ready to start: yes on source/unit prerequisites; Phase 1 was not started.**
++
+ ### Phase 1 — Shared query and input foundation
+ 
+ **Scope and prerequisites.** Depends on P0 source/baseline preparation. Context is Section 5, current query tests, SQLite schema, SearchField callers, organization logic, and queue contracts.
+
+--- baseline/Plans/context/DoloGram_Search_Context_Index.md
++++ current/Plans/context/DoloGram_Search_Context_Index.md
+@@ -159,3 +159,79 @@
+ 
+ Concurrent changes are existing user work, outside this request. The updated source fingerprints invalidate earlier artifact-compatibility assumptions. Search itself plans no new native dependency and does not repair calling integration. Follow-up reads confirmed that ChatScreen retains its historical-focus/query/render contract while adding voice-call actions, accountSession adds call teardown before a session switch, and chats/preferences adds `subscribeChatPreferenceChanges` with unsubscribe handling. The plan preserves those consumers and uses the new preference notification API for search invalidation. Shared New Chat/chat-info strings and SDK pins retain their inspected contracts. A final validator detected another ChatScreen fingerprint change during active concurrent editing. Its parameter, historical-load, focused-row, Back, and call-action branches were re-read, and the manifest entry was refreshed. This manifest identifies inspection snapshots rather than asserting an immutable working tree. Phase 0 must refresh any subsequently changed source or dependency before editing it.
+ 
++## Phase 0 execution context — 2026-11-11
++
++Current execution: **Complete, 3/3 items (100%)**. Search plan: **3/12 (25%)**
++by predefined item count. No later phase started. Historical planning statements
++and the preceding manifest remain their dated inspection snapshots; current
++execution identities and evidence below supersede them where changed.
++
++### Scope, prerequisites and workflow checklist
++
++- [x] Phase 0 only: recoverable inputs, check/toolchain/device/artifact baselines,
++  public-reference adaptation and safe timing fixture. No earlier phase exists.
++- [x] Read complete current plan across bounded ranges and both applicable
++  AGENTS. Ancestor/hidden discovery found no other applicable AGENTS/CLAUDE.
++  Mobile AGENTS' src/app sentence is factually inconsistent with existing app
++  routes; no product routing change was made in this phase.
++- [x] Git baseline → narrow ripgrep discovery → prior Reader identity validation
++  → scoped Repomix → complete bounded XML analysis → original-source verification.
++  Repowise was unavailable and unnecessary; no graph freshness was assumed.
++- [x] Existing confirmed scripts run before product changes; exact logs/exits
++  captured, failures diagnosed without weakening assertions. Final source checks
++  and evidence-fixture checks recorded separately.
++- [x] Acceptance: all three preparation items verified; gaps assigned to V11;
++  task-owned processes/ADB mapping cleaned; snapshots/restore integrity verified.
++
++### Current context inputs and identity index
++
++Evidence root: `docs/test-results/search/phase-00/`.
++
++| Evidence | Identity/coverage and finding |
++| --- | --- |
++| `baseline/git-status.txt`, tracked/staged patches, tracked-files/head | Working-copy ownership recorded. Most app inputs are untracked and cannot be restored from HEAD. Patches are empty. |
++| `baseline/sources.json` and `baseline/source/` | 72 relevant exact pre-edit copies, SHA-256/byte counts, 1,176,525 bytes. No credentials, APKs or unrelated directory copy. `recovery.md` defines per-file recovery; restore-to-scratch passed. |
++| `source-refresh.json` | All 75 historical identities rechecked: 74 unchanged initially, separate calling plan changed. Prior findings reused only for unchanged, relevant contracts. |
++| `packet-manifest.json`, `context.xml`, `repomix.log` | Cached global Repomix 1.18.1, no compression, parsable XML, default security/exclusions intact. Exactly 13 intended/actual entries, no unexplained omission; 14,049 estimated packet tokens (not measured model usage or savings). |
++| XML complete read boundaries | `packet-read-1.txt` 1–170/10,951 chars; 2:171–350/8,977; 3:351–530/7,173; 4:531–710/10,586; 5:711–890/8,958; 6:891–980/4,262. Every chunk ≤180 lines/11,000 chars; all six fully read. All decoded entries equal their current originals. |
++| Packet SHA-256 | `8992e012a17905811e84a24e77547f06cb5effc75376aca27117e0e12c033538`. Source entries/selector string/hashes are in packet-manifest. No compression gaps; no repeat packet was needed. |
++| `original-source-identities.json` | Targeted original contracts read beyond packet: direct-chat cache-failure/create recovery; broad contact query; chat-list organization; historical/pending helper; field/forward/header/info/pinned callers; clearLocalData; call native fallback; root auth/sync start; pure shared client definitions; configured backend. |
++| `concurrent-sources.json`, `concurrent-source/`, `concurrent-source-2/` | Later user changes read by diff and preserved: ChatScreen video-call action; shared calling strings, then missing-native call wording/carriage-return bytes. Current hashes are in this supplemental manifest; original copies remain in baseline. Normalized follow-up diff is in concurrent-refresh-analysis.json. Search focus/navigation/query and search strings unchanged, so packet entries/analysis remain valid. |
++| `toolchain.json`, `framework-notes.md` | Installed Expo 57.0.32/Router 57.0.30/SQLite 57.0.4/RN 0.86.3/React 19.2.3/Jest 29.7.0; Node 24.13.1/npm 11.8.0. Relevant versioned SDK/SQLite/Router/TextInput/BackHandler/native-entry docs and installed signatures read. |
++| `screen-checklist.md` | Every Section 4 state finalized as DoloGram adaptation; public date/build/asset limits recorded. iPhoneLife is Apple Messages and excluded. Current Messenger pixel parity unverified. |
++| `runtime/assigned-runtime.json`, `local-apk.json` | MuMu name/config port mapping and explicit ADB package/OS/ABI/APK hashes verified. Installed/local APKs differ. Relevant native query loading exercised; no entire-product/calling compatibility claim. |
++| `runtime/native-timing.json` | Final offline/non-development native fixture: in-memory path empty, network fence verified, all 35 synthetic old matches (30+5), first page 45.51 ms/total 51.34 ms; native reads 200/60/5 rows; already-cancelled query zero reads; final console clean. Not UI/stress/JS-CPU evidence. |
++| `runtime-app/`, `recovery.md` | Evidence-only custom main outside product routes/workspaces; uses existing installed modules and actual query. No auth/queue/sync/notification imports or connected fixture mutations. Database closes in finally; stopped activity releases fixture-only global network guards. |
++| `baseline/checks/`, `baseline/writable-cache/`, `baseline/jest-diagnostics/`, `baseline/feature-suites/`, `baseline/isolated-accessibility/` | Exact initial commands/results/logs. Typecheck passed; initial lint returned 0; shared 149 tests passed. First Jest failed EPERM before assertions; writable-cache combined command timed out. Diagnosed config/list discovery; split runs passed six suites/29 tests. No failing full command relabeled passed. |
++| `final-checks/`, `lint-diagnostic-sources.json` | Final workspace typecheck and strict fixture typecheck passed. Explicit fixture ESLint passed. Final mobile lint failed: 13 errors/3 warnings in seven task-untouched files; snapshotted affected info/preferences/config bytes match baseline. Initial/final lint discrepancy unresolved; no clean overall lint claim. All diagnostics captured before any product implementation. |
++| `runtime/stopped-server.json`, `runtime/cleanup.json`, `validation.json` | Task-owned offline server/activity stopped; added 8084 reverse removed, prior mappings preserved at cleanup. A later observation found emulator/mapping reuse under another ADB host but no task fixture server/listener; that later state was left untouched. Source/packet/snapshot/link/scope integrity validation and final owned diff recorded. |
++
++Fully read packet entries: global search 226 lines; scoped search 83; SearchField
++108; query 86; query tests 92; screen tests 83; both AGENTS; three manifests;
++app.json; Jest config. Findings: global batching/cursors already exist; scoped
++search has the 200-row limit/silent error/replace navigation; SearchField's
++internal value can disagree with supplied controlled props. Those remain later
++implementation tasks and were not changed in Phase 0.
++
++### Verification limits and unresolved questions
++
++P0.1 entered partially done, P0.2 not started, P0.3 partially done. Their detailed
++requirement-by-requirement entry/final classification is in `report.md`. No phase
++credit was inferred from prior status labels.
++
++The original 8082 Metro endpoint stopped serving; an ADB client launch reported
++unexpected end of stream, without a captured native-module error signature.
++The task did not restart that service. Its separate offline fixture used 8084.
++Initial development-mode fixture guards blocked HMR/SQLite DevTools, creating
++fixture errors; a justified non-development rerun omitted those clients and was
++clean. Both diagnostic and final results are retained, not conflated.
++
++Broader V11 product screens, connected disposable account/chat isolation, current
++whole-app native loading and 10,000-message stress observations remain pending
++their later-phase execution. The configured backend matches the supplied test
++script but does not itself prove connected data isolation. Offline fixtures
++provided the permitted Phase 0 alternative. No new authorization or credentials
++are needed for Phase 1 source/unit work. Exact current-Messenger build geometry
++and the initial/final lint outcome difference remain unverified. No unrelated
++calling/lint repair, commit, push, upload, migration or deployment was performed.
++

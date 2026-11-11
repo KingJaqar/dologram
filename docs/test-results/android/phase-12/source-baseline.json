@@ -1,0 +1,634 @@
+[
+  {
+    "Path": "packages/shared/src\\validation\\__tests__\\message.test.ts",
+    "SHA256": "3218E72533A767214B6AF74A37F5091D30CE87AD51E7DBAF905B79082FBBE2DB"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\__tests__\\chat.test.ts",
+    "SHA256": "DF72C6CB8E6209A73FAA1FDDC05A96799A465A713DA07F9104BB9E6B0AE47E7C"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\__tests__\\attachment.test.ts",
+    "SHA256": "B66F2A939A085F0FE1CAE42D5EB9AC98C6C301D2B5647F465492A3BE347ACEA0"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\__tests__\\account.test.ts",
+    "SHA256": "6ED403B42D86401888E5CABE8E23DDE1ADF47560A41B7582B5CB8B5D11FB7D4A"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\text.ts",
+    "SHA256": "8F1219F538F256BD331047DB0220F6712E207F0B67F48F45317A04D2ED690B38"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\message.ts",
+    "SHA256": "30B4FB17CF82F2BD394F6081AEF8101B06E85ED8CC1F880C29D04B8A257F6BC2"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\chat.ts",
+    "SHA256": "59A7E8FDD2650CD448DF6E62053AF38020D0DC9D4B8C3C290A3B5F7439AC42E1"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\attachment.ts",
+    "SHA256": "55E88F00E05F357045A568B11B47EEA6BA813AAC5D9F7B477C8EEB9E39C80923"
+  },
+  {
+    "Path": "packages/shared/src\\validation\\account.ts",
+    "SHA256": "2D1DDDB447C6F0641DFA7328E5FB93E5AEDC063892A4E2D0BFD2728EA4C69F6B"
+  },
+  {
+    "Path": "packages/shared/src\\theme\\typography.ts",
+    "SHA256": "B7879CDAB6B3CDCBA4FDEF5430510386A302ECB76C740FB9165D5817B6D11DC6"
+  },
+  {
+    "Path": "packages/shared/src\\theme\\tokens.ts",
+    "SHA256": "991264DFAC456D603DC8A6689027629D56B21AD854E8167337566196941D5A7F"
+  },
+  {
+    "Path": "packages/shared/src\\theme\\icons.ts",
+    "SHA256": "48AB7770D396743BD7198A0634332907162775EEF7F39138E331C1390893193A"
+  },
+  {
+    "Path": "packages/shared/src\\theme\\contrast.ts",
+    "SHA256": "B73FB2A288A71CAAF91B47F159171247057DE591A18763E11AB30D38C19FCD2B"
+  },
+  {
+    "Path": "packages/shared/src\\theme\\contrast.test.ts",
+    "SHA256": "99BA16D42DA9AE7950668ACA2648B233C625BB455D0F497498E0C85484C935EA"
+  },
+  {
+    "Path": "packages/shared/src\\ids.ts",
+    "SHA256": "A1F0240CC31666AD0742C4A16E015454FA15DBC8C517E92410A5EF65577D1C46"
+  },
+  {
+    "Path": "packages/shared/src\\errors.ts",
+    "SHA256": "63A34B978B92B0391E9FCD47474BAD151D51F745E4CC947DD4BFD06BA1A7B539"
+  },
+  {
+    "Path": "packages/shared/src\\sync\\__tests__\\sync-engine.test.ts",
+    "SHA256": "BAFD84C127DA63BA93CF1F7BAC638CB10D97B092BA6A5AD05972D7B6E009DBC3"
+  },
+  {
+    "Path": "packages/shared/src\\sync\\types.ts",
+    "SHA256": "4B2B56C060CA3906AF4E811E4FD7DA2F537636B912F92AEF18DE5ADECA574558"
+  },
+  {
+    "Path": "packages/shared/src\\sync\\index.ts",
+    "SHA256": "64458484FCB34BEC4701D7EC63D4EAD807C5DA7896488B811EC9CAEA5367D0A1"
+  },
+  {
+    "Path": "packages/shared/src\\sync\\engine.ts",
+    "SHA256": "3C2BFF4380BDEAFA04CD6D938A0F26A4583C68111066A061DE8FD9CFD7C874B2"
+  },
+  {
+    "Path": "packages/shared/src\\index.ts",
+    "SHA256": "A8C33D604308E5D685674D72E551496A4BFDA055A2190079D55037049A5E9189"
+  },
+  {
+    "Path": "packages/shared/src\\strings\\index.ts",
+    "SHA256": "5A778B51C4310F218E3AECFCDA0BB9B0128B1B007C86B3DA80447732BDE65766"
+  },
+  {
+    "Path": "packages/shared/src\\config\\index.ts.working",
+    "SHA256": "B8027A3EB30F1EDC835C03B49168065306E11826E2D1DA4CBD9993081DD8FD89"
+  },
+  {
+    "Path": "packages/shared/src\\config\\index.ts.new",
+    "SHA256": "B8027A3EB30F1EDC835C03B49168065306E11826E2D1DA4CBD9993081DD8FD89"
+  },
+  {
+    "Path": "packages/shared/src\\config\\index.ts",
+    "SHA256": "B8027A3EB30F1EDC835C03B49168065306E11826E2D1DA4CBD9993081DD8FD89"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\format.ts",
+    "SHA256": "9C88179561E78CFAA0F5767E83FC1D26D261F8A143986AE65A897BB9F07AD050"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\build.ts",
+    "SHA256": "8B1F04BF8AC27CA42C372BF12B8038BACD8944869B9DFFC975AFDA8D291D7D11"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\index.ts",
+    "SHA256": "68758F6FDDDA50715267404368BBE4D77F0A1F9D2AA735770EC259ECC1ABCF86"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\preview.ts",
+    "SHA256": "7535489FB0B1D35E611745FB2E52CF9C3750CB05DDB3A0C7B9D889533967B824"
+  },
+  {
+    "Path": "packages/shared/src\\chats\\index.ts",
+    "SHA256": "A113B91C16513ABF0D2B433571B37F1038A9D634B40B8127C12748C0404A526D"
+  },
+  {
+    "Path": "packages/shared/src\\chats\\direct.ts",
+    "SHA256": "90E6FAAF69351C6FDAC69EE3128B6A2CD52AFBFAECF810D45D38189A8ED06C88"
+  },
+  {
+    "Path": "packages/shared/src\\chats\\contacts.ts",
+    "SHA256": "EBDB863568D63474037D9C5A85454322A314D5A83A8FE363826666E85047B518"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\types.ts",
+    "SHA256": "E96D5485AAB0B91347A9F11B4B00ACEE731470F1AC56609C66C1E70BB5DC5704"
+  },
+  {
+    "Path": "packages/shared/src\\chats\\info.ts",
+    "SHA256": "8FE2C26DB8E44C2F89B87608416559BBC9F1AEE3114564629950C68930A26BE9"
+  },
+  {
+    "Path": "packages/shared/src\\chatList\\__tests__\\chat-list.test.ts",
+    "SHA256": "36399E508FD442DFAC96C6053AAED1D150F35F0B912CC4BEA5A6C15F4C76B417"
+  },
+  {
+    "Path": "packages/shared/src\\errors\\__tests__\\classify-error.test.ts",
+    "SHA256": "9953272C52450E21765270BF5B0EDB5CFF9F3DE119F054873117BD491F8C1B66"
+  },
+  {
+    "Path": "packages/shared/src\\chats\\__tests__\\chats.test.ts",
+    "SHA256": "FC937FF6E8B557005D236709DCEDA276D56C7A820B904CE7193912CE3B722E0B"
+  },
+  {
+    "Path": "packages/shared/src\\db\\result.ts",
+    "SHA256": "B05122D362138AFFBDB93786BC60440716180837C2BCA6EDE06B51961D23B50A"
+  },
+  {
+    "Path": "packages/shared/src\\realtime\\__tests__\\topics.test.ts",
+    "SHA256": "7ACF40DD9C1F689D1AA3D0BD4BCC55D5107BE47BF7B04062CC4CE320DF6D75B0"
+  },
+  {
+    "Path": "packages/shared/src\\realtime\\topics.ts",
+    "SHA256": "EA5B8BF8618EC103869A2317DBE58FCDD50972001AAEB0EBE8A34310D3446FE7"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\media.ts",
+    "SHA256": "D95CA351289CFFA114B08DC7F2C62799CC7FBD9FB7FA3C13A0509BC6782A3826"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\chats.ts",
+    "SHA256": "504F9AF7BBD119F9821B658A1BF079AF04E224847BD61060CB863CE8742E98DB"
+  },
+  {
+    "Path": "packages/shared/src\\db\\database.types.ts",
+    "SHA256": "B7D506BDD3251E48E6255F4E39CE242743EA7732867BD234764E83EDF414CBB0"
+  },
+  {
+    "Path": "packages/shared/src\\db\\client.ts",
+    "SHA256": "C447584299A6575A1FCCCE484B5119AE457E47C11767CAAB235BBE0CBE49BB08"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\messages.ts",
+    "SHA256": "1FCB9EC5CD9B286FF2A23B16C8EC2D963D3D08FF384461C8A5122315585314CB"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\members.ts",
+    "SHA256": "704D36417B767FD22C13C201B2A9B475D13DCDC9570F853BF1A5D94F639AF391"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\profiles.ts",
+    "SHA256": "2430FE537AB37DF8E6940BBB3653172E36CEA2DAAD05215B9E76182540FBC95A"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\reactions.ts",
+    "SHA256": "86F536DFAE1136398A5A0CB4D63BBF763ED3E53EBA17BE5C41CBB7BAF834239C"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\index.ts",
+    "SHA256": "43F76CDCC0415B46E21229D3CE6129B458502A297C6BAB85900FB8DF4FA905DF"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\core.ts",
+    "SHA256": "A7310ACCDAA38ABF7BAF797FB06E8F39A5FB167042CFC66C2F76C7DF94C1FA47"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\backoff.ts",
+    "SHA256": "738D5D750AA6A95B01044FDC31AE222AD03CBF5B9E01E64B95A565B057F9F106"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\runner.ts",
+    "SHA256": "E94AD9FB7D66C73D788E0747389E3974B946C9D5EECDA50D603E68819BB2DD6F"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\memoryStore.ts",
+    "SHA256": "088677967D0A02E5CC57E838679AFF1F9C08247C54BA6F1544B997B5E62429DA"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\types.ts",
+    "SHA256": "8CA8DE43EC2930E4B3CC6CB375A7DB5C4A1153CE893675A32283544210460243"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\__tests__\\queue-core.test.ts",
+    "SHA256": "E4BDBA2E38BD9DAA3DCF55731322DF016C6EDE953BF6AF0168610B4C947AD8F5"
+  },
+  {
+    "Path": "packages/shared/src\\queue\\__tests__\\queue-runner.test.ts",
+    "SHA256": "A1D00276D0D4255AB728C1056B2D05B6823CE1A6A9EC03F4109A730C74D65C0B"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\__tests__\\reactions.test.ts",
+    "SHA256": "9543FF30893DF266812F02AE24F8C5A798CEFAC5F2F7B1AB0AA0553FA8F695B6"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\__tests__\\profiles.test.ts",
+    "SHA256": "7A86961A836EC85D7002490A84B44A7283984C01C378E8D8E07DE640913F8055"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\__tests__\\messages.test.ts",
+    "SHA256": "E360C89BD4234913A848AC39B0C7EE45DDAE1547AD1784FE309A00EE5B30A1C2"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\__tests__\\members.test.ts",
+    "SHA256": "83497275E2C45634A48C8A838577416690BC289F2EDB256BE0D8112E743ACCC1"
+  },
+  {
+    "Path": "packages/shared/src\\db\\repositories\\__tests__\\media.test.ts",
+    "SHA256": "8343BB30D537C8F6A77302411B8F6B182731F2BBC0CC943D690FC2590B139785"
+  },
+  {
+    "Path": "apps/mobile/app\\_layout.tsx",
+    "SHA256": "5EAD7CD899789D8453BACA8C5C3E77EFF0B9C86F0284CB80C1FB8386780E57F5"
+  },
+  {
+    "Path": "apps/mobile/app\\sign-up.tsx",
+    "SHA256": "6929BDDFB01B6996A817FD8E968E6B6C5BC81BDFBE8A01B2029429A293833CA8"
+  },
+  {
+    "Path": "apps/mobile/app\\sign-in.tsx",
+    "SHA256": "5B7496407AC50BDB98CFC41FD74821A500AB9FA3CC008669F73F1FEA5BF76F41"
+  },
+  {
+    "Path": "apps/mobile/app\\reset-password.tsx",
+    "SHA256": "639079E87BFFAE71158AF8987DC8BC63218BF07984238234C99F30A78A05BFAA"
+  },
+  {
+    "Path": "apps/mobile/app\\new-group.tsx",
+    "SHA256": "62CE78D0CDEC484A840E0AED85E98723C0D9A9219476BC53E58E86061D3E89A3"
+  },
+  {
+    "Path": "apps/mobile/app\\new-chat.tsx",
+    "SHA256": "D5E307CDCAACDCD84AD63D154CD56A48B4DE2B79E56C84846376F98435EB7F6C"
+  },
+  {
+    "Path": "apps/mobile/app\\forward.tsx",
+    "SHA256": "E672AAB78C2CE1DB0966B183B50A94C01809CF7B0556D280E319AE4CCD17643C"
+  },
+  {
+    "Path": "apps/mobile/app\\forgot-password.tsx",
+    "SHA256": "FFC43E88EA54D38269E968A035E86E38EB5162EDF352218DD965B8D321E1CE7D"
+  },
+  {
+    "Path": "apps/mobile/app\\folders.tsx",
+    "SHA256": "A576F0CAE6EB88306F958515F1CC0E2026FA213B5F5C42DEFE005702ACAF8457"
+  },
+  {
+    "Path": "apps/mobile/src\\__tests__\\signUp.test.tsx",
+    "SHA256": "8D2BCD17BC58FE2C5261773C4A443B3D7B4800979A4BD829018C13A46E6B1DB3"
+  },
+  {
+    "Path": "apps/mobile/src\\__tests__\\signIn.test.tsx",
+    "SHA256": "D206B56F83EF0C9DE178A09CFF6B4977C95C3CC71B4C559648D8A36A93918913"
+  },
+  {
+    "Path": "apps/mobile/src\\__tests__\\resetPassword.test.tsx",
+    "SHA256": "907E98F59D86BC267A83B51B16D5CE2EEEBF97CB1D41B8CF535F90725AA01B49"
+  },
+  {
+    "Path": "apps/mobile/src\\__tests__\\forgotPassword.test.tsx",
+    "SHA256": "1D755DDE3EB889095C7EAEDFB061BF1A9C0D3C901ACFA59942312F5B555C999D"
+  },
+  {
+    "Path": "apps/mobile/src\\__tests__\\changePassword.test.tsx",
+    "SHA256": "398220EC8227E7F25DB6D1C567843D3EB718AA179F0E0F40E6CD0F767FF93653"
+  },
+  {
+    "Path": "apps/mobile/app\\dev\\tokens.tsx",
+    "SHA256": "8692A4F20F87B67FBF951FC9CC7B23F5AA363C136513F9075C520D92905BD79B"
+  },
+  {
+    "Path": "apps/mobile/app\\dev\\sync.tsx",
+    "SHA256": "32D07D4FC1211B0FF8305873DBD043CA7D0A3B685F824C7667A32051FFF76752"
+  },
+  {
+    "Path": "apps/mobile/app\\dev\\queue.tsx",
+    "SHA256": "B3AD5C25BD660F2BCE6DEAB9CB04A49D16B3DF33F59DC7C57B52D3D2793624C8"
+  },
+  {
+    "Path": "apps/mobile/app\\dev\\markdown.tsx",
+    "SHA256": "053D1A9E991C83224284F6ADFCACC726695098682E79D1ABDE0FCC9417EAE7BC"
+  },
+  {
+    "Path": "apps/mobile/src\\theme\\typography.ts",
+    "SHA256": "0A0D52C874937E1A5C7446D4B60228C93F7BE44F77526826FFCF7005669ADDF0"
+  },
+  {
+    "Path": "apps/mobile/src\\theme\\ThemeProvider.tsx",
+    "SHA256": "8DD523750AA27E6343A8D1F3763210E5A1DFDEF51075EF3E4FE067713F8F5876"
+  },
+  {
+    "Path": "apps/mobile/app\\change-password.tsx",
+    "SHA256": "8DD4758E96AAF162575F79066A9530C10AE35F00E1FA667DC6C634AA3B8BC63D"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\source.ts",
+    "SHA256": "82D72E43E3C1A31BE9885F41FA914AB8D71214208B989F506405007D96749551"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\localCache.ts",
+    "SHA256": "B8B8AE098E4B4C4DE7702257768A649D320CFBF805FC43AAF203654ECDD5E685"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\lifecycle.ts",
+    "SHA256": "DACF95E543B381443CE6953BC47D8F549F80B6C7D248221BA47FB7266B239622"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\debug.ts",
+    "SHA256": "C99287030C39E4506A2080E39E512276751DC48BFFE79417DA008BD8B76FB13D"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\cacheStore.ts",
+    "SHA256": "DD45AC0DCB708B32980C116B4825E32201262D53AC127FF0B2D8F9E42F872856"
+  },
+  {
+    "Path": "apps/mobile/src\\sync\\cacheEvents.ts",
+    "SHA256": "ECA7C7A580E18AD0FD5B5F8B8F1C0B8B582A4A46740522D781F0B0CB63A9F942"
+  },
+  {
+    "Path": "apps/mobile/app\\chat\\[chatId]\\media\\[mediaId].tsx",
+    "SHA256": "FA23C5F815C2223D124F2202CBE5BA2F14063B5490D62316108E280E9BDA898D"
+  },
+  {
+    "Path": "apps/mobile/app\\chat\\[chatId]\\info.tsx",
+    "SHA256": "D864C833BDE8C3B798E363E429C49440020D38D16F8116D41EB2769A21F3BC57"
+  },
+  {
+    "Path": "apps/mobile/app\\chat\\[chatId]\\index.tsx",
+    "SHA256": "3461E0AC7620AAA817DBD0389CCBE64B35ACD28331D1E10369139188A26F986A"
+  },
+  {
+    "Path": "apps/mobile/app\\(main)\\archive.tsx",
+    "SHA256": "61BFBF69464F079DD112572EC867D944D92864E1A7B73000F7D5CA17E6C7DA5D"
+  },
+  {
+    "Path": "apps/mobile/app\\(main)\\_layout.tsx",
+    "SHA256": "F80AE82867542134BBAB4D1B16098ACD03804C69DCF34E5536CF4CE94DDCFB10"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\useContacts.ts",
+    "SHA256": "C313C7D6A9C03D9D7F7007990BE70D8DF863497F559D7E275190D5D6944AF926"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\useChatInfo.ts",
+    "SHA256": "8E66A0C541D1C52A01B130E5FDC07AC52F26B7BF33486ECE63D6244935EDDAA5"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\infoQuery.ts",
+    "SHA256": "33F58E3E54710B0351E34609235FCE315C02841C1C2CCFD9E4B71275F7896691"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\group.ts",
+    "SHA256": "C4E170F8E86BD70550662B66E22AC2748B3D8BDD377942BAB8353A1077C046B7"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\errors.ts",
+    "SHA256": "F61D86BB5D93A2FF6A16EB501F978F3942AB478D872F18F68A627522D22DD5AB"
+  },
+  {
+    "Path": "apps/mobile/src\\chats\\directChat.ts",
+    "SHA256": "28570EEDA58208E10D286FDCDE69ACBA625CBB0FCD74C45EE76953EB0391DA8A"
+  },
+  {
+    "Path": "apps/mobile/src\\chat\\realtime.ts",
+    "SHA256": "8A6ACF82D82BBF4D2068337CD2A6A5D14A0708F7A18C4F613766EA42963585CD"
+  },
+  {
+    "Path": "apps/mobile/src\\chat\\readState.ts",
+    "SHA256": "B1E0C6D89B0DFB9A29E0F2775FE27E1CE17FA0E295B7E57F2D600563916DC10F"
+  },
+  {
+    "Path": "apps/mobile/src\\chat\\query.ts",
+    "SHA256": "EB0784859AEB934424A6B8EE6F18FBBC6D034409603614F182C416EEC2B0FDEC"
+  },
+  {
+    "Path": "apps/mobile/app\\(main)\\(tabs)\\index.tsx",
+    "SHA256": "CC9DD232605A37AA61349C2B1E436BA13BA0879C48184C0B444B2760A255130B"
+  },
+  {
+    "Path": "apps/mobile/app\\(main)\\(tabs)\\settings.tsx",
+    "SHA256": "EC4E2D2A59FB043A49DE400E5C8FAE295811309FBA61DF7486A2C0E41AEB2B54"
+  },
+  {
+    "Path": "apps/mobile/app\\(main)\\(tabs)\\_layout.tsx",
+    "SHA256": "5048C4445C411D0968563D100FF0CAB93552C99D8493035A8FFF06CB0013AA84"
+  },
+  {
+    "Path": "apps/mobile/src\\chatList\\useChatList.ts",
+    "SHA256": "DA36690C6B672596325EF1EDB2D2031B1D167164D3968D986542E4C8238AE61D"
+  },
+  {
+    "Path": "apps/mobile/src\\chatList\\query.ts",
+    "SHA256": "5605BCA1DA901A552DEA153972C9996B7DC23388C2108AC833A34FE92897C064"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\events.ts",
+    "SHA256": "BEB8A21BB3686ED8321F461CCD560679200CE803AF3B53EF4F14953056D76E7A"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\db.ts",
+    "SHA256": "2621BD4F2780957FECE7615AD1273F3EEDDC5AE9C23BDD059AFB2FFEDDE7339E"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\attachments.ts",
+    "SHA256": "089BD2825AA8BB9098E303598A0C319AB855E0E6FE002CADD434DC90A26F7B06"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\attachmentFiles.ts",
+    "SHA256": "43487AA22B17AFE64A865F82D7CE69B65813E56A3119E6BFCE945D5B5335E500"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\mediaUploader.ts",
+    "SHA256": "05CD78408170D5C288DBCF0EA0A9DBBF9A8B8BB1172E2C051533CDB8D9A7DDC4"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\localQueue.ts",
+    "SHA256": "F970274F1B5BD924BF4628F9CD8469C8147665A731058C22BCF5EC6F752979FE"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\store.ts",
+    "SHA256": "4BC47EADB76B20C93D5E9626563BE324D3808770CAA4B485DB3DE8E88FA7C754"
+  },
+  {
+    "Path": "apps/mobile/src\\queue\\worker.ts",
+    "SHA256": "56B25C80B08A70A0C3BDE306A830132D2CC8052BA770E2E046DCBE3F3FBB6D1E"
+  },
+  {
+    "Path": "apps/mobile/src\\auth\\AuthProvider.tsx",
+    "SHA256": "FA729267131C5A9545E36A7BEB72A22FC711921E973A26FC044ADFE59FC43BB9"
+  },
+  {
+    "Path": "apps/mobile/src\\auth\\authError.ts",
+    "SHA256": "BF775F6D89C503B33B2D92BAF99CA0BF25E99FBD7F72AFD583F5CE40438474C0"
+  },
+  {
+    "Path": "apps/mobile/src\\lib\\supabase.ts",
+    "SHA256": "168E88C6A75E8E9F67A2703BD03B6DD5E97AE14085BCAC4A7A33A1A82B5FE7E0"
+  },
+  {
+    "Path": "apps/mobile/src\\lib\\ids.ts",
+    "SHA256": "681A27FD108426D9A86B54E612A04E718BED66F70FAA3A52800142064E9A3D0A"
+  },
+  {
+    "Path": "apps/mobile/src\\net\\netState.ts",
+    "SHA256": "DF3BA01945B725ED26C38ABC30CE971135AE695FC7532749DF36E4778AEDB3AD"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\__tests__\\PeopleRows.test.tsx",
+    "SHA256": "8251CF3B431810A1CCDF172879B11FDBF6D5D9E9BC0E837997CAE0A9624A84BE"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\__tests__\\MessageText.test.tsx",
+    "SHA256": "934753C74E3D70BF49D31B067E514B44BFFB9FB68C8C1ABDB290D5D6AA7B0A07"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\__tests__\\ChatRow.test.tsx",
+    "SHA256": "1FD1E705575D348BFD061D46339463F691E9B390DD38AB7BDA06BAD8A123F57B"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\__tests__\\a11yLabels.test.tsx",
+    "SHA256": "FAAF42E30D3B182ECE94B1B745A405A2C91A388834B96834BB5B27547F04ACFF"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\TopBar.tsx",
+    "SHA256": "EA0A131F0F9E09A6A69A085A1163ECF5087C2CA99184C27FA7BA6B1DF2A6733E"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Toast.tsx",
+    "SHA256": "BF5239412C7852C65C63249C94E54D3332342BAF24B69D4B611100F30CC33069"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\TextField.tsx",
+    "SHA256": "24ED317E07D2A194CCF2D50AD4BBF38F6E63709B8198597A71FBFF6298194D81"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\TabBar.tsx",
+    "SHA256": "316C7D914285DBE28B32308964071FDF24528DB7FC0B6ACF9DAAB80B8EF95029"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\SwitchRow.tsx",
+    "SHA256": "9A3AC5A5F35C9CF442C91E3B9327C6F9D17E655D07696A591624BBBC8306C047"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Skeleton.tsx",
+    "SHA256": "782ECF7F14EE7C4B44E755E9968122D77B1C8F96819702DA37DA64837ABD7929"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\SearchField.tsx",
+    "SHA256": "0BC2D2504EF55820193E7F6076D4FDD0A3FE1CCF49B4620668ACCF7EE2F5B02B"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\MessageText.tsx",
+    "SHA256": "C20FAA21DD6FBA35C1B4ECFFA98ACD999FA1249AF15FB2F336597CD5214DC5A4"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\MessageFocusOverlay.tsx",
+    "SHA256": "0258AA5082648D6C21D8E43D725D86B896A77780EBEA544CDAFF82E257B1F3BB"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\MessageBubble.tsx",
+    "SHA256": "B9CF382D158FAA4870145BEBE2816FB64AB92EC00424BEA8A8C464AA0E927F31"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\MemberRow.tsx",
+    "SHA256": "4311F09A24572B22D4BA36410FDD91193C92E2CD693D72E9D686DFFFDB2AAD30"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Icon.tsx",
+    "SHA256": "010E566E131D4F92E7AF6BCC4544F9F476D0A0AC064E411CD69E8D13550C717E"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\FolderTabs.tsx",
+    "SHA256": "53CE15B8328026728E27E9F348B02A6C0779517AB1D832339B54CC9411BA9FFD"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\EmptyState.tsx",
+    "SHA256": "A0DE38CFDF96D1681D687030EF92D7B278850A348800A4ABC46470C480BB724E"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Dialog.tsx",
+    "SHA256": "93B27E88B7447CBA6096A7797AFF4E1C3E9331191236A3B709496644DB5E163F"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\DateSeparator.tsx",
+    "SHA256": "AD55453902965DA645D650D922B2FFE75CE37E16B7609EA2568E91E585D83849"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\ContactRow.tsx",
+    "SHA256": "8EE33AACF5DAA4B7675978D8F01E7F7EC8923EEA2B45B802C4B3F6569CC15FF2"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\ConnectionBanner.tsx",
+    "SHA256": "82D44EF214A79E3368176A35AB7F816C7C71565A4656E6F9C63563E662432E04"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\ChatRow.tsx",
+    "SHA256": "1A328ACCCE7A48DB877E9C5E88BCDB7D79FA6AA2DAC4CF3D3DE88FF44BFF806D"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\ChatComposer.tsx",
+    "SHA256": "C14F13C39C66449EABCC5DE809F834E1BAD96CBD3AC8F01CAB6FBCC057C15346"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Button.tsx",
+    "SHA256": "5F50708AFDBFBB6A4E93EF3483773B8466D23BA801E3A75ACC8C9B96229551B8"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\BottomSheet.tsx",
+    "SHA256": "D0864926C218D4913C6E0B7FCA047BDE4B8BD954054AF736CB70F9D7092A207F"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Badge.tsx",
+    "SHA256": "9350051A66D1CFAB5CFC147FED9E17A7B80AC32694FE5BA4D6A47AAA4FCDE943"
+  },
+  {
+    "Path": "apps/mobile/src\\components\\Avatar.tsx",
+    "SHA256": "6207294720D20781C4A00F62368C4E5040D20DC102C9E4901CE0D0B1EA1FD8C7"
+  },
+  {
+    "Path": "Plans/DoloGram_Android_Implementation_Plan.md",
+    "SHA256": "FDE9C7ABA08A61DF80D6526BE7FEA51EF66F054810E67191D8718C1ED29FEC9E"
+  },
+  {
+    "Path": "apps/mobile/AGENTS.md",
+    "SHA256": "B7D381DD55800D242252E8BF89A40B026586D254E34908210931BC35582396A3"
+  },
+  {
+    "Path": "apps/mobile/package.json",
+    "SHA256": "EA52CDFA2D46DB37B861D2F764DAB949FAF6F25DE6145D01C0776F7E749438E2"
+  },
+  {
+    "Path": "apps/mobile/app.json",
+    "SHA256": "F29280B72B04D914217586E26B111B544EFC97576FCB1B1363F3D27C9ADF563A"
+  },
+  {
+    "Path": "apps/mobile/eslint.config.js",
+    "SHA256": "F2099DA1B25AA9E62DEFB44FFBEB8A4290EF7F905748A6849928A970ADF5390D"
+  },
+  {
+    "Path": "apps/mobile/jest.config.js",
+    "SHA256": "45EA0DDD7808C4317145256C049092729A4996874ED4C48D33F874572532AEF8"
+  },
+  {
+    "Path": "packages/shared/package.json",
+    "SHA256": "3C8AF956C6B43D97A4826DFE89B7D8C0ED4D6167F7A8C72946648F8A4BB2F4CC"
+  },
+  {
+    "Path": "package.json",
+    "SHA256": "92AEC11F03707FAF604AFE2553CDBFD1328C35E1E74A01C7E6265F51AC8F2E0E"
+  },
+  {
+    "Path": "package-lock.json",
+    "SHA256": "C216BDA04288C94211754D4CE067A43CAB7C3ED28A7D96CF2A60577CDCC92948"
+  },
+  {
+    "Path": "tsconfig.base.json",
+    "SHA256": "49840E3C2D35DE7C02B9E45358B3F6A0EA1726B9485D2BE7D16A2D66C0A81A38"
+  }
+]

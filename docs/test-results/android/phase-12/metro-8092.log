@@ -1,0 +1,23 @@
+
+> @dologram/mobile@1.0.0 start
+> expo start --dev-client --localhost --port 8092 --max-workers 2
+
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+Starting project at G:\codebase\DoloGram\apps\mobile
+Logs: G:\codebase\DoloGram\apps\mobile\.expo\dev\logs\start.log
+Expo Autolinking module resolution enabled
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+
+Waiting on http://localhost:8092
+
+2 packages may need updating. Run npx expo install --check for details.
+Logs for your project will appear below.
+Unable to resolve asset "./assets/icon.png" from "icon" in your app.json or app.config.js
+Unable to resolve asset "./assets/icon.png" from "icon" in your app.json or app.config.js
+| (node:23356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:23356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Android Bundled 6593ms node_modules\expo-router\entry.js (3957 modules)

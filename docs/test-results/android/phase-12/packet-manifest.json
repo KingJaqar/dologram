@@ -1,0 +1,147 @@
+{
+  "Version": "1.18.1",
+  "Packet": "repomix-phase12.xml",
+  "SHA256": "EDCCB2CE94AE130CC672D54BE4990169AA028308462EF4AABE18A711F49930AF",
+  "Entries": [
+    {
+      "Path": "apps/mobile/app/chat/[chatId]/media/[mediaId].tsx",
+      "PacketSourceSHA256": "FA23C5F815C2223D124F2202CBE5BA2F14063B5490D62316108E280E9BDA898D",
+      "CurrentSourceSHA256": "D9A625798F9A293730F020470E3CC7DEB579767CF6699C24F46CF64168AB0391",
+      "PacketSourceChanged": true,
+      "EntryChars": 409
+    },
+    {
+      "Path": "apps/mobile/app/chat/[chatId]/index.tsx",
+      "PacketSourceSHA256": "3461E0AC7620AAA817DBD0389CCBE64B35ACD28331D1E10369139188A26F986A",
+      "CurrentSourceSHA256": "4307141ECA3F53A097CE17996B41C609A09AB2150824458FC21C4E8DDC6156BD",
+      "PacketSourceChanged": true,
+      "EntryChars": 2706
+    },
+    {
+      "Path": "apps/mobile/src/chat/query.ts",
+      "PacketSourceSHA256": "EB0784859AEB934424A6B8EE6F18FBBC6D034409603614F182C416EEC2B0FDEC",
+      "CurrentSourceSHA256": "9C8DC8DE447E798410973086BFC700F83D3CF183D82833EE464A0E8E8C8328F4",
+      "PacketSourceChanged": true,
+      "EntryChars": 2538
+    },
+    {
+      "Path": "apps/mobile/src/components/BottomSheet.tsx",
+      "PacketSourceSHA256": "D0864926C218D4913C6E0B7FCA047BDE4B8BD954054AF736CB70F9D7092A207F",
+      "CurrentSourceSHA256": "D0864926C218D4913C6E0B7FCA047BDE4B8BD954054AF736CB70F9D7092A207F",
+      "PacketSourceChanged": false,
+      "EntryChars": 754
+    },
+    {
+      "Path": "apps/mobile/src/components/ChatComposer.tsx",
+      "PacketSourceSHA256": "C14F13C39C66449EABCC5DE809F834E1BAD96CBD3AC8F01CAB6FBCC057C15346",
+      "CurrentSourceSHA256": "752B438B4B1D59844591E18246734B7C5F6DE0B48B4440183455DB11DAD03547",
+      "PacketSourceChanged": true,
+      "EntryChars": 803
+    },
+    {
+      "Path": "apps/mobile/src/components/MessageBubble.tsx",
+      "PacketSourceSHA256": "B9CF382D158FAA4870145BEBE2816FB64AB92EC00424BEA8A8C464AA0E927F31",
+      "CurrentSourceSHA256": "2379792E728537C9DA6FCC978E3A6A96D145A20F101FFA8452E76E955977BCF5",
+      "PacketSourceChanged": true,
+      "EntryChars": 1280
+    },
+    {
+      "Path": "apps/mobile/src/queue/attachmentFiles.ts",
+      "PacketSourceSHA256": "43487AA22B17AFE64A865F82D7CE69B65813E56A3119E6BFCE945D5B5335E500",
+      "CurrentSourceSHA256": "43487AA22B17AFE64A865F82D7CE69B65813E56A3119E6BFCE945D5B5335E500",
+      "PacketSourceChanged": false,
+      "EntryChars": 413
+    },
+    {
+      "Path": "apps/mobile/src/queue/attachments.ts",
+      "PacketSourceSHA256": "089BD2825AA8BB9098E303598A0C319AB855E0E6FE002CADD434DC90A26F7B06",
+      "CurrentSourceSHA256": "31D7771B9B3536CA5D0A01F885D69CF4E2D685D5AC8A7A8A3552034315819BE8",
+      "PacketSourceChanged": true,
+      "EntryChars": 1202
+    },
+    {
+      "Path": "apps/mobile/src/queue/worker.ts",
+      "PacketSourceSHA256": "56B25C80B08A70A0C3BDE306A830132D2CC8052BA770E2E046DCBE3F3FBB6D1E",
+      "CurrentSourceSHA256": "56B25C80B08A70A0C3BDE306A830132D2CC8052BA770E2E046DCBE3F3FBB6D1E",
+      "PacketSourceChanged": false,
+      "EntryChars": 1744
+    },
+    {
+      "Path": "apps/mobile/AGENTS.md",
+      "PacketSourceSHA256": "B7D381DD55800D242252E8BF89A40B026586D254E34908210931BC35582396A3",
+      "CurrentSourceSHA256": "B7D381DD55800D242252E8BF89A40B026586D254E34908210931BC35582396A3",
+      "PacketSourceChanged": false,
+      "EntryChars": 2585
+    },
+    {
+      "Path": "apps/mobile/package.json",
+      "PacketSourceSHA256": "EA52CDFA2D46DB37B861D2F764DAB949FAF6F25DE6145D01C0776F7E749438E2",
+      "CurrentSourceSHA256": "EA52CDFA2D46DB37B861D2F764DAB949FAF6F25DE6145D01C0776F7E749438E2",
+      "PacketSourceChanged": false,
+      "EntryChars": 1921
+    },
+    {
+      "Path": "docs/test-results/android/phase-12/requirements-v14.txt",
+      "PacketSourceSHA256": "5E060CAA038952F6F5743AA7C6B96592F3FF0DA40787ED59095B493928AD5A9B",
+      "CurrentSourceSHA256": "5E060CAA038952F6F5743AA7C6B96592F3FF0DA40787ED59095B493928AD5A9B",
+      "PacketSourceChanged": false,
+      "EntryChars": 13282
+    },
+    {
+      "Path": "packages/shared/src/config/index.ts",
+      "PacketSourceSHA256": "B8027A3EB30F1EDC835C03B49168065306E11826E2D1DA4CBD9993081DD8FD89",
+      "CurrentSourceSHA256": "B8027A3EB30F1EDC835C03B49168065306E11826E2D1DA4CBD9993081DD8FD89",
+      "PacketSourceChanged": false,
+      "EntryChars": 2042
+    },
+    {
+      "Path": "packages/shared/src/db/repositories/media.ts",
+      "PacketSourceSHA256": "D95CA351289CFFA114B08DC7F2C62799CC7FBD9FB7FA3C13A0509BC6782A3826",
+      "CurrentSourceSHA256": "D95CA351289CFFA114B08DC7F2C62799CC7FBD9FB7FA3C13A0509BC6782A3826",
+      "PacketSourceChanged": false,
+      "EntryChars": 2392
+    },
+    {
+      "Path": "packages/shared/src/db/repositories/messages.ts",
+      "PacketSourceSHA256": "1FCB9EC5CD9B286FF2A23B16C8EC2D963D3D08FF384461C8A5122315585314CB",
+      "CurrentSourceSHA256": "1FCB9EC5CD9B286FF2A23B16C8EC2D963D3D08FF384461C8A5122315585314CB",
+      "PacketSourceChanged": false,
+      "EntryChars": 1311
+    },
+    {
+      "Path": "packages/shared/src/queue/runner.ts",
+      "PacketSourceSHA256": "E94AD9FB7D66C73D788E0747389E3974B946C9D5EECDA50D603E68819BB2DD6F",
+      "CurrentSourceSHA256": "E94AD9FB7D66C73D788E0747389E3974B946C9D5EECDA50D603E68819BB2DD6F",
+      "PacketSourceChanged": false,
+      "EntryChars": 2340
+    },
+    {
+      "Path": "packages/shared/src/queue/types.ts",
+      "PacketSourceSHA256": "8CA8DE43EC2930E4B3CC6CB375A7DB5C4A1153CE893675A32283544210460243",
+      "CurrentSourceSHA256": "8CA8DE43EC2930E4B3CC6CB375A7DB5C4A1153CE893675A32283544210460243",
+      "PacketSourceChanged": false,
+      "EntryChars": 5513
+    },
+    {
+      "Path": "packages/shared/src/validation/attachment.ts",
+      "PacketSourceSHA256": "55E88F00E05F357045A568B11B47EEA6BA813AAC5D9F7B477C8EEB9E39C80923",
+      "CurrentSourceSHA256": "478FF070F544D41EBE9B49E795DDB3448B6A797D243609BEC5B25CAB730E0709",
+      "PacketSourceChanged": true,
+      "EntryChars": 643
+    },
+    {
+      "Path": "packages/shared/src/validation/message.ts",
+      "PacketSourceSHA256": "30B4FB17CF82F2BD394F6081AEF8101B06E85ED8CC1F880C29D04B8A257F6BC2",
+      "CurrentSourceSHA256": "30B4FB17CF82F2BD394F6081AEF8101B06E85ED8CC1F880C29D04B8A257F6BC2",
+      "PacketSourceChanged": false,
+      "EntryChars": 465
+    },
+    {
+      "Path": "packages/shared/package.json",
+      "PacketSourceSHA256": "3C8AF956C6B43D97A4826DFE89B7D8C0ED4D6167F7A8C72946648F8A4BB2F4CC",
+      "CurrentSourceSHA256": "3C8AF956C6B43D97A4826DFE89B7D8C0ED4D6167F7A8C72946648F8A4BB2F4CC",
+      "PacketSourceChanged": false,
+      "EntryChars": 366
+    }
+  ]
+}

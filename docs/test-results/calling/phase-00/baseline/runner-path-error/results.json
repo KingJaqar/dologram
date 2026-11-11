@@ -1,0 +1,62 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm.cmd",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "G:\\codebase",
+    "status": "failed",
+    "exit_code": 4294963238,
+    "timeout_seconds": 180,
+    "seconds": 5.39
+  },
+  {
+    "name": "lint",
+    "command": [
+      "npm.cmd",
+      "run",
+      "lint",
+      "--workspace",
+      "@dologram/mobile"
+    ],
+    "cwd": "G:\\codebase",
+    "status": "failed",
+    "exit_code": 4294963238,
+    "timeout_seconds": 180,
+    "seconds": 5.62
+  },
+  {
+    "name": "shared",
+    "command": [
+      "npm.cmd",
+      "run",
+      "test",
+      "--workspace",
+      "@dologram/shared"
+    ],
+    "cwd": "G:\\codebase",
+    "status": "failed",
+    "exit_code": 4294963238,
+    "timeout_seconds": 180,
+    "seconds": 5.56
+  },
+  {
+    "name": "mobile",
+    "command": [
+      "npm.cmd",
+      "run",
+      "test",
+      "--workspace",
+      "@dologram/mobile",
+      "--",
+      "--runInBand"
+    ],
+    "cwd": "G:\\codebase",
+    "status": "failed",
+    "exit_code": 4294963238,
+    "timeout_seconds": 240,
+    "seconds": 5.62
+  }
+]

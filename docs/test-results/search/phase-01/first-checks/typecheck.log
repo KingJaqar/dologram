@@ -1,0 +1,39 @@
+
+> dologram@0.0.0 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @dologram/mobile@1.0.0 typecheck
+> tsc --noEmit
+
+src/search/__tests__/query.test.ts(174,47): error TS2352: Conversion of type 'string | number | boolean | SQLiteBindBlobValue | null' to type '(string | number)[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type '(string | number)[]': pop, push, concat, shift, and 6 more.
+src/search/__tests__/useMessageSearch.test.tsx(22,27): error TS2345: Argument of type '({ query, userId, chatId }: { query: any; userId: any; chatId: any; }) => { data: string | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }' is not assignable to parameter of type '(props: unknown) => { data: string | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }'.
+  Types of parameters '__0' and 'props' are incompatible.
+    Type 'unknown' is not assignable to type '{ query: any; userId: any; chatId: any; }'.
+src/search/__tests__/useMessageSearch.test.tsx(28,10): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(29,27): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(30,55): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(38,27): error TS2345: Argument of type '({ active }: { active: any; }) => { data: string | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }' is not assignable to parameter of type '(props: unknown) => { data: string | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }'.
+  Types of parameters '__0' and 'props' are incompatible.
+    Type 'unknown' is not assignable to type '{ active: any; }'.
+src/search/__tests__/useMessageSearch.test.tsx(41,10): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(44,10): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(49,43): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(71,27): error TS2345: Argument of type '({ allowedChatIds }: { allowedChatIds: any; }) => { data: {} | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }' is not assignable to parameter of type '(props: unknown) => { data: {} | null; error: "read" | "unavailable" | "timeout" | null; loading: boolean; retry: () => void; }'.
+  Types of parameters '__0' and 'props' are incompatible.
+    Type 'unknown' is not assignable to type '{ allowedChatIds: any; }'.
+src/search/__tests__/useMessageSearch.test.tsx(73,27): error TS18046: 'hook.result.current' is of type 'unknown'.
+src/search/__tests__/useMessageSearch.test.tsx(74,49): error TS18046: 'hook.result.current' is of type 'unknown'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --noEmit
+
+
+> @dologram/shared@0.0.0 typecheck
+> tsc --noEmit
+

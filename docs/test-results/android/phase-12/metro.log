@@ -1,0 +1,20 @@
+
+> @dologram/mobile@1.0.0 start
+> expo start --dev-client --localhost --port 8081 --max-workers 2
+
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+Starting project at G:\codebase\DoloGram\apps\mobile
+Logs: G:\codebase\DoloGram\apps\mobile\.expo\dev\logs\start.log
+› Port 8081 is being used by another process
+Input is required, but 'npx expo' is in non-interactive mode.
+Required input:
+> Use port 8084 instead?
+› Skipping dev server
+npm error Lifecycle script `start` failed with error:
+npm error code 1
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c expo start --dev-client --localhost --port 8081 --max-workers 2

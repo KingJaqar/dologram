@@ -1,0 +1,170 @@
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: apps/mobile/AGENTS.md, supabase/AGENTS.md, package.json, apps/mobile/package.json, packages/shared/package.json, apps/mobile/app.json, apps/mobile/jest.config.js, apps/mobile/src/search/query.ts, apps/mobile/src/search/__tests__/query.test.ts, apps/mobile/src/search/__tests__/SearchScreen.test.tsx, apps/mobile/src/components/SearchField.tsx, apps/mobile/app/search.tsx, apps/mobile/app/chat/*/search.tsx
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure>apps/
+  mobile/
+    app/
+      chat/
+        [chatId]/
+          search.tsx
+      search.tsx
+    src/
+      components/
+        SearchField.tsx
+      search/
+        __tests__/
+          query.test.ts
+          SearchScreen.test.tsx
+        query.ts
+    AGENTS.md
+    app.json
+    jest.config.js
+    package.json
+packages/
+  shared/
+    package.json
+supabase/
+  AGENTS.md
+package.json</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/mobile/app/chat/[chatId]/search.tsx">import React, { useEffect, useMemo, useState } from &apos;react&apos;;
+import { Pressable, ScrollView, StyleSheet, Text, View } from &apos;react-native&apos;;
+import { useLocalSearchParams, useRouter } from &apos;expo-router&apos;;
+import { strings } from &apos;@dologram/shared&apos;;
+import { SearchField } from &apos;../../../src/components/SearchField&apos;;
+import { TopBar } from &apos;../../../src/components/TopBar&apos;;
+import { EmptyState } from &apos;../../../src/components/EmptyState&apos;;
+import { Icon } from &apos;../../../src/components/Icon&apos;;
+import { useAuth } from &apos;../../../src/auth/AuthProvider&apos;;
+import { useTheme } from &apos;../../../src/theme/ThemeProvider&apos;;
+import { textStyle } from &apos;../../../src/theme/typography&apos;;
+import { goBackOrReplace } from &apos;../../../src/navigation/goBackOrReplace&apos;;
+import { getLocalDatabase } from &apos;../../../src/queue/db&apos;;
+import { loadChatSnapshot, type ChatMessageItem } from &apos;../../../src/chat/query&apos;;
+import { attachmentLabel } from &apos;../../../src/media/model&apos;;
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? &apos;&apos; : date.toLocaleDateString([], { month: &apos;short&apos;, day: &apos;numeric&apos; });
+}
+
+export default function ChatSearchScreen() {
+  const { chatId } = useLocalSearchParams&lt;{ chatId: string }&gt;();
+  const router = useRouter();
+  const theme = useTheme();
+  const c = theme.colors;
+  const { session } = useAuth();
+  const [messages, setMessages] = useState&lt;ChatMessageItem[]&gt;([]);
+  const [query, setQuery] = useState(&apos;&apos;);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    if (!chatId || !session?.user.id) return;
+    let active = true;
+    void getLocalDatabase().then((db) =&gt; loadChatSnapshot(db, chatId, session.user.id, { limit: 200 })).then((snapshot) =&gt; {
+      if (active) setMessages(snapshot.messages.filter((message) =&gt; message.deletedAt === null));
+    }).catch(() =&gt; undefined).finally(() =&gt; { if (active) setLoading(false); });
+    return () =&gt; { active = false; };
+  }, [chatId, session?.user.id]);
+
+  const matches = useMemo(() =&gt; {
+    const normalized = query.trim().toLocaleLowerCase();
+    if (!normalized) return [];
+    return messages.filter((message) =&gt; {
+      const content = `${message.senderName} ${message.content} ${message.attachments.map((item) =&gt; attachmentLabel(item.mediaType)).join(&apos; &apos;)}`;
+      return content.toLocaleLowerCase().includes(normalized);
+    }).reverse();
+  }, [messages, query]);
+
+  return (
+    &lt;View style={[styles.screen, { backgroundColor: c.bg.app }]}&gt;
+      &lt;TopBar title={strings.chatInfo.search} onBack={() =&gt; goBackOrReplace(router, { pathname: &apos;/chat/[chatId]/info&apos;, params: { chatId } })} /&gt;
+      &lt;View style={[styles.search, { padding: theme.space[4] }]}&gt;&lt;SearchField placeholder=&quot;Search this chat&quot; onSearch={setQuery} /&gt;&lt;/View&gt;
+      {loading ? &lt;Text style={[textStyle(theme.typeTokens.bodyMd), styles.message, { color: c.text.secondary }]}&gt;Loading messages…&lt;/Text&gt; : query.trim().length === 0 ? &lt;EmptyState iconName=&quot;action.search&quot; title=&quot;Search this chat&quot; message=&quot;Find messages, files and shared moments.&quot; /&gt; : matches.length === 0 ? &lt;EmptyState iconName=&quot;action.search&quot; title=&quot;No results&quot; message=&quot;Try a different word or phrase.&quot; /&gt; : (
+        &lt;ScrollView keyboardShouldPersistTaps=&quot;handled&quot;&gt;
+          {matches.map((message) =&gt; &lt;SearchResult key={message.messageId} message={message} onPress={() =&gt; router.replace({ pathname: &apos;/chat/[chatId]&apos;, params: { chatId, focusMessageId: message.messageId } })} /&gt;)}
+        &lt;/ScrollView&gt;
+      )}
+    &lt;/View&gt;
+  );
+}
+
+function SearchResult({ message, onPress }: { message: ChatMessageItem; onPress: () =&gt; void }) {
+  const theme = useTheme();
+  const c = theme.colors;
+  const summary = message.content || (message.attachments[0] ? attachmentLabel(message.attachments[0].mediaType) : strings.chat.attachmentOnly);
+  return (
+    &lt;Pressable style={({ pressed }) =&gt; [styles.result, pressed &amp;&amp; { backgroundColor: c.bg.pressed }]} onPress={onPress} accessibilityRole=&quot;button&quot; accessibilityLabel={`${message.senderName || &apos;You&apos;}: ${summary}`}&gt;
+      &lt;View style={[styles.resultIcon, { backgroundColor: c.bg.surface }]}&gt;&lt;Icon name={message.attachments.length &gt; 0 ? &apos;action.file&apos; : &apos;action.search&apos;} size=&quot;sm&quot; color={c.text.primary} accessibilityLabel=&quot;&quot; /&gt;&lt;/View&gt;
+      &lt;View style={styles.resultBody}&gt;&lt;Text style={[textStyle(theme.typeTokens.labelMd), { color: c.text.primary }]}&gt;{message.senderName || &apos;You&apos;} · {formatDate(message.createdAt)}&lt;/Text&gt;&lt;Text style={[textStyle(theme.typeTokens.bodyMd), { color: c.text.secondary }]} numberOfLines={2}&gt;{summary}&lt;/Text&gt;&lt;/View&gt;
+      &lt;Icon name=&quot;nav.forward&quot; size=&quot;sm&quot; color={c.text.muted} accessibilityLabel=&quot;&quot; /&gt;
+    &lt;/Pressable&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  search: { borderBottomWidth: StyleSheet.hairlineWidth },
+  message: { padding: 20 },
+  result: { minHeight: 72, flexDirection: &apos;row&apos;, alignItems: &apos;center&apos;, gap: 12, paddingHorizontal: 16, paddingVertical: 10 },
+  resultIcon: { width: 40, height: 40, borderRadius: 20, alignItems: &apos;center&apos;, justifyContent: &apos;center&apos; },
+  resultBody: { flex: 1, gap: 3 },
+});</file><file path="apps/mobile/app/search.tsx">import React, { useCallback, useEffect, useMemo, useRef, useState } from &apos;react&apos;;
+import {
+  ActivityIndicator, Animated, Easing, Keyboard, Pressable, SectionList, StyleSheet, Text, View,
+  useWindowDimensions, type TextInput,
+} from &apos;react-native&apos;;
+import { useFocusEffect, useLocalSearchParams, useRouter } from &apos;expo-router&apos;;
+import { useSafeAreaInsets } from &apos;react-native-safe-area-context&apos;;
+import type { ChatListItem } from &apos;@dologram/shared&apos;;
+import { useAuth } from &apos;../src/auth/AuthProvider&apos;;
+import { useChatList } from &apos;../src/chatList/useChatList&apos;;
+import { Button, IconButton } from &apos;../src/components/Button&apos;;
+import { ChatRow } from &apos;../src/components/ChatRow&apos;;
+import { EmptyState, ErrorState } from &apos;../src/components/EmptyState&apos;;
+import { SearchField } from &apos;../src/components/SearchField&apos;;
+import { goBackOrReplace } from &apos;../src/navigation/goBackOrReplace&apos;;
+import { getLocalDatabase } from &apos;../src/queue/db&apos;;
+import { normalizeSearch, searchCachedMessages, type MessageMatch, type SearchCursor } from &apos;../src/search/query&apos;;
+import { subscribeCacheChange } from &apos;../src/sync/cacheEvents&apos;;
+import { useTheme } from &apos;../src/theme/ThemeProvider&apos;;
+import { textStyle } from &apos;../src/theme/typography&apos;;
+
+const SEARCH_BUTTON_WIDTH = 44;
+
+export default function SearchScreen() {
+  const { session } = useAuth();
+  return session ? &lt;AccountSearch key={session.user.id} userId={session.user.id} /&gt; : null;
+}
+
+function AccountSearch({ userId }: { userId: string }) {
+  const theme = useTheme();
+  const router = useRouter();
+  const { originX } = useLocalSearchParams&lt;{ originX?: string }&gt;();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const origin = Number(originX);
+  const canExpand = Number.isFinite(origin) &amp;&amp; !theme.reduceMotion;
+  const progress = useRef(new Animated.Value(canExpand ? 0 : 1)).current;
+  const input = useRef&lt;TextInput&gt;(null);
+  const opening = useRef(false);
+  const [query, setQuery] = useState(&apos;&apos;);
+  const normalized = normalizeSearch(query);
+  const { active, archived, ignored, loading, error, reload } = useChatList();
+  const chats = useMemo(() =&gt; [...active, ...archived, ...ignored], [active, archived, ignored]);

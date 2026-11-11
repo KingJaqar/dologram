@@ -1,0 +1,11 @@
+Networking has been disabled
+Starting project at G:\codebase\DoloGram\docs\test-results\search\phase-00\runtime-app
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+
+Waiting on http://localhost:8084
+
+Logs for your project will appear below.
+Android Bundled 16295ms index.tsx (692 modules)
+Android Bundled 2332ms index.tsx (1 module)
+Android Bundled 14536ms index.tsx (818 modules)

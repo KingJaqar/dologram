@@ -1,0 +1,81 @@
+# Calling Phase 1 execution result
+
+2026-11-11, Asia/Manila. **Partially complete: offline Phase 1 implementation is
+authored; the isolated-target V1 gate is pending.** The current Phase 1 authoring
+progress is 70%. Verified calling-plan progress remains 11% because the plan only
+credits a phase item after its live acceptance evidence is complete.
+
+## Changed
+
+- Added migration `029_calling_state_and_authorization.sql` with:
+  - public `calls` and `call_participants` rows, participant-only SELECT RLS, safe
+    Realtime publication membership, lifecycle invariants and history indexes;
+  - private reservations, opaque room/admission state, action idempotency, rate
+    windows, settings, webhook metadata, and deletion-safe cleanup/reconcile jobs;
+  - service-role-only create/transition/snapshot/admission/provisioning/reconcile/
+    worker/cleanup RPCs;
+  - deterministic UUID lock ordering, bounded deadlines/backoff, session binding,
+    epoch fencing, no-reopen terminal transitions, and Auth eligibility checks for
+    `banned_until`, `deleted_at`, and `raw_app_meta_data.must_change_password`;
+  - `call_worker_tick` for due expiry/duration/access-loss scans and fenced job
+    claims. It performs no provider HTTP work.
+- Added shared `calls` types, strict cursor history repository, exports, and public
+  database table/function contract entries.
+- Added `supabase/tests/calling_phase_1.sql` and the two-session
+  `calling_concurrency.sql` procedure.
+- Added [scheduler.md](phase-01/scheduler.md) with the target-only Cron,
+  Vault, disable, and timing-measurement procedure.
+- Added a secret-free baseline and scoped XML packet under
+  [phase-01 context](phase-01/context.xml).
+
+No new package dependency was added. No Expo/React Native code was touched, so the
+Expo v57 documentation gate was not triggered for this phase.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Passed, mobile and shared workspaces. |
+| `npm run test --workspace @dologram/shared` | Passed: 19 files, 147 tests. Existing Vite CommonJS/ESM config warning remains. |
+| `npm run lint --workspace @dologram/mobile` baseline | Pre-existing failure: 13 errors and 3 warnings in unrelated mobile files; no mobile file changed. |
+| Repomix 1.18.1 scoped packet/security scan | Passed: 53 intended files, no suspicious files, XML written and parsed; token-cache persistence hit sandbox EPERM after output generation. |
+| Supabase target inventory | Read-only only: DoloGram is shared/non-isolated, migration 028, Postgres 17.11, pg_cron/pg_net/Vault installed, no development branches. |
+| SQL V1 test | Not run: no disposable migrated target; the only known target must not be mutated. |
+| Target-generated shared types | Not run: requires applying 029 to a disposable target. |
+| Cron install/budget measurement | Not run: requires target-only scheduler configuration and Phase 2 worker. |
+
+## Acceptance criteria
+
+- CALL-03: **Partially met.** SQL transition/deadline/idempotency paths are
+  authored; live state-machine/race proof is pending V1.
+- CALL-04: **Partially met.** Ordered reservations, unique request replay and
+  busy history are implemented; two-session proof is pending.
+- CALL-05: **Partially met.** Service-only grants, participant RLS, membership,
+  Auth restriction and deletion fencing are authored; direct role attacks are
+  pending live SQL execution.
+- CALL-06: **Partially met.** Admission leases, epoch checks, token nbf/exp
+  recording and terminal invalidation are authored; provider/token admission is
+  Phase 2 and live DB verification is pending.
+- CALL-11: **Partially met.** Bounded due scans, claims, backoff and duration cap
+  are authored; lost-event/provider recovery is Phase 2 and timing evidence is
+  pending.
+- CALL-12: **Partially met.** Server-backed public call rows and strict tuple
+  history access are implemented; generated target types and SQL access proof are
+  pending.
+- CALL-17: **Partially met.** Server flags, rate windows and bounded limits are
+  implemented; measured healthy-service budgets and provider quota behavior are
+  later verification.
+
+## Remaining and out of scope
+
+- Blocker: a disposable Supabase target/branch is needed to apply 029, run V1
+  security/concurrency/deletion tests, run advisors, and regenerate
+  `database.types.ts`. Creating a branch may incur external cost and was not
+  authorized here.
+- The current shared DoloGram project was inspected but not changed. No remote
+  migration, scheduler, secret, deployment, or data fixture was touched.
+- Phase 2 remains out of scope: LiveKit SDK calls, provider webhooks, token
+  signing, cleanup HTTP, and Edge Functions were not started.
+- The migration restore strategy is nondestructive: keep 029 applied on the
+  disposable target, use rollback by disabling calling/scheduler flags and retain
+  rows/jobs; do not destructively roll back applied schema.

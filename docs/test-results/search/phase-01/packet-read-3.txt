@@ -1,0 +1,195 @@
+const listeners = new Set<() => void>();
+
+export function subscribeQueueChange(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function notifyQueueChange(): void {
+  for (const listener of listeners) listener();
+}
+
+export type ForwardOutcome = { userId: string; messageId: string; status: 'sent' | 'failed' };
+const outcomeListeners = new Set<(outcome: ForwardOutcome) => void>();
+export function subscribeForwardOutcome(listener: (outcome: ForwardOutcome) => void): () => void {
+  outcomeListeners.add(listener);
+  return () => { outcomeListeners.delete(listener); };
+}
+export function notifyForwardOutcome(outcome: ForwardOutcome): void {
+  for (const listener of outcomeListeners) listener(outcome);
+}
+SOURCE apps/mobile/src/search/__tests__/query.test.ts
+import { DatabaseSync } from 'node:sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
+import { normalizeSearch, searchCachedMessages } from '../query';
+
+let sqlite: DatabaseSync;
+let db: SQLiteDatabase;
+
+beforeEach(() => {
+  sqlite = new DatabaseSync(':memory:');
+  sqlite.exec(`
+    CREATE TABLE cache_messages (
+      message_id TEXT PRIMARY KEY, chat_id TEXT, sender_id TEXT, seq INTEGER,
+      created_at TEXT, deleted_at TEXT, payload TEXT
+    );
+    CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, nickname TEXT);
+    CREATE TABLE cache_profiles (user_id TEXT, display_name TEXT);
+    CREATE TABLE cache_message_media (message_id TEXT, payload TEXT);
+    INSERT INTO cache_chat_members VALUES ('chat', 'me', NULL), ('chat', 'other', 'José');
+  `);
+  db = {
+    getAllAsync: async (sql: string, params: string[]) => sqlite.prepare(sql).all(...params),
+  } as unknown as SQLiteDatabase;
+});
+
+afterEach(() => sqlite.close());
+
+function addMessage(id: string, content: string, options: {
+  chatId?: string; senderId?: string; deleted?: boolean; seq?: number;
+} = {}) {
+  sqlite.prepare('INSERT INTO cache_messages VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+    id, options.chatId ?? 'chat', options.senderId ?? 'me', options.seq ?? 1,
+    '2026-11-11T00:00:00Z', options.deleted ? '2026-11-11T01:00:00Z' : null,
+    JSON.stringify({ content }),
+  );
+}
+
+function search(query: string, cursor: Parameters<typeof searchCachedMessages>[4] = null) {
+  return searchCachedMessages(db, 'me', '["chat"]', normalizeSearch(query), cursor, new AbortController().signal);
+}
+
+test('searches beyond the newest 200 rows and preserves tied-date pagination', async () => {
+  for (let index = 0; index < 260; index++) {
+    addMessage(String(index).padStart(3, '0'), index < 35 ? 'Needle' : 'Unrelated');
+  }
+  const first = await search('needle');
+  expect(first.matches).toHaveLength(30);
+  expect(first.matches[0].messageId).toBe('034');
+  expect(first.next).toBeTruthy();
+  const second = await search('needle', first.next);
+  expect(second.matches).toHaveLength(5);
+  expect(second.next).toBeNull();
+  expect(new Set([...first.matches, ...second.matches].map((message) => message.messageId)).size).toBe(35);
+});
+
+test('excludes deleted messages, other accounts, and hidden conversations', async () => {
+  addMessage('valid', 'needle');
+  addMessage('deleted', 'needle', { deleted: true });
+  addMessage('foreign', 'needle', { chatId: 'foreign' });
+  sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, NULL)').run('foreign', 'someone-else');
+  addMessage('hidden', 'needle', { chatId: 'hidden' });
+  sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, NULL)').run('hidden', 'me');
+  const result = await searchCachedMessages(db, 'me', '["chat","foreign"]', 'needle', null, new AbortController().signal);
+  expect(result.matches.map((message) => message.messageId)).toEqual(['valid']);
+});
+
+test('normalizes Unicode and treats SQL metacharacters literally', async () => {
+  addMessage('unicode', 'ＣＡＦÉ');
+  addMessage('literal', "100%_ ' OR 1=1 --");
+  expect((await search('café')).matches.map((message) => message.messageId)).toEqual(['unicode']);
+  expect((await search("%_ ' OR 1=1 --")).matches.map((message) => message.messageId)).toEqual(['literal']);
+});
+
+test('matches sender nicknames and live attachment types', async () => {
+  addMessage('nickname', 'hello', { senderId: 'other' });
+  addMessage('file', '');
+  addMessage('removed-file', '');
+  sqlite.prepare('INSERT INTO cache_message_media VALUES (?, ?)').run('file', JSON.stringify({ media_type: 'file', deleted_at: null }));
+  sqlite.prepare('INSERT INTO cache_message_media VALUES (?, ?)').run('removed-file', JSON.stringify({ media_type: 'file', deleted_at: '2026-11-11' }));
+  expect((await search('josé')).matches.map((message) => message.messageId)).toEqual(['nickname']);
+  const files = await search('file');
+  expect(files.matches.map((message) => message.messageId)).toEqual(['file']);
+  expect(files.matches[0].preview).toBe('File');
+});
+
+test('stops a cancelled search and returns no matches for an empty query', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const getAll = jest.spyOn(db, 'getAllAsync');
+  await searchCachedMessages(db, 'me', '["chat"]', 'hello', null, controller.signal);
+  await search('');
+  expect(getAll).not.toHaveBeenCalled();
+});
+SOURCE apps/mobile/src/search/__tests__/SearchScreen.test.tsx
+import React from 'react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import type { ChatListItem } from '@dologram/shared';
+import SearchScreen from '../../../app/search';
+import { searchCachedMessages, type MessageMatch } from '../query';
+
+const mockRouter = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true };
+const mockChats = [{
+  chatId: 'chat', title: 'White', preview: 'Hello', timeLabel: '', sortMs: 0,
+  unreadCount: 0, muted: false, isGroup: false, pinned: false, savedMessages: false,
+  avatarId: 'other', avatarName: 'White', ownStatus: null, archived: false, accessibilityLabel: 'White',
+}] satisfies ChatListItem[];
+
+jest.mock('expo-router', () => ({
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => ({}),
+  useFocusEffect: (callback: () => void) => jest.requireActual('react').useEffect(callback, [callback]),
+}));
+jest.mock('../../auth/AuthProvider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
+jest.mock('../../theme/ThemeProvider', () => ({
+  useTheme: () => {
+    const tokens = jest.requireActual('@dologram/shared');
+    return { ...tokens, colors: tokens.color.light, duration: () => 0, reduceMotion: true };
+  },
+}));
+jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
+jest.mock('../../chatList/useChatList', () => ({
+  useChatList: () => ({ active: mockChats, archived: [], ignored: [], loading: false, error: false, reload: jest.fn() }),
+}));
+jest.mock('../../queue/db', () => ({ getLocalDatabase: async () => ({}) }));
+jest.mock('../../components/Icon', () => ({ Icon: () => null }));
+jest.mock('../../components/Avatar', () => ({ Avatar: () => null }));
+jest.mock('../query', () => ({ ...jest.requireActual('../query'), searchCachedMessages: jest.fn() }));
+
+const match: MessageMatch = {
+  chatId: 'chat', messageId: 'message', sender: 'You',
+  preview: 'Hello from history', createdAt: '2026-11-11T00:00:00Z',
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.mocked(searchCachedMessages).mockResolvedValue({ matches: [match], next: null });
+});
+
+test('filters conversations, clears immediately, and opens the selected chat', async () => {
+  const screen = render(<SearchScreen />);
+  const input = screen.getByPlaceholderText('Search chats and messages');
+  fireEvent.changeText(input, 'white');
+  expect(screen.getByText('White')).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
+  expect(input.props.value).toBe('');
+  expect(screen.getByText('Search DoloGram')).toBeTruthy();
+  fireEvent.changeText(input, 'white');
+  fireEvent.press(screen.getByRole('button', { name: 'White' }));
+  expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/chat/[chatId]', params: { chatId: 'chat' } });
+  await act(async () => undefined);
+});
+
+test('opens a message result with its focus target and preserves search on the back stack', async () => {
+  const screen = render(<SearchScreen />);
+  fireEvent.changeText(screen.getByPlaceholderText('Search chats and messages'), 'hello');
+  await waitFor(() => expect(screen.getByText(match.preview)).toBeTruthy());
+  fireEvent.press(screen.getByText(match.preview));
+  expect(mockRouter.push).toHaveBeenCalledWith({
+    pathname: '/chat/[chatId]', params: { chatId: 'chat', focusMessageId: 'message' },
+  });
+});
+
+test('drops results from a previous query and retries a failed search', async () => {
+  let resolveOld!: (page: { matches: MessageMatch[]; next: null }) => void;
+  jest.mocked(searchCachedMessages).mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }));
+  const screen = render(<SearchScreen />);
+  const input = screen.getByPlaceholderText('Search chats and messages');
+  fireEvent.changeText(input, 'old');
+  await waitFor(() => expect(searchCachedMessages).toHaveBeenCalledTimes(1));
+  jest.mocked(searchCachedMessages).mockRejectedValueOnce(new Error('database unavailable'));
+  fireEvent.changeText(input, 'new');
+  await act(async () => { resolveOld({ matches: [{ ...match, preview: 'Stale result' }], next: null }); });
+  await waitFor(() => expect(screen.getByText("Couldn't search messages.")).toBeTruthy());
+  expect(screen.queryByText('Stale result')).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'Retry' }));

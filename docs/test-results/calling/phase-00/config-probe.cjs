@@ -1,0 +1,13 @@
+const assert = require('node:assert/strict');
+const { resolve } = require('node:path');
+const base = resolve(__dirname, '../../../../.tmp/calling-phase00/vendor') + '/';
+const webrtc = require(base + 'config-plugins--react-native-webrtc/build/withWebRTC.js').default;
+const livekit = require(base + 'livekit--react-native-expo-plugin/plugin/build/index.js').default;
+let config = {name:'phase-zero',slug:'phase-zero',android:{},ios:{}};
+config = webrtc(config, {cameraPermission:'DoloGram uses your camera for video calls.',microphonePermission:'DoloGram uses your microphone for calls.'});
+config = livekit(config, {android:{audioType:'communication',enableScreenShareService:false}});
+assert(config.android.permissions.includes('android.permission.CAMERA'));
+assert(config.android.permissions.includes('android.permission.RECORD_AUDIO'));
+assert(config.mods.android.manifest);
+assert(config.mods.ios.infoPlist);
+console.log(JSON.stringify({status:'passed',androidPermissions:config.android.permissions,androidMods:Object.keys(config.mods.android),iosMods:Object.keys(config.mods.ios)},null,2));

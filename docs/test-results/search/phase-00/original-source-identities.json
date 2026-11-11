@@ -1,0 +1,62 @@
+[
+  {
+    "path": "apps/mobile/src/chatList/useChatList.ts",
+    "sha256": "ae45a78c34f3e201a3dd46f2b18710492b5ae22e091eb76b27576ac7f2e005bd"
+  },
+  {
+    "path": "apps/mobile/src/chats/infoQuery.ts",
+    "sha256": "33f58e3e54710b0351e34609235fce315c02841c1c2ccfd9e4b71275f7896691"
+  },
+  {
+    "path": "apps/mobile/src/chats/directChat.ts",
+    "sha256": "becc55a84fadf155020cef4c13e7a0e3c22bea75fd478a7be271f847b3654336"
+  },
+  {
+    "path": "apps/mobile/src/chat/query.ts",
+    "sha256": "63bab823c9c23053f442da2bfccfecba630e9d5f0845d5f8db6c44f9070a77aa"
+  },
+  {
+    "path": "apps/mobile/src/calls/media.ts",
+    "sha256": "0d70060f1c4f3e1c4fcbf2121fff8d2d16cac6a1659ae03f8eac2bae5edda778"
+  },
+  {
+    "path": "apps/mobile/src/storage/localData.ts",
+    "sha256": "1ee6e0ba8c929a9d29cca3551029dbaf7ac634af8f7064adcfa4d777ee866a44"
+  },
+  {
+    "path": "apps/mobile/src/components/MainHeader.tsx",
+    "sha256": "b1c2b4e6678328f0b8d37182f750797c15c91069cad2c45a8657301b6426754c"
+  },
+  {
+    "path": "apps/mobile/app/forward.tsx",
+    "sha256": "45cedb863860d8104884e16492204eb10ceac60cff014bb0c623bb3fb027d9db"
+  },
+  {
+    "path": "apps/mobile/app/chat/[chatId]/info.tsx",
+    "sha256": "9a82a3672ed83cd6b9507d863da9fe4c3750630dbf6613571dd98db230d2bdb8"
+  },
+  {
+    "path": "apps/mobile/app/chat/[chatId]/pinned.tsx",
+    "sha256": "6bdacce75f59a747445698fa7d7f91321e85b444c79ae04b6ec51caba2ff92c4"
+  },
+  {
+    "path": "apps/mobile/src/chats/preferences.ts",
+    "sha256": "680e5b8a271ce1b27d2e5fb1a8b530fb34608921897380d7abaffc7e6f505228"
+  },
+  {
+    "path": "apps/mobile/app/_layout.tsx",
+    "sha256": "83c0a6e9c0953ee856aebbe1ea21c13cf58340ba24680171a3c690f6a23c376d"
+  },
+  {
+    "path": "apps/mobile/src/lib/supabase.ts",
+    "sha256": "96da2fca6f6b024bddfcfb8640a27f0cfcfc78334c9b76d11be49f91deb26ad2"
+  },
+  {
+    "path": "packages/shared/src/index.ts",
+    "sha256": "d21e74893a9340bb0388797d1df6ad99d918fb4c311efb5a415088048fac391e"
+  },
+  {
+    "path": "packages/shared/src/db/client.ts",
+    "sha256": "c447584299a6575a1fccce484b5119ae457e47c11767caab235bbe0cbe49bb08"
+  }
+]

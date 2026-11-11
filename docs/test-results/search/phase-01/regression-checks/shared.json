@@ -1,0 +1,18 @@
+{
+  "name": "shared",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/shared",
+    "run",
+    "test"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 46948,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 300,
+  "seconds": 4.1,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-01\\regression-checks\\shared.log"
+}

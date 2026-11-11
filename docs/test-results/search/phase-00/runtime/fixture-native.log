@@ -1,0 +1,7 @@
+E/ReactNativeJS(31692): [TypeError: Function is not a constructor]
+W/ReactNativeJS(31692): 'Failed to initialize devtools client', [TypeError: Function is not a constructor]
+I/ReactNativeJS(31692): 'DG_SEARCH_PHASE00_RESULT', '{"fixture":"260 synthetic rows / 35 older-than-latest-200 matches","nativeDatabase":[{"seq":0,"name":"main","file":""}],"networkFenceVerified":true,"firstPageMs":279.6907590031624,"totalMs":284.4697650000453,"deliveredMatches":35,"batches":[{"rows":200,"milliseconds":100.46699300408363},{"rows":60,"milliseconds":166.77784600108862},{"rows":5,"milliseconds":4.533769994974136}],"cancelledReadCount":0}'
+E/ReactNativeJS(31692): [TypeError: Function is not a constructor]
+E/ReactNativeJS(31692): [TypeError: Function is not a constructor]
+E/ReactNativeJS(31692): [TypeError: Function is not a constructor]
+E/ReactNativeJS(31692): [TypeError: Function is not a constructor]

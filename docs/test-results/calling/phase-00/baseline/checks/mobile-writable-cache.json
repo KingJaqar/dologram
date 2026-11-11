@@ -1,0 +1,9 @@
+{
+  "status": "timed_out",
+  "timeout_seconds": 180,
+  "suites_printing_pass": 10,
+  "complete_suite_result": false,
+  "cache": "G:/codebase/DoloGram/.tmp/calling-phase00/jest-cache",
+  "cleanup": "taskkill denied in sandbox; wrapper wait also timed out; subsequent elevated process inventory showed no matching task process",
+  "command": "npm run test --workspace @dologram/mobile -- --runInBand --cacheDirectory=G:/codebase/DoloGram/.tmp/calling-phase00/jest-cache"
+}

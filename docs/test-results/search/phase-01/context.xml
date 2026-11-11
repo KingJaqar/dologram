@@ -1,0 +1,1075 @@
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: apps/mobile/AGENTS.md, apps/mobile/package.json, package.json, apps/mobile/src/search/query.ts, apps/mobile/src/search/__tests__/query.test.ts, apps/mobile/src/components/SearchField.tsx, apps/mobile/src/search/__tests__/SearchScreen.test.tsx, apps/mobile/src/chats/infoQuery.ts, packages/shared/src/chats/contacts.ts, packages/shared/src/chats/direct.ts, packages/shared/src/queue/types.ts, apps/mobile/src/queue/events.ts, apps/mobile/src/sync/cacheEvents.ts, apps/mobile/src/chatList/preferences.ts, apps/mobile/src/chats/preferences.ts
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style</notes></file_summary><directory_structure>apps/
+  mobile/
+    src/
+      chatList/
+        preferences.ts
+      chats/
+        infoQuery.ts
+        preferences.ts
+      components/
+        SearchField.tsx
+      queue/
+        events.ts
+      search/
+        __tests__/
+          query.test.ts
+          SearchScreen.test.tsx
+        query.ts
+      sync/
+        cacheEvents.ts
+    AGENTS.md
+    package.json
+packages/
+  shared/
+    src/
+      chats/
+        contacts.ts
+        direct.ts
+      queue/
+        types.ts
+package.json</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/mobile/src/chatList/preferences.ts">import AsyncStorage from &apos;@react-native-async-storage/async-storage&apos;;
+import { notifyCacheChange } from &apos;../sync/cacheEvents&apos;;
+
+/** Per-account, per-device organization; server read receipts remain monotonic. */
+export type ChatListPreferences = {
+  pinned: string[];
+  ignored: string[];
+  unread: string[];
+  deleted: string[];
+};
+export type ChatListPreference = keyof ChatListPreferences;
+const STORAGE_KEY = &apos;dg.chatListPreferences&apos;;
+let writes: Promise&lt;unknown&gt; = Promise.resolve();
+
+function normalize(value: unknown): ChatListPreferences {
+  const record = value &amp;&amp; typeof value === &apos;object&apos; ? value as Record&lt;string, unknown&gt; : {};
+  const ids = (key: ChatListPreference): string[] =&gt; Array.isArray(record[key])
+    ? record[key].filter((id): id is string =&gt; typeof id === &apos;string&apos;) : [];
+  return { pinned: ids(&apos;pinned&apos;), ignored: ids(&apos;ignored&apos;), unread: ids(&apos;unread&apos;), deleted: ids(&apos;deleted&apos;) };
+}
+
+async function readAll(): Promise&lt;Record&lt;string, unknown&gt;&gt; {
+  const value = await AsyncStorage.getItem(STORAGE_KEY);
+  if (!value) return {};
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return parsed &amp;&amp; typeof parsed === &apos;object&apos; &amp;&amp; !Array.isArray(parsed) ? parsed as Record&lt;string, unknown&gt; : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function loadChatListPreferences(userId: string): Promise&lt;ChatListPreferences&gt; {
+  await writes;
+  return normalize((await readAll())[userId]);
+}
+
+/** Serialize read/modify/write so actions from mounted screens cannot overwrite each other. */
+export function updateChatListPreferences(
+  userId: string,
+  chatId: string,
+  patch: Partial&lt;Record&lt;ChatListPreference, boolean&gt;&gt;,
+): Promise&lt;ChatListPreferences&gt; {
+  const operation = writes.then(async () =&gt; {
+    const all = await readAll();
+    const current = normalize(all[userId]);
+    let changed = false;
+    for (const key of Object.keys(patch) as ChatListPreference[]) {
+      const ids = new Set(current[key]);
+      if (ids.has(chatId) === patch[key]) continue;
+      if (patch[key]) ids.add(chatId);
+      else ids.delete(chatId);
+      current[key] = [...ids];
+      changed = true;
+    }
+    if (changed) {
+      all[userId] = current;
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      notifyCacheChange();
+    }
+    return current;
+  });
+  writes = operation.catch(() =&gt; {});
+  return operation;
+}
+
+export function setChatListPreference(userId: string, chatId: string, preference: ChatListPreference, enabled: boolean) {
+  return updateChatListPreferences(userId, chatId, { [preference]: enabled });
+}</file><file path="apps/mobile/src/chats/infoQuery.ts">/**
+ * Cache reads for AND-12 (M2-07, D-44, D-91).
+ *
+ * Chat info renders from the synced local cache, so opening it does not depend on the network. The
+ * rows are stored as the server JSON (6.4); a malformed payload is skipped rather than thrown.
+ */
+import type { SQLiteDatabase } from &apos;expo-sqlite&apos;;
+import type { ChatMemberRow, ChatRow, ProfileRow } from &apos;@dologram/shared&apos;;
+
+export type ChatInfoSource = {
+  chat: ChatRow | null;
+  members: ChatMemberRow[];
+  profiles: ProfileRow[];
+};
+
+function parsePayload&lt;T&gt;(payload: string | null): T | null {
+  if (payload === null) return null;
+  try {
+    const parsed: unknown = JSON.parse(payload);
+    return typeof parsed === &apos;object&apos; &amp;&amp; parsed !== null ? (parsed as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function loadChatInfoSource(
+  db: SQLiteDatabase,
+  chatId: string,
+): Promise&lt;ChatInfoSource&gt; {
+  const chatRow = await db.getFirstAsync&lt;{ payload: string }&gt;(
+    &apos;SELECT payload FROM cache_chats WHERE chat_id = ?&apos;,
+    [chatId],
+  );
+  const chat = parsePayload&lt;ChatRow&gt;(chatRow?.payload ?? null);
+
+  const memberRows = await db.getAllAsync&lt;{ payload: string }&gt;(
+    &apos;SELECT payload FROM cache_chat_members WHERE chat_id = ?&apos;,
+    [chatId],
+  );
+  const members: ChatMemberRow[] = [];
+  for (const row of memberRows) {
+    const member = parsePayload&lt;ChatMemberRow&gt;(row.payload);
+    if (member) members.push(member);
+  }
+
+  const profiles: ProfileRow[] = [];
+  if (members.length &gt; 0) {
+    const placeholders = members.map(() =&gt; &apos;?&apos;).join(&apos;, &apos;);
+    const profileRows = await db.getAllAsync&lt;{ payload: string }&gt;(
+      `SELECT payload FROM cache_profiles WHERE user_id IN (${placeholders})`,
+      members.map((member) =&gt; member.user_id),
+    );
+    for (const row of profileRows) {
+      const profile = parsePayload&lt;ProfileRow&gt;(row.payload);
+      if (profile) profiles.push(profile);
+    }
+  }
+
+  return { chat, members, profiles };
+}
+
+export type CachedContactRow = { user_id: string; display_name: string | null };
+
+/**
+ * Every other member of every cached chat: the people the caller already shares a chat with, which
+ * is exactly who D-70 lets the caller put into a group.
+ */
+export async function loadCachedContacts(db: SQLiteDatabase, userId: string): Promise&lt;CachedContactRow[]&gt; {
+  return db.getAllAsync&lt;CachedContactRow&gt;(
+    `SELECT DISTINCT m.user_id AS user_id, p.display_name AS display_name
+       FROM cache_chat_members m
+       LEFT JOIN cache_profiles p ON p.user_id = m.user_id
+      WHERE m.user_id &lt;&gt; ?`,
+    [userId],
+  );
+}</file><file path="apps/mobile/src/chats/preferences.ts">import AsyncStorage from &apos;@react-native-async-storage/async-storage&apos;;
+
+export type ChatThemeName = &apos;default&apos; | &apos;ocean&apos; | &apos;mint&apos; | &apos;sunset&apos; | &apos;violet&apos;;
+
+export type ChatPreferences = {
+  nickname: string;
+  theme: ChatThemeName;
+  emoji: string;
+  notifications: boolean;
+  sounds: boolean;
+  blocked: boolean;
+};
+
+export const CHAT_THEME_OPTIONS: readonly {
+  id: ChatThemeName;
+  label: string;
+  color: string;
+}[] = [
+  { id: &apos;default&apos;, label: &apos;Default&apos;, color: &apos;#EDE8D0&apos; },
+  { id: &apos;ocean&apos;, label: &apos;Ocean&apos;, color: &apos;#168AAD&apos; },
+  { id: &apos;mint&apos;, label: &apos;Mint&apos;, color: &apos;#2A9D8F&apos; },
+  { id: &apos;sunset&apos;, label: &apos;Sunset&apos;, color: &apos;#E76F51&apos; },
+  { id: &apos;violet&apos;, label: &apos;Violet&apos;, color: &apos;#9B5DE5&apos; },
+];
+
+export const CHAT_EMOJI_OPTIONS = [&apos;👍&apos;, &apos;❤️&apos;, &apos;😂&apos;, &apos;😮&apos;, &apos;😢&apos;, &apos;😡&apos;, &apos;🔥&apos;, &apos;✨&apos;] as const;
+
+export const DEFAULT_CHAT_PREFERENCES: ChatPreferences = {
+  nickname: &apos;&apos;,
+  theme: &apos;default&apos;,
+  emoji: &apos;👍&apos;,
+  notifications: true,
+  sounds: true,
+  blocked: false,
+};
+
+export const PINNED_MESSAGES_KEY = &apos;dg.pinnedMessages&apos;;
+
+function storageKey(userId: string, chatId: string): string {
+  return `dg.chatPreferences:${userId}:${chatId}`;
+}
+
+function isTheme(value: unknown): value is ChatThemeName {
+  return CHAT_THEME_OPTIONS.some((option) =&gt; option.id === value);
+}
+
+function parsePreferences(value: string | null): ChatPreferences {
+  if (!value) return DEFAULT_CHAT_PREFERENCES;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (typeof parsed !== &apos;object&apos; || parsed === null) return DEFAULT_CHAT_PREFERENCES;
+    const row = parsed as Partial&lt;ChatPreferences&gt;;
+    return {
+      nickname: typeof row.nickname === &apos;string&apos; ? row.nickname : DEFAULT_CHAT_PREFERENCES.nickname,
+      theme: isTheme(row.theme) ? row.theme : DEFAULT_CHAT_PREFERENCES.theme,
+      emoji: typeof row.emoji === &apos;string&apos; &amp;&amp; row.emoji.length &gt; 0 ? row.emoji : DEFAULT_CHAT_PREFERENCES.emoji,
+      notifications: typeof row.notifications === &apos;boolean&apos; ? row.notifications : DEFAULT_CHAT_PREFERENCES.notifications,
+      sounds: typeof row.sounds === &apos;boolean&apos; ? row.sounds : DEFAULT_CHAT_PREFERENCES.sounds,
+      blocked: typeof row.blocked === &apos;boolean&apos; ? row.blocked : DEFAULT_CHAT_PREFERENCES.blocked,
+    };
+  } catch {
+    return DEFAULT_CHAT_PREFERENCES;
+  }
+}
+
+export async function loadChatPreferences(userId: string, chatId: string): Promise&lt;ChatPreferences&gt; {
+  return parsePreferences(await AsyncStorage.getItem(storageKey(userId, chatId)));
+}
+
+export async function saveChatPreferences(
+  userId: string,
+  chatId: string,
+  preferences: ChatPreferences,
+): Promise&lt;void&gt; {
+  await AsyncStorage.setItem(storageKey(userId, chatId), JSON.stringify(preferences));
+}
+
+const preferenceWrites = new Map&lt;string, Promise&lt;unknown&gt;&gt;();
+const preferenceListeners = new Map&lt;string, Set&lt;() =&gt; void&gt;&gt;();
+
+function notifyPreferenceChange(userId: string, chatId: string): void {
+  preferenceListeners.get(storageKey(userId, chatId))?.forEach((listener) =&gt; listener());
+}
+
+export function subscribeChatPreferenceChanges(userId: string, chatId: string, listener: () =&gt; void): () =&gt; void {
+  const key = storageKey(userId, chatId);
+  const listeners = preferenceListeners.get(key) ?? new Set&lt;() =&gt; void&gt;();
+  listeners.add(listener);
+  preferenceListeners.set(key, listeners);
+  return () =&gt; {
+    listeners.delete(listener);
+    if (listeners.size === 0) preferenceListeners.delete(key);
+  };
+}
+
+export async function updateChatPreferences(
+  userId: string,
+  chatId: string,
+  patch: Partial&lt;ChatPreferences&gt;,
+): Promise&lt;ChatPreferences&gt; {
+  const key = storageKey(userId, chatId);
+  const operation = (preferenceWrites.get(key) ?? Promise.resolve()).catch(() =&gt; undefined).then(async () =&gt; {
+    const next = { ...parsePreferences(await AsyncStorage.getItem(key)), ...patch };
+    await saveChatPreferences(userId, chatId, next);
+    notifyPreferenceChange(userId, chatId);
+    return next;
+  });
+  preferenceWrites.set(key, operation);
+  try { return await operation; }
+  finally { if (preferenceWrites.get(key) === operation) preferenceWrites.delete(key); }
+}
+
+export async function clearChatPreferences(userId: string, chatId: string): Promise&lt;void&gt; {
+  await AsyncStorage.removeItem(storageKey(userId, chatId));
+  notifyPreferenceChange(userId, chatId);
+}
+
+export async function loadPinnedMessageIds(userId: string): Promise&lt;Set&lt;string&gt;&gt; {
+  const value = await AsyncStorage.getItem(`${PINNED_MESSAGES_KEY}:${userId}`);
+  if (!value) return new Set();
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string =&gt; typeof id === &apos;string&apos;) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export async function savePinnedMessageIds(userId: string, ids: Iterable&lt;string&gt;): Promise&lt;void&gt; {
+  await AsyncStorage.setItem(`${PINNED_MESSAGES_KEY}:${userId}`, JSON.stringify([...ids]));
+}</file><file path="apps/mobile/src/components/SearchField.tsx">/**
+ * CMP-03: Search field — height 40, full radius, debounced filtering.
+ * 12.5, D-95
+ */
+import React, { useEffect, useRef, useState } from &apos;react&apos;;
+import {
+  TextInput,
+  View,
+  Pressable,
+  StyleSheet,
+  type TextInputProps,
+} from &apos;react-native&apos;;
+import { useTheme } from &apos;../theme/ThemeProvider&apos;;
+import { textStyle } from &apos;../theme/typography&apos;;
+import { Icon } from &apos;./Icon&apos;;
+
+export interface SearchFieldProps extends Omit&lt;TextInputProps, &apos;onChangeText&apos;&gt; {
+  /** Called ~150 ms after the user stops typing. */
+  onSearch: (query: string) =&gt; void;
+  debounceMs?: number;
+  inputRef?: React.Ref&lt;TextInput&gt;;
+}
+
+export function SearchField({
+  onSearch,
+  debounceMs = 150,
+  placeholder = &apos;Search&apos;,
+  inputRef,
+  ...inputProps
+}: SearchFieldProps) {
+  const theme = useTheme();
+  const c = theme.colors;
+  const [value, setValue] = useState(&apos;&apos;);
+  const timerRef = useRef&lt;ReturnType&lt;typeof setTimeout&gt; | null&gt;(null);
+
+  useEffect(() =&gt; {
+    return () =&gt; {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleChange = (text: string) =&gt; {
+    setValue(text);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (debounceMs === 0) onSearch(text);
+    else timerRef.current = setTimeout(() =&gt; onSearch(text), debounceMs);
+  };
+
+  const handleClear = () =&gt; {
+    setValue(&apos;&apos;);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    onSearch(&apos;&apos;);
+  };
+
+  return (
+    &lt;View
+      style={[
+        styles.container,
+        {
+          height: 40,
+          borderRadius: theme.radius.full,
+          backgroundColor: c.bg.surface,
+          paddingHorizontal: theme.space[3],
+        },
+      ]}
+    &gt;
+      &lt;Icon name=&quot;action.search&quot; size=&quot;sm&quot; color={c.text.muted} /&gt;
+
+      &lt;TextInput
+        ref={inputRef}
+        style={[
+          styles.input,
+          { ...textStyle(theme.typeTokens.bodyMd), color: c.text.primary },
+        ]}
+        value={value}
+        onChangeText={handleChange}
+        placeholder={placeholder}
+        placeholderTextColor={c.text.muted}
+        returnKeyType=&quot;search&quot;
+        clearButtonMode=&quot;never&quot;
+        accessibilityRole=&quot;search&quot;
+        {...inputProps}
+      /&gt;
+
+      {value.length &gt; 0 ? (
+        &lt;Pressable
+          onPress={handleClear}
+          accessibilityLabel=&quot;Clear search&quot;
+          accessibilityRole=&quot;button&quot;
+          style={styles.clearButton}
+          hitSlop={8}
+        &gt;
+          &lt;Icon name=&quot;nav.close&quot; size=&quot;sm&quot; color={c.text.muted} /&gt;
+        &lt;/Pressable&gt;
+      ) : null}
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: &apos;row&apos;,
+    alignItems: &apos;center&apos;,
+    gap: 8,
+  },
+  input: { flex: 1 },
+  clearButton: { padding: 2 },
+});</file><file path="apps/mobile/src/queue/events.ts">/** Queue change notifications used by the chat screen to repaint LS-2 status captions. */
+const listeners = new Set&lt;() =&gt; void&gt;();
+
+export function subscribeQueueChange(listener: () =&gt; void): () =&gt; void {
+  listeners.add(listener);
+  return () =&gt; listeners.delete(listener);
+}
+
+export function notifyQueueChange(): void {
+  for (const listener of listeners) listener();
+}
+
+export type ForwardOutcome = { userId: string; messageId: string; status: &apos;sent&apos; | &apos;failed&apos; };
+const outcomeListeners = new Set&lt;(outcome: ForwardOutcome) =&gt; void&gt;();
+export function subscribeForwardOutcome(listener: (outcome: ForwardOutcome) =&gt; void): () =&gt; void {
+  outcomeListeners.add(listener);
+  return () =&gt; { outcomeListeners.delete(listener); };
+}
+export function notifyForwardOutcome(outcome: ForwardOutcome): void {
+  for (const listener of outcomeListeners) listener(outcome);
+}</file><file path="apps/mobile/src/search/__tests__/query.test.ts">import { DatabaseSync } from &apos;node:sqlite&apos;;
+import type { SQLiteDatabase } from &apos;expo-sqlite&apos;;
+import { normalizeSearch, searchCachedMessages } from &apos;../query&apos;;
+
+let sqlite: DatabaseSync;
+let db: SQLiteDatabase;
+
+beforeEach(() =&gt; {
+  sqlite = new DatabaseSync(&apos;:memory:&apos;);
+  sqlite.exec(`
+    CREATE TABLE cache_messages (
+      message_id TEXT PRIMARY KEY, chat_id TEXT, sender_id TEXT, seq INTEGER,
+      created_at TEXT, deleted_at TEXT, payload TEXT
+    );
+    CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, nickname TEXT);
+    CREATE TABLE cache_profiles (user_id TEXT, display_name TEXT);
+    CREATE TABLE cache_message_media (message_id TEXT, payload TEXT);
+    INSERT INTO cache_chat_members VALUES (&apos;chat&apos;, &apos;me&apos;, NULL), (&apos;chat&apos;, &apos;other&apos;, &apos;José&apos;);
+  `);
+  db = {
+    getAllAsync: async (sql: string, params: string[]) =&gt; sqlite.prepare(sql).all(...params),
+  } as unknown as SQLiteDatabase;
+});
+
+afterEach(() =&gt; sqlite.close());
+
+function addMessage(id: string, content: string, options: {
+  chatId?: string; senderId?: string; deleted?: boolean; seq?: number;
+} = {}) {
+  sqlite.prepare(&apos;INSERT INTO cache_messages VALUES (?, ?, ?, ?, ?, ?, ?)&apos;).run(
+    id, options.chatId ?? &apos;chat&apos;, options.senderId ?? &apos;me&apos;, options.seq ?? 1,
+    &apos;2026-11-11T00:00:00Z&apos;, options.deleted ? &apos;2026-11-11T01:00:00Z&apos; : null,
+    JSON.stringify({ content }),
+  );
+}
+
+function search(query: string, cursor: Parameters&lt;typeof searchCachedMessages&gt;[4] = null) {
+  return searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;]&apos;, normalizeSearch(query), cursor, new AbortController().signal);
+}
+
+test(&apos;searches beyond the newest 200 rows and preserves tied-date pagination&apos;, async () =&gt; {
+  for (let index = 0; index &lt; 260; index++) {
+    addMessage(String(index).padStart(3, &apos;0&apos;), index &lt; 35 ? &apos;Needle&apos; : &apos;Unrelated&apos;);
+  }
+  const first = await search(&apos;needle&apos;);
+  expect(first.matches).toHaveLength(30);
+  expect(first.matches[0].messageId).toBe(&apos;034&apos;);
+  expect(first.next).toBeTruthy();
+  const second = await search(&apos;needle&apos;, first.next);
+  expect(second.matches).toHaveLength(5);
+  expect(second.next).toBeNull();
+  expect(new Set([...first.matches, ...second.matches].map((message) =&gt; message.messageId)).size).toBe(35);
+});
+
+test(&apos;excludes deleted messages, other accounts, and hidden conversations&apos;, async () =&gt; {
+  addMessage(&apos;valid&apos;, &apos;needle&apos;);
+  addMessage(&apos;deleted&apos;, &apos;needle&apos;, { deleted: true });
+  addMessage(&apos;foreign&apos;, &apos;needle&apos;, { chatId: &apos;foreign&apos; });
+  sqlite.prepare(&apos;INSERT INTO cache_chat_members VALUES (?, ?, NULL)&apos;).run(&apos;foreign&apos;, &apos;someone-else&apos;);
+  addMessage(&apos;hidden&apos;, &apos;needle&apos;, { chatId: &apos;hidden&apos; });
+  sqlite.prepare(&apos;INSERT INTO cache_chat_members VALUES (?, ?, NULL)&apos;).run(&apos;hidden&apos;, &apos;me&apos;);
+  const result = await searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;,&quot;foreign&quot;]&apos;, &apos;needle&apos;, null, new AbortController().signal);
+  expect(result.matches.map((message) =&gt; message.messageId)).toEqual([&apos;valid&apos;]);
+});
+
+test(&apos;normalizes Unicode and treats SQL metacharacters literally&apos;, async () =&gt; {
+  addMessage(&apos;unicode&apos;, &apos;ＣＡＦÉ&apos;);
+  addMessage(&apos;literal&apos;, &quot;100%_ &apos; OR 1=1 --&quot;);
+  expect((await search(&apos;café&apos;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;unicode&apos;]);
+  expect((await search(&quot;%_ &apos; OR 1=1 --&quot;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;literal&apos;]);
+});
+
+test(&apos;matches sender nicknames and live attachment types&apos;, async () =&gt; {
+  addMessage(&apos;nickname&apos;, &apos;hello&apos;, { senderId: &apos;other&apos; });
+  addMessage(&apos;file&apos;, &apos;&apos;);
+  addMessage(&apos;removed-file&apos;, &apos;&apos;);
+  sqlite.prepare(&apos;INSERT INTO cache_message_media VALUES (?, ?)&apos;).run(&apos;file&apos;, JSON.stringify({ media_type: &apos;file&apos;, deleted_at: null }));
+  sqlite.prepare(&apos;INSERT INTO cache_message_media VALUES (?, ?)&apos;).run(&apos;removed-file&apos;, JSON.stringify({ media_type: &apos;file&apos;, deleted_at: &apos;2026-11-11&apos; }));
+  expect((await search(&apos;josé&apos;)).matches.map((message) =&gt; message.messageId)).toEqual([&apos;nickname&apos;]);
+  const files = await search(&apos;file&apos;);
+  expect(files.matches.map((message) =&gt; message.messageId)).toEqual([&apos;file&apos;]);
+  expect(files.matches[0].preview).toBe(&apos;File&apos;);
+});
+
+test(&apos;stops a cancelled search and returns no matches for an empty query&apos;, async () =&gt; {
+  const controller = new AbortController();
+  controller.abort();
+  const getAll = jest.spyOn(db, &apos;getAllAsync&apos;);
+  await searchCachedMessages(db, &apos;me&apos;, &apos;[&quot;chat&quot;]&apos;, &apos;hello&apos;, null, controller.signal);
+  await search(&apos;&apos;);
+  expect(getAll).not.toHaveBeenCalled();
+});</file><file path="apps/mobile/src/search/__tests__/SearchScreen.test.tsx">import React from &apos;react&apos;;
+import { act, fireEvent, render, waitFor } from &apos;@testing-library/react-native&apos;;
+import type { ChatListItem } from &apos;@dologram/shared&apos;;
+import SearchScreen from &apos;../../../app/search&apos;;
+import { searchCachedMessages, type MessageMatch } from &apos;../query&apos;;
+
+const mockRouter = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () =&gt; true };
+const mockChats = [{
+  chatId: &apos;chat&apos;, title: &apos;White&apos;, preview: &apos;Hello&apos;, timeLabel: &apos;&apos;, sortMs: 0,
+  unreadCount: 0, muted: false, isGroup: false, pinned: false, savedMessages: false,
+  avatarId: &apos;other&apos;, avatarName: &apos;White&apos;, ownStatus: null, archived: false, accessibilityLabel: &apos;White&apos;,
+}] satisfies ChatListItem[];
+
+jest.mock(&apos;expo-router&apos;, () =&gt; ({
+  useRouter: () =&gt; mockRouter,
+  useLocalSearchParams: () =&gt; ({}),
+  useFocusEffect: (callback: () =&gt; void) =&gt; jest.requireActual(&apos;react&apos;).useEffect(callback, [callback]),
+}));
+jest.mock(&apos;../../auth/AuthProvider&apos;, () =&gt; ({ useAuth: () =&gt; ({ session: { user: { id: &apos;me&apos; } } }) }));
+jest.mock(&apos;../../theme/ThemeProvider&apos;, () =&gt; ({
+  useTheme: () =&gt; {
+    const tokens = jest.requireActual(&apos;@dologram/shared&apos;);
+    return { ...tokens, colors: tokens.color.light, duration: () =&gt; 0, reduceMotion: true };
+  },
+}));
+jest.mock(&apos;react-native-safe-area-context&apos;, () =&gt; ({ useSafeAreaInsets: () =&gt; ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
+jest.mock(&apos;../../chatList/useChatList&apos;, () =&gt; ({
+  useChatList: () =&gt; ({ active: mockChats, archived: [], ignored: [], loading: false, error: false, reload: jest.fn() }),
+}));
+jest.mock(&apos;../../queue/db&apos;, () =&gt; ({ getLocalDatabase: async () =&gt; ({}) }));
+jest.mock(&apos;../../components/Icon&apos;, () =&gt; ({ Icon: () =&gt; null }));
+jest.mock(&apos;../../components/Avatar&apos;, () =&gt; ({ Avatar: () =&gt; null }));
+jest.mock(&apos;../query&apos;, () =&gt; ({ ...jest.requireActual(&apos;../query&apos;), searchCachedMessages: jest.fn() }));
+
+const match: MessageMatch = {
+  chatId: &apos;chat&apos;, messageId: &apos;message&apos;, sender: &apos;You&apos;,
+  preview: &apos;Hello from history&apos;, createdAt: &apos;2026-11-11T00:00:00Z&apos;,
+};
+
+beforeEach(() =&gt; {
+  jest.clearAllMocks();
+  jest.mocked(searchCachedMessages).mockResolvedValue({ matches: [match], next: null });
+});
+
+test(&apos;filters conversations, clears immediately, and opens the selected chat&apos;, async () =&gt; {
+  const screen = render(&lt;SearchScreen /&gt;);
+  const input = screen.getByPlaceholderText(&apos;Search chats and messages&apos;);
+  fireEvent.changeText(input, &apos;white&apos;);
+  expect(screen.getByText(&apos;White&apos;)).toBeTruthy();
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;Clear search&apos; }));
+  expect(input.props.value).toBe(&apos;&apos;);
+  expect(screen.getByText(&apos;Search DoloGram&apos;)).toBeTruthy();
+  fireEvent.changeText(input, &apos;white&apos;);
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;White&apos; }));
+  expect(mockRouter.push).toHaveBeenCalledWith({ pathname: &apos;/chat/[chatId]&apos;, params: { chatId: &apos;chat&apos; } });
+  await act(async () =&gt; undefined);
+});
+
+test(&apos;opens a message result with its focus target and preserves search on the back stack&apos;, async () =&gt; {
+  const screen = render(&lt;SearchScreen /&gt;);
+  fireEvent.changeText(screen.getByPlaceholderText(&apos;Search chats and messages&apos;), &apos;hello&apos;);
+  await waitFor(() =&gt; expect(screen.getByText(match.preview)).toBeTruthy());
+  fireEvent.press(screen.getByText(match.preview));
+  expect(mockRouter.push).toHaveBeenCalledWith({
+    pathname: &apos;/chat/[chatId]&apos;, params: { chatId: &apos;chat&apos;, focusMessageId: &apos;message&apos; },
+  });
+});
+
+test(&apos;drops results from a previous query and retries a failed search&apos;, async () =&gt; {
+  let resolveOld!: (page: { matches: MessageMatch[]; next: null }) =&gt; void;
+  jest.mocked(searchCachedMessages).mockImplementationOnce(() =&gt; new Promise((resolve) =&gt; { resolveOld = resolve; }));
+  const screen = render(&lt;SearchScreen /&gt;);
+  const input = screen.getByPlaceholderText(&apos;Search chats and messages&apos;);
+  fireEvent.changeText(input, &apos;old&apos;);
+  await waitFor(() =&gt; expect(searchCachedMessages).toHaveBeenCalledTimes(1));
+  jest.mocked(searchCachedMessages).mockRejectedValueOnce(new Error(&apos;database unavailable&apos;));
+  fireEvent.changeText(input, &apos;new&apos;);
+  await act(async () =&gt; { resolveOld({ matches: [{ ...match, preview: &apos;Stale result&apos; }], next: null }); });
+  await waitFor(() =&gt; expect(screen.getByText(&quot;Couldn&apos;t search messages.&quot;)).toBeTruthy());
+  expect(screen.queryByText(&apos;Stale result&apos;)).toBeNull();
+  fireEvent.press(screen.getByRole(&apos;button&apos;, { name: &apos;Retry&apos; }));
+  await waitFor(() =&gt; expect(screen.getByText(match.preview)).toBeTruthy());
+});</file><file path="apps/mobile/src/search/query.ts">import type { SQLiteDatabase } from &apos;expo-sqlite&apos;;
+import { strings, type MediaType } from &apos;@dologram/shared&apos;;
+import { attachmentLabel } from &apos;../media/model&apos;;
+
+export type SearchCursor = { createdAt: string; messageId: string };
+export type MessageMatch = SearchCursor &amp; { chatId: string; sender: string; preview: string };
+
+type CachedMessage = {
+  message_id: string;
+  chat_id: string;
+  created_at: string;
+  content: string;
+  sender: string;
+  media_types: string | null;
+};
+
+const BATCH_SIZE = 200;
+const PAGE_SIZE = 30;
+const MEDIA_TYPES: readonly MediaType[] = [&apos;photo&apos;, &apos;video&apos;, &apos;voice&apos;, &apos;file&apos;];
+
+export function normalizeSearch(value: string): string {
+  return value.normalize(&apos;NFKC&apos;).trim().toLowerCase();
+}
+
+function previewOf(content: string, query: string): string {
+  const normalized = content.normalize(&apos;NFKC&apos;).trim();
+  const match = normalized.toLowerCase().indexOf(query);
+  const start = Math.max(0, match - 36);
+  const end = Math.max(start + 160, match + query.length);
+  return `${start &gt; 0 ? &apos;…&apos; : &apos;&apos;}${normalized.slice(start, end)}${end &lt; normalized.length ? &apos;…&apos; : &apos;&apos;}`;
+}
+
+/** Walk the synced cache in bounded batches. JS normalization also handles non-ASCII text. */
+export async function searchCachedMessages(
+  db: SQLiteDatabase,
+  userId: string,
+  chatIds: string,
+  query: string,
+  cursor: SearchCursor | null,
+  signal: AbortSignal,
+): Promise&lt;{ matches: MessageMatch[]; next: SearchCursor | null }&gt; {
+  const matches: MessageMatch[] = [];
+  if (!query) return { matches, next: null };
+  let after = cursor;
+  while (!signal.aborted) {
+    const rows = await db.getAllAsync&lt;CachedMessage&gt;(
+      `SELECT m.message_id, m.chat_id, m.created_at,
+          json_extract(m.payload, &apos;$.content&apos;) AS content,
+          CASE WHEN m.sender_id = own.user_id THEN &apos;You&apos;
+            ELSE COALESCE(NULLIF(sender.nickname, &apos;&apos;), profile.display_name, ?) END AS sender,
+          (SELECT group_concat(DISTINCT json_extract(media.payload, &apos;$.media_type&apos;))
+             FROM cache_message_media media
+             WHERE media.message_id = m.message_id AND json_extract(media.payload, &apos;$.deleted_at&apos;) IS NULL
+          ) AS media_types
+        FROM cache_messages m
+        JOIN cache_chat_members own ON own.chat_id = m.chat_id AND own.user_id = ?
+        LEFT JOIN cache_chat_members sender ON sender.chat_id = m.chat_id AND sender.user_id = m.sender_id
+        LEFT JOIN cache_profiles profile ON profile.user_id = m.sender_id
+        WHERE m.chat_id IN (SELECT value FROM json_each(?))
+          AND m.deleted_at IS NULL AND m.seq IS NOT NULL
+          ${after ? &apos;AND (m.created_at, m.message_id) &lt; (?, ?)&apos; : &apos;&apos;}
+        ORDER BY m.created_at DESC, m.message_id DESC LIMIT ?`,
+      [strings.chatList.unknownMember, userId, chatIds, ...(after ? [after.createdAt, after.messageId] : []), BATCH_SIZE],
+    );
+    if (signal.aborted) break;
+    for (const row of rows) {
+      const types = row.media_types?.split(&apos;,&apos;) ?? [];
+      const labels = MEDIA_TYPES.filter((type) =&gt; types.includes(type)).map(attachmentLabel).join(&apos; · &apos;);
+      const content = row.content ?? &apos;&apos;;
+      if (![content, row.sender, labels].some((value) =&gt; normalizeSearch(value).includes(query))) continue;
+      if (matches.length === PAGE_SIZE) return { matches, next: matches[PAGE_SIZE - 1] };
+      const text = normalizeSearch(labels).includes(query) &amp;&amp; content ? `${labels} · ${content}` : content || labels;
+      matches.push({
+        chatId: row.chat_id,
+        messageId: row.message_id,
+        createdAt: row.created_at,
+        sender: row.sender,
+        preview: text ? previewOf(text, query) : strings.chat.attachmentOnly,
+      });
+    }
+    if (rows.length &lt; BATCH_SIZE) break;
+    const last = rows[rows.length - 1];
+    after = { createdAt: last.created_at, messageId: last.message_id };
+  }
+  return { matches, next: null };
+}</file><file path="apps/mobile/src/sync/cacheEvents.ts">/**
+ * Change notifications for the local cache (M2-08).
+ *
+ * The sync engine writes the SQLite cache outside React, so the chat list and the Archive refresh
+ * themselves when a pass or a Realtime event has merged rows instead of polling (F2: &quot;the order
+ * updates when a message arrives&quot;).
+ */
+
+const listeners = new Set&lt;() =&gt; void&gt;();
+
+/** Subscribes to cache updates; returns the unsubscribe function. */
+export function subscribeCacheChange(listener: () =&gt; void): () =&gt; void {
+  listeners.add(listener);
+  return () =&gt; {
+    listeners.delete(listener);
+  };
+}
+
+/** Called by the sync lifecycle after rows were merged or a pass finished. */
+export function notifyCacheChange(): void {
+  for (const listener of listeners) listener();
+}</file><file path="apps/mobile/AGENTS.md">This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+
+## Expo has changed — do not trust your training data
+
+Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+
+1. Read the major version of the `expo` package in `package.json`.
+2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v&lt;major&gt;.0.0/`
+3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+
+## Commands
+
+Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+
+```bash
+npx expo install &lt;package&gt;  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+npx expo start              # start the dev server
+npx expo lint               # lint
+npx tsc --noEmit            # typecheck
+npx expo-doctor             # diagnose dependency and config issues
+npx expo install --fix      # fix incompatible package versions
+```
+
+Run lint and typecheck before declaring any task done.
+
+## Navigation &amp; Routing
+
+- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
+- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
+- Docs: https://docs.expo.dev/router/introduction.md
+
+## Building with EAS
+
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli &lt;command&gt;` in Bun projects, or `npx eas-cli@latest &lt;command&gt;` otherwise; substitute that for bare `eas` in docs examples.
+Docs: https://docs.expo.dev/eas/index.md
+
+## Rules
+
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md</file><file path="apps/mobile/package.json">{
+  &quot;name&quot;: &quot;@dologram/mobile&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;main&quot;: &quot;expo-router/entry&quot;,
+  &quot;dependencies&quot;: {
+    &quot;@config-plugins/react-native-webrtc&quot;: &quot;15.0.2&quot;,
+    &quot;@dologram/shared&quot;: &quot;*&quot;,
+    &quot;@expo-google-fonts/inter&quot;: &quot;0.4.2&quot;,
+    &quot;@expo-google-fonts/jetbrains-mono&quot;: &quot;0.4.1&quot;,
+    &quot;@livekit/react-native&quot;: &quot;3.1.0&quot;,
+    &quot;@livekit/react-native-expo-plugin&quot;: &quot;1.1.0&quot;,
+    &quot;@livekit/react-native-webrtc&quot;: &quot;150.1.1&quot;,
+    &quot;@react-native-async-storage/async-storage&quot;: &quot;2.2.0&quot;,
+    &quot;@react-native-community/netinfo&quot;: &quot;12.0.1&quot;,
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;,
+    &quot;base64-arraybuffer&quot;: &quot;1.0.2&quot;,
+    &quot;expo&quot;: &quot;~57.0.32&quot;,
+    &quot;expo-audio&quot;: &quot;~57.0.5&quot;,
+    &quot;expo-clipboard&quot;: &quot;~57.0.2&quot;,
+    &quot;expo-constants&quot;: &quot;~57.0.23&quot;,
+    &quot;expo-crypto&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-dev-client&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-document-picker&quot;: &quot;~57.0.3&quot;,
+    &quot;expo-file-system&quot;: &quot;~57.0.7&quot;,
+    &quot;expo-font&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-image-manipulator&quot;: &quot;~57.0.22&quot;,
+    &quot;expo-image-picker&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-linking&quot;: &quot;~57.0.13&quot;,
+    &quot;expo-media-library&quot;: &quot;~57.0.6&quot;,
+    &quot;expo-notifications&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-router&quot;: &quot;~57.0.30&quot;,
+    &quot;expo-sharing&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-splash-screen&quot;: &quot;~57.0.11&quot;,
+    &quot;expo-sqlite&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-status-bar&quot;: &quot;~57.0.1&quot;,
+    &quot;expo-video&quot;: &quot;~57.0.5&quot;,
+    &quot;livekit-client&quot;: &quot;2.23.0&quot;,
+    &quot;lucide-react-native&quot;: &quot;1.70.0&quot;,
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-native&quot;: &quot;0.86.3&quot;,
+    &quot;react-native-gesture-handler&quot;: &quot;3.5.0&quot;,
+    &quot;react-native-markdown-display&quot;: &quot;7.0.2&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-safe-area-context&quot;: &quot;~5.7.0&quot;,
+    &quot;react-native-screens&quot;: &quot;~4.26.0&quot;,
+    &quot;react-native-svg&quot;: &quot;15.15.4&quot;,
+    &quot;react-native-url-polyfill&quot;: &quot;4.0.0&quot;,
+    &quot;tus-js-client&quot;: &quot;4.3.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;,
+    &quot;@testing-library/react-native&quot;: &quot;13.3.3&quot;,
+    &quot;@types/jest&quot;: &quot;29.5.14&quot;,
+    &quot;@types/react&quot;: &quot;~19.2.2&quot;,
+    &quot;eslint&quot;: &quot;^9.0.0&quot;,
+    &quot;eslint-config-expo&quot;: &quot;~57.0.2&quot;,
+    &quot;jest&quot;: &quot;~29.7.0&quot;,
+    &quot;jest-expo&quot;: &quot;57.0.6&quot;,
+    &quot;react-test-renderer&quot;: &quot;19.2.3&quot;,
+    &quot;typescript&quot;: &quot;~6.0.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;expo start&quot;,
+    &quot;android&quot;: &quot;expo run:android&quot;,
+    &quot;ios&quot;: &quot;expo run:ios&quot;,
+    &quot;web&quot;: &quot;expo start --web&quot;,
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;jest&quot;,
+    &quot;lint&quot;: &quot;expo lint&quot;
+  },
+  &quot;private&quot;: true
+}</file><file path="packages/shared/src/chats/contacts.ts">/**
+ * People the caller may put into a group (M2-07, AND-11, D-58, D-70).
+ *
+ * D-70 only allows adding a member who already shares a chat with the member adding them, so the
+ * eligible set is exactly the other members of the chats the caller already belongs to. The rows
+ * come from the local cache, which holds every synced `chat_members` row, so the list works with
+ * the same data the chat list already uses.
+ */
+import { strings } from &apos;../strings&apos;;
+
+export type ContactCandidate = {
+  userId: string;
+  displayName: string;
+};
+
+/** One `chat_members` row joined with the cached profile name, as the SQL adapter returns it. */
+export type CachedContactRow = {
+  user_id: string;
+  display_name: string | null;
+};
+
+/** Group members besides the creator (D-58: at most 100 members, so at most 99 added). */
+export const maxSelectableMembers = 99;
+
+function compareContacts(a: ContactCandidate, b: ContactCandidate): number {
+  const left = a.displayName.toLowerCase();
+  const right = b.displayName.toLowerCase();
+  if (left &lt; right) return -1;
+  if (left &gt; right) return 1;
+  return a.userId &lt; b.userId ? -1 : a.userId &gt; b.userId ? 1 : 0;
+}
+
+/**
+ * Distinct people who share a chat with the caller, without the caller and without `exclude`
+ * (the members a chat already has). Sorted by display name, then user id.
+ */
+export function buildContactList(
+  rows: readonly CachedContactRow[],
+  userId: string,
+  exclude: readonly string[] = [],
+): ContactCandidate[] {
+  const seen = new Set&lt;string&gt;(exclude);
+  const contacts: ContactCandidate[] = [];
+
+  for (const row of rows) {
+    if (row.user_id === userId || seen.has(row.user_id)) continue;
+    seen.add(row.user_id);
+    contacts.push({
+      userId: row.user_id,
+      displayName: row.display_name ?? strings.chatList.unknownMember,
+    });
+  }
+
+  return contacts.sort(compareContacts);
+}
+
+/**
+ * Adds or removes one selected member, never exceeding `max` (D-58). A selection at the limit is
+ * returned unchanged, so the screen can disable the further checkboxes.
+ */
+export function toggleContactSelection(
+  selected: readonly string[],
+  userId: string,
+  max: number,
+): readonly string[] {
+  if (selected.includes(userId)) {
+    return selected.filter((id) =&gt; id !== userId);
+  }
+  if (selected.length &gt;= max) {
+    return selected;
+  }
+  return [...selected, userId];
+}</file><file path="packages/shared/src/chats/direct.ts">/**
+ * Direct-chat lookup (M2-07, D-70, C-8).
+ *
+ * chats.direct_key is unique on the server, so a second direct chat for the same pair is rejected.
+ * Before inserting the three rows of a direct chat the client checks the synced local cache for an
+ * existing chat with that member and opens it instead. Archived direct chats still count: D-70 says
+ * a user hides an unwanted direct chat by archiving it, so archiving must not create a second one.
+ * Saved Messages is a direct chat with only the caller as a member. A self-chat lookup therefore
+ * resolves to that one-member chat instead of trying to create a two-member direct chat.
+ */
+import type { ChatListSourceRow } from &apos;../chatList/types&apos;;
+
+export type DirectChatLookup = {
+  /** The signed-in user. */
+  userId: string;
+  /** The user the caller wants to message. */
+  otherUserId: string;
+};
+
+/** The cached direct chat with `otherUserId`, or null when there is none. */
+export function findDirectChatId(
+  rows: readonly ChatListSourceRow[],
+  lookup: DirectChatLookup,
+): string | null {
+  for (const row of rows) {
+    if (row.chat.type !== &apos;direct&apos;) continue;
+    if (lookup.otherUserId === lookup.userId) {
+      if (row.chat.direct_key === lookup.userId) {
+        return row.chat.chat_id;
+      }
+      continue;
+    }
+    if (row.otherMemberId === lookup.otherUserId) {
+      return row.chat.chat_id;
+    }
+  }
+  return null;
+}</file><file path="packages/shared/src/queue/types.ts">/**
+ * Queue contracts (M2-02, M2-03, LS-1 to LS-3, LS-7 to LS-9, D-06, D-10, D-27, D-77, D-93).
+ *
+ * The queue is the device-local record of 6.2: `temp_id` equals the `message_id` the row will use
+ * (D-10), the payload is the insert it will send, and the status is the LS-2 set. Storage is a
+ * platform adapter (expo-sqlite on mobile); everything here is platform-agnostic so the state
+ * machine can be tested with a fake store, a fake clock and an injected fetch.
+ */
+
+/** LS-2. The two Low Signal labels are presentation refinements, not extra states (D-17). */
+export type QueueStatus = &apos;queued&apos; | &apos;sending&apos; | &apos;sent&apos; | &apos;failed&apos;;
+
+import type { MediaType } from &apos;../config&apos;;
+
+/** A file copied into app-private storage before a message enters the durable queue (M3-02). */
+export type QueuedAttachment = {
+  media_id: string;
+  media_type: MediaType;
+  mime: string;
+  size_bytes: number;
+  local_uri: string;
+  compressed: boolean;
+};
+
+/** The payload of an outgoing message, including its optional attachment work (M3-02). */
+export type TextQueuePayload = {
+  kind: &apos;text&apos;;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  reply_to: string | null;
+  attachment_count: number;
+  attachments: QueuedAttachment[];
+  /** LS-6: the Force Low Signal Mode preference captured when the item was queued. */
+  force_low_signal?: boolean;
+  /** Device-only feedback intent, never included in the server message insert. */
+  feedback?: &apos;forward&apos;;
+};
+
+export type QueuePayload = TextQueuePayload;
+
+export type QueueItem = {
+  /** Equals the message_id the delivered row uses (D-10). */
+  temp_id: string;
+  /** Copy of `payload.chat_id`, so per-chat strict order needs no JSON parse (D-93). */
+  chat_id: string;
+  payload: QueuePayload;
+  status: QueueStatus;
+  /** D-77: counts only attempts made while connected that failed with a network or server error. */
+  retry_count: number;
+  /** Epoch milliseconds; the worker attempts the item only once this has passed (D-77). */
+  next_attempt_at: number;
+  /**
+   * True once an insert was attempted, so the row may exist on the server. Discard needs a
+   * connection and a soft delete in that case, and works offline only while this is false (D-93).
+   */
+  row_may_exist: boolean;
+  /** Whether the message row is absent, may exist, or is confirmed stored (D-93). */
+  row_state: &apos;absent&apos; | &apos;unknown&apos; | &apos;stored&apos;;
+  /** The kind of the last failure, for the item&apos;s caption in the chat (D-17, D-93). */
+  last_error: &apos;network&apos; | &apos;server&apos; | &apos;rateLimited&apos; | &apos;waitingWifi&apos; | null;
+  created_at: number;
+};
+
+/** The D-27 values the queue machine needs; `config.queue` satisfies it. */
+export type QueueTiming = {
+  timerMs: number;
+  backoffBaseMs: number;
+  backoffFactor: number;
+  backoffCapMs: number;
+  jitter: number;
+  maxAttempts: number;
+  maxUnsent: number;
+};
+
+/**
+ * The storage contract every platform adapter implements (M2-02). The cache, cache rows and
+ * `sync_state` belong to the same database (6.2) but are not reached here yet.
+ */
+export interface LocalQueueStore {
+  /** Creates or upgrades the schema. Idempotent. */
+  init(): Promise&lt;void&gt;;
+  insert(item: QueueItem): Promise&lt;void&gt;;
+  update(item: QueueItem): Promise&lt;void&gt;;
+  get(tempId: string): Promise&lt;QueueItem | null&gt;;
+  /** Every item that is not yet sent, oldest first (LS-7 counts queued, sending and failed). */
+  listUnsent(): Promise&lt;QueueItem[]&gt;;
+  countUnsent(): Promise&lt;number&gt;;
+  /** LS-9: items left in `sending` at startup return to `queued`. */
+  resetSending(): Promise&lt;void&gt;;
+  /** D-77: a returning connection makes every queued item due at once without resetting counts. */
+  makeAllDue(now: number): Promise&lt;void&gt;;
+  delete(tempId: string): Promise&lt;void&gt;;
+  /** Removes sent items; the chat shows delivered rows from the server from then on. */
+  deleteSent(): Promise&lt;void&gt;;
+  /** Returns sent items before cleanup so mobile can remove their private attachment copies. */
+  listSent(): Promise&lt;QueueItem[]&gt;;
+}
+
+export type EnqueueResult =
+  | { ok: true; item: QueueItem }
+  | { ok: false; reason: &apos;queueFull&apos; };</file><file path="package.json">{
+  &quot;name&quot;: &quot;dologram&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;private&quot;: true,
+  &quot;workspaces&quot;: [
+    &quot;apps/*&quot;,
+    &quot;packages/*&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;typecheck&quot;: &quot;npm run typecheck --workspaces --if-present&quot;,
+    &quot;test&quot;: &quot;npm run test --workspaces --if-present&quot;,
+    &quot;gen:types&quot;: &quot;supabase gen types typescript --project-id dologram --ref none&quot;,
+    &quot;scan:mobile-bundle&quot;: &quot;powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1&quot;
+  },
+  &quot;overrides&quot;: {
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-dom&quot;: &quot;19.2.3&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-worklets&quot;: &quot;0.10.1&quot;,
+    &quot;expo-asset&quot;: &quot;57.0.21&quot;,
+    &quot;expo-constants&quot;: &quot;57.0.23&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;
+  }
+}</file></files></repomix>

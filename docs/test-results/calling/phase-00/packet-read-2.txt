@@ -1,0 +1,140 @@
+      }
+    },
+    &quot;owner&quot;: &quot;alex123superman&quot;
+  }
+}</file><file path="apps/mobile/eas.json">{
+  &quot;cli&quot;: {
+    &quot;version&quot;: &quot;&gt;= 16.0.0&quot;,
+    &quot;appVersionSource&quot;: &quot;remote&quot;
+  },
+  &quot;build&quot;: {
+    &quot;development&quot;: {
+      &quot;developmentClient&quot;: true,
+      &quot;distribution&quot;: &quot;internal&quot;,
+      &quot;environment&quot;: &quot;development&quot;,
+      &quot;android&quot;: {
+        &quot;buildType&quot;: &quot;apk&quot;
+      }
+    },
+    &quot;preview&quot;: {
+      &quot;distribution&quot;: &quot;internal&quot;,
+      &quot;environment&quot;: &quot;preview&quot;,
+      &quot;android&quot;: {
+        &quot;buildType&quot;: &quot;apk&quot;
+      }
+    }
+  }
+}</file><file path="apps/mobile/jest.config.js">/** @type {import(&apos;jest&apos;).Config} */
+module.exports = {
+  preset: &apos;jest-expo&apos;,
+  testMatch: [
+    &apos;**/__tests__/**/*.test.{ts,tsx}&apos;,
+    &apos;**/*.test.{ts,tsx}&apos;,
+  ],
+  // Allow jest-expo to find @react-native/jest-preset from the workspace node_modules
+  modulePaths: [
+    &apos;&lt;rootDir&gt;/node_modules&apos;,
+    &apos;&lt;rootDir&gt;/../../node_modules&apos;,
+  ],
+  moduleNameMapper: {
+    &apos;^@dologram/shared$&apos;: &apos;&lt;rootDir&gt;/../../packages/shared/src/index.ts&apos;,
+    // Mock AsyncStorage so tests don&apos;t require a native module
+    &apos;^@react-native-async-storage/async-storage$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.js&apos;,
+    // Force lucide-react-native to use the CJS build so Jest doesn&apos;t see ESM
+    &apos;^lucide-react-native$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/lucide-react-native/dist/cjs/lucide-react-native.js&apos;,
+    // Reanimated&apos;s native worklet runtime is unavailable in Jest; use its
+    // official mock while keeping UI-thread animations in the app build.
+    &apos;^react-native-reanimated$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-reanimated.ts&apos;,
+    &apos;^react-native-gesture-handler$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-gesture-handler.tsx&apos;,
+  },
+  // Extend jest-expo&apos;s transformIgnorePatterns to include our packages
+  transformIgnorePatterns: [
+    &apos;/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|standard-navigation|lucide-react-native|react-native-markdown-display|react-native-svg|@dologram))&apos;,
+    &apos;/node_modules/react-native-reanimated/plugin/&apos;,
+    &apos;/node_modules/@react-native/babel-preset/&apos;,
+  ],
+};</file><file path="apps/mobile/package.json">{
+  &quot;name&quot;: &quot;@dologram/mobile&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;main&quot;: &quot;expo-router/entry&quot;,
+  &quot;dependencies&quot;: {
+    &quot;@dologram/shared&quot;: &quot;*&quot;,
+    &quot;@expo-google-fonts/inter&quot;: &quot;0.4.2&quot;,
+    &quot;@expo-google-fonts/jetbrains-mono&quot;: &quot;0.4.1&quot;,
+    &quot;@react-native-async-storage/async-storage&quot;: &quot;2.2.0&quot;,
+    &quot;@react-native-community/netinfo&quot;: &quot;12.0.1&quot;,
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;,
+    &quot;base64-arraybuffer&quot;: &quot;1.0.2&quot;,
+    &quot;expo&quot;: &quot;~57.0.32&quot;,
+    &quot;expo-audio&quot;: &quot;~57.0.5&quot;,
+    &quot;expo-clipboard&quot;: &quot;~57.0.2&quot;,
+    &quot;expo-constants&quot;: &quot;~57.0.23&quot;,
+    &quot;expo-crypto&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-dev-client&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-document-picker&quot;: &quot;~57.0.3&quot;,
+    &quot;expo-file-system&quot;: &quot;~57.0.7&quot;,
+    &quot;expo-font&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-image-manipulator&quot;: &quot;~57.0.22&quot;,
+    &quot;expo-image-picker&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-linking&quot;: &quot;~57.0.13&quot;,
+    &quot;expo-media-library&quot;: &quot;~57.0.6&quot;,
+    &quot;expo-notifications&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-router&quot;: &quot;~57.0.30&quot;,
+    &quot;expo-sharing&quot;: &quot;~57.0.25&quot;,
+    &quot;expo-splash-screen&quot;: &quot;~57.0.11&quot;,
+    &quot;expo-sqlite&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-status-bar&quot;: &quot;~57.0.1&quot;,
+    &quot;expo-video&quot;: &quot;~57.0.5&quot;,
+    &quot;lucide-react-native&quot;: &quot;1.70.0&quot;,
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-native&quot;: &quot;0.86.3&quot;,
+    &quot;react-native-gesture-handler&quot;: &quot;3.5.0&quot;,
+    &quot;react-native-markdown-display&quot;: &quot;7.0.2&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-safe-area-context&quot;: &quot;~5.7.0&quot;,
+    &quot;react-native-screens&quot;: &quot;~4.26.0&quot;,
+    &quot;react-native-svg&quot;: &quot;15.15.4&quot;,
+    &quot;react-native-url-polyfill&quot;: &quot;4.0.0&quot;,
+    &quot;tus-js-client&quot;: &quot;4.3.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;,
+    &quot;@testing-library/react-native&quot;: &quot;13.3.3&quot;,
+    &quot;@types/jest&quot;: &quot;29.5.14&quot;,
+    &quot;@types/react&quot;: &quot;~19.2.2&quot;,
+    &quot;eslint&quot;: &quot;^9.0.0&quot;,
+    &quot;eslint-config-expo&quot;: &quot;~57.0.2&quot;,
+    &quot;jest&quot;: &quot;~29.7.0&quot;,
+    &quot;jest-expo&quot;: &quot;57.0.6&quot;,
+    &quot;react-test-renderer&quot;: &quot;19.2.3&quot;,
+    &quot;typescript&quot;: &quot;~6.0.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;expo start&quot;,
+    &quot;android&quot;: &quot;expo run:android&quot;,
+    &quot;ios&quot;: &quot;expo run:ios&quot;,
+    &quot;web&quot;: &quot;expo start --web&quot;,
+    &quot;typecheck&quot;: &quot;tsc --noEmit&quot;,
+    &quot;test&quot;: &quot;jest&quot;,
+    &quot;lint&quot;: &quot;expo lint&quot;
+  },
+  &quot;private&quot;: true
+}</file><file path="docs/builds.md"># DoloGram Android builds
+
+EAS Free allows 15 cloud builds per calendar month (6.5). A new build is made only when a native
+dependency or native configuration changes (D-149); JavaScript-only changes do not need one because
+the development client loads JavaScript from Metro.
+
+| Date | Profile | EAS build id | Reason | Builds this month |
+| --- | --- | --- | --- | --- |
+| 2026-11-08 | development | 76224190-109e-4596-87bf-979a45a8654f | Phase 0 first build (dev client, all MVP natives, package `com.dologram.app`) | 1 |
+
+## Android push notifications
+
+1. Add `com.dologram.app` to Firebase. Place its `google-services.json` beside `apps/mobile/app.json` for local builds, or provide it as the `GOOGLE_SERVICES_JSON` file variable in the Expo Build environment. Configure the matching FCM V1 service account in the Expo project&apos;s Android credentials and rebuild the APK.
+2. Apply Supabase migration `023_notification_delivery_preferences.sql` before releasing the mobile bundle. Deploy `send-push-notifications` and set its `PUSH_WEBHOOK_SECRET`. If enhanced push security is enabled in Expo, set `EXPO_ACCESS_TOKEN` in the Edge Function environment.
+3. Create a Supabase Database Webhook for `public.messages` **INSERT**, pointing to the deployed `send-push-notifications` function. Send the same webhook secret in the `Authorization: Bearer` header. Verify on a signed-in Android device by sending a message from a different test account while DoloGram is in the background.

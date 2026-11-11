@@ -1,0 +1,96 @@
+★ eas-cli@27.7.2 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+(node:54308) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+- Fetching usage data for account alex123superman
+√ Usage data loaded for alex123superman
+{
+  "account": {
+    "name": "alex123superman",
+    "plan": "Free",
+    "concurrencies": {
+      "total": 5,
+      "android": 5,
+      "ios": 1
+    },
+    "billingPeriod": {
+      "start": "2026-11-01T00:00:00.000Z",
+      "end": "2026-12-01T00:00:00.000Z",
+      "daysElapsed": 11,
+      "daysRemaining": 20,
+      "totalDays": 30
+    }
+  },
+  "builds": {
+    "plan": {
+      "used": 6,
+      "limit": 30,
+      "percentUsed": 20
+    },
+    "overage": {
+      "count": 0,
+      "costCents": 0,
+      "byWorkerSize": []
+    },
+    "byPlatformAndSize": [
+      {
+        "platform": "android",
+        "resourceClass": "medium",
+        "count": 6
+      }
+    ],
+    "ios": {
+      "plan": {
+        "used": 0,
+        "limit": 15,
+        "percentUsed": 0
+      }
+    },
+    "android": {
+      "plan": {
+        "used": 6,
+        "limit": 15,
+        "percentUsed": 40
+      }
+    }
+  },
+  "updates": {
+    "uniqueUpdaters": {
+      "plan": {
+        "used": 0,
+        "limit": 1000,
+        "percentUsed": 0
+      },
+      "overage": {
+        "count": 0,
+        "costCents": 0
+      }
+    },
+    "bandwidth": {
+      "plan": {
+        "usedBytes": 0,
+        "usedFormatted": "0.00 MiB",
+        "limitBytes": 107374182400,
+        "limitFormatted": "100 GiB",
+        "percentUsed": 0
+      },
+      "overage": {
+        "usedBytes": 0,
+        "usedFormatted": "0.00 MiB",
+        "costCents": 0
+      }
+    },
+    "overageCostCents": 0
+  },
+  "billing": {
+    "addons": [],
+    "estimated": {
+      "overageCents": 0,
+      "totalCents": 0
+    }
+  },
+  "billingUrl": "https://expo.dev/accounts/alex123superman/settings/billing"
+}

@@ -1,0 +1,19 @@
+{
+  "path": "apps\\mobile\\dologram-dev.apk",
+  "bytes": 279719965,
+  "sha256": "db12369a518004d6ceabbf34c325545c4540be635768a1ef7e7d07d9153df17b",
+  "native_entries": [
+    "lib/arm64-v8a/libexpo-sqlite.so",
+    "lib/arm64-v8a/libreanimated.so",
+    "lib/arm64-v8a/libworklets.so",
+    "lib/armeabi-v7a/libexpo-sqlite.so",
+    "lib/armeabi-v7a/libreanimated.so",
+    "lib/armeabi-v7a/libworklets.so",
+    "lib/x86/libexpo-sqlite.so",
+    "lib/x86/libreanimated.so",
+    "lib/x86/libworklets.so",
+    "lib/x86_64/libexpo-sqlite.so",
+    "lib/x86_64/libreanimated.so",
+    "lib/x86_64/libworklets.so"
+  ]
+}

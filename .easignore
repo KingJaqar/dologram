@@ -1,0 +1,64 @@
+# EAS reads this file from the Git repository root. Keep only files needed to
+# build apps/mobile and its local workspace dependency packages/shared.
+
+# Dependencies and VCS metadata
+node_modules/
+.git/
+.gitignore
+.easignore
+
+# Local Expo/Metro/tool caches
+.expo/
+apps/mobile/.expo/
+.tmp/
+.freebuff/
+.vscode/
+.claude/
+*.log
+*.tsbuildinfo
+*.cache
+.metro-health-check*
+
+# Local secrets and machine-specific credentials
+.env
+.env.*
+!.env.example
+apps/mobile/.env
+apps/mobile/.env.*
+!apps/mobile/.env.example
+**/google-services.json
+**/credentials.json
+**/credentials/
+**/*.jks
+**/*.keystore
+**/*.p8
+**/*.p12
+**/*.key
+**/*.pem
+**/*.mobileprovision
+
+# Generated/native outputs and install artifacts
+android/
+ios/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/dist/
+apps/mobile/dist-android/
+apps/mobile/web-build/
+*.apk
+*.aab
+
+# Documentation, planning, test evidence, and generated snapshots
+docs/
+Documentation/
+Plans/
+repomix-*.xml
+test-output.txt
+
+# Backend is deployed separately and is not part of the Android bundle
+supabase/
+
+# Root-only tooling not needed by the mobile EAS build
+scripts/
+tsconfig.base.json
+tsconfig.json

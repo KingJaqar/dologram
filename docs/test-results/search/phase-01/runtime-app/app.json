@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Search Phase 1 Fixture",
+    "slug": "search-phase01-fixture",
+    "scheme": "dologram",
+    "android": {
+      "package": "com.dologram.app"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "dc2c68a9-43f1-4c3e-a586-584efc775b61",
+  "runtimeVersion": "exposdk:57.0.0",
+  "launchAsset": {
+    "key": "bundle",
+    "contentType": "application/javascript",
+    "url": "http://127.0.0.1:8084/index.tsx.bundle?platform=android&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.bytecode=1&transform.routerRoot=app&unstable_transformProfile=hermes-stable"
+  }
+}

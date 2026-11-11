@@ -1,0 +1,34 @@
+{
+  "fixture": "260 synthetic rows / 35 older-than-latest-200 matches",
+  "nativeDatabase": [
+    {
+      "seq": 0,
+      "name": "main",
+      "file": ""
+    }
+  ],
+  "networkFenceVerified": true,
+  "firstPageMs": 45.506751999258995,
+  "totalMs": 51.34161199629307,
+  "deliveredMatches": 35,
+  "batches": [
+    {
+      "rows": 200,
+      "milliseconds": 20.769420996308327
+    },
+    {
+      "rows": 60,
+      "milliseconds": 10.646205998957157
+    },
+    {
+      "rows": 5,
+      "milliseconds": 5.558184005320072
+    }
+  ],
+  "cancelledReadCount": 0,
+  "pid": "31940",
+  "serial": "127.0.0.1:16480",
+  "mode": "offline --no-dev",
+  "console_errors": [],
+  "console_warnings": []
+}

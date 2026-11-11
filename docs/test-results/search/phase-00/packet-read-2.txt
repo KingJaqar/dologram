@@ -1,0 +1,180 @@
+  const chatIds = useMemo(() =&gt; JSON.stringify(chats.map((chat) =&gt; chat.chatId).sort()), [chats]);
+  const duration = theme.duration(&apos;normal&apos;);
+  const startLeft = Math.max(0, Math.min(width - SEARCH_BUTTON_WIDTH, origin - SEARCH_BUTTON_WIDTH / 2));
+
+  useFocusEffect(useCallback(() =&gt; { opening.current = false; }, []));
+  useEffect(() =&gt; {
+    if (!canExpand) {
+      progress.setValue(1);
+      input.current?.focus();
+      return;
+    }
+    const transition = Animated.timing(progress, {
+      toValue: 1, duration, easing: Easing.out(Easing.cubic), useNativeDriver: false,
+    });
+    transition.start(({ finished }) =&gt; { if (finished) input.current?.focus(); });
+    return () =&gt; transition.stop();
+  }, [canExpand, duration, progress]);
+
+  const openChat = useCallback((chatId: string, focusMessageId?: string) =&gt; {
+    if (opening.current) return;
+    opening.current = true;
+    Keyboard.dismiss();
+    router.push({
+      pathname: &apos;/chat/[chatId]&apos;,
+      params: focusMessageId ? { chatId, focusMessageId } : { chatId },
+    });
+  }, [router]);
+
+  return (
+    &lt;View style={styles.screen} accessibilityViewIsModal&gt;
+      &lt;Animated.View
+        pointerEvents=&quot;none&quot;
+        style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.bg.app, opacity: progress }]}
+      /&gt;
+      &lt;View style={[styles.toolbar, { marginTop: insets.top }]}&gt;
+        &lt;Animated.View style={{ marginLeft: insets.left + 4, opacity: progress }}&gt;
+          &lt;IconButton iconName=&quot;nav.back&quot; accessibilityLabel=&quot;Go back&quot; onPress={() =&gt; goBackOrReplace(router)} /&gt;
+        &lt;/Animated.View&gt;
+        &lt;Animated.View style={[
+          styles.field,
+          {
+            left: canExpand ? progress.interpolate({ inputRange: [0, 1], outputRange: [startLeft, insets.left + 52] }) : insets.left + 52,
+            right: canExpand ? progress.interpolate({ inputRange: [0, 1], outputRange: [width - startLeft - SEARCH_BUTTON_WIDTH, insets.right + 12] }) : insets.right + 12,
+          },
+        ]}&gt;
+          &lt;SearchField
+            inputRef={input}
+            placeholder=&quot;Search chats and messages&quot;
+            accessibilityLabel=&quot;Search chats and messages&quot;
+            autoCapitalize=&quot;none&quot;
+            autoCorrect={false}
+            onSearch={setQuery}
+            debounceMs={0}
+          /&gt;
+        &lt;/Animated.View&gt;
+      &lt;/View&gt;
+      &lt;Animated.View style={[styles.screen, { opacity: progress, paddingBottom: insets.bottom }]}&gt;
+        {!normalized ? (
+          &lt;EmptyState iconName=&quot;action.search&quot; title=&quot;Search DoloGram&quot; message=&quot;Find conversations, messages and attachments.&quot; /&gt;
+        ) : error &amp;&amp; chats.length === 0 ? (
+          &lt;ErrorState title=&quot;Couldn&apos;t load chats&quot; message=&quot;Try searching again.&quot; onRetry={() =&gt; void reload()} /&gt;
+        ) : loading ? (
+          &lt;ActivityIndicator style={styles.loader} color={theme.colors.brand.primary} accessibilityLabel=&quot;Loading chats&quot; /&gt;
+        ) : (
+          &lt;SearchResults key={JSON.stringify([normalized, chatIds])} chats={chats} chatIds={chatIds} userId={userId} query={normalized} openChat={openChat} /&gt;
+        )}
+      &lt;/Animated.View&gt;
+    &lt;/View&gt;
+  );
+}
+
+type Result = { chat: ChatListItem } | { message: MessageMatch };
+
+function SearchResults({ chats, chatIds, userId, query, openChat }: {
+  chats: ChatListItem[];
+  chatIds: string;
+  userId: string;
+  query: string;
+  openChat: (chatId: string, messageId?: string) =&gt; void;
+}) {
+  const theme = useTheme();
+  const chatsById = useMemo(() =&gt; new Map(chats.map((chat) =&gt; [chat.chatId, chat])), [chats]);
+  const [results, setResults] = useState&lt;MessageMatch[]&gt;([]);
+  const [next, setNext] = useState&lt;SearchCursor | null&gt;(null);
+  const [request, setRequest] = useState&lt;{ cursor: SearchCursor | null }&gt;({ cursor: null });
+  const [settled, setSettled] = useState&lt;typeof request | null&gt;(null);
+  const [failed, setFailed] = useState(false);
+  const loading = settled !== request;
+
+  useEffect(() =&gt; subscribeCacheChange(() =&gt; setRequest({ cursor: null })), []);
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+    const search = async () =&gt; {
+      try {
+        const page = chatIds === &apos;[]&apos; ? { matches: [], next: null } : await searchCachedMessages(
+          await getLocalDatabase(), userId, chatIds, query, request.cursor, controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        setResults((previous) =&gt; request.cursor ? [...previous, ...page.matches] : page.matches);
+        setNext(page.next);
+        setFailed(false);
+      } catch {
+        if (!controller.signal.aborted) setFailed(true);
+      } finally {
+        if (!controller.signal.aborted) setSettled(request);
+      }
+    };
+    const timer = setTimeout(() =&gt; void search(), request.cursor ? 0 : 150);
+    return () =&gt; { clearTimeout(timer); controller.abort(); };
+  }, [chatIds, query, request, userId]);
+
+  const matchingChats = chats.filter((chat) =&gt; normalizeSearch(chat.title).includes(query));
+  const messages = results.filter((message) =&gt; chatsById.has(message.chatId));
+  const sections: { title: string; data: Result[] }[] = [
+    { title: &apos;Chats&apos;, data: matchingChats.map((chat) =&gt; ({ chat })) },
+    { title: &apos;Messages&apos;, data: messages.map((message) =&gt; ({ message })) },
+  ].filter((section) =&gt; section.data.length &gt; 0);
+
+  return (
+    &lt;SectionList&lt;Result&gt;
+      sections={sections}
+      keyboardShouldPersistTaps=&quot;handled&quot;
+      keyboardDismissMode=&quot;on-drag&quot;
+      stickySectionHeadersEnabled={false}
+      keyExtractor={(item) =&gt; &apos;chat&apos; in item ? `chat:${item.chat.chatId}` : item.message.messageId}
+      renderSectionHeader={({ section }) =&gt; (
+        &lt;Text accessibilityRole=&quot;header&quot; style={[styles.section, textStyle(theme.typeTokens.titleSm), { color: theme.colors.text.primary }]}&gt;
+          {section.title}
+        &lt;/Text&gt;
+      )}
+      renderItem={({ item }) =&gt; {
+        if (&apos;chat&apos; in item) return &lt;ChatRow item={item.chat} onPress={openChat} /&gt;;
+        const { message } = item;
+        const title = chatsById.get(message.chatId)?.title ?? &apos;&apos;;
+        const date = new Date(message.createdAt).toLocaleDateString([], { dateStyle: &apos;medium&apos; });
+        return (
+          &lt;Pressable
+            accessibilityRole=&quot;button&quot;
+            accessibilityLabel={`${title}, ${message.sender}, ${date}, ${message.preview}`}
+            onPress={() =&gt; openChat(message.chatId, message.messageId)}
+            style={({ pressed }) =&gt; [styles.message, pressed &amp;&amp; { backgroundColor: theme.colors.bg.pressed }]}
+          &gt;
+            &lt;Text numberOfLines={1} style={[textStyle(theme.typeTokens.labelMd), { color: theme.colors.text.primary }]}&gt;
+              {title} · {message.sender} · {date}
+            &lt;/Text&gt;
+            &lt;Text numberOfLines={2} style={[textStyle(theme.typeTokens.bodyMd), { color: theme.colors.text.secondary }]}&gt;
+              {message.preview}
+            &lt;/Text&gt;
+          &lt;/Pressable&gt;
+        );
+      }}
+      contentContainerStyle={sections.length === 0 ? styles.emptyList : undefined}
+      ListEmptyComponent={loading || failed ? null : (
+        &lt;EmptyState iconName=&quot;action.search&quot; title=&quot;No results&quot; message=&quot;Try a different word or phrase.&quot; /&gt;
+      )}
+      ListFooterComponent={loading ? (
+        &lt;ActivityIndicator style={styles.loader} color={theme.colors.brand.primary} accessibilityLabel=&quot;Searching messages&quot; /&gt;
+      ) : failed ? (
+        &lt;View style={styles.footer}&gt;
+          &lt;Text accessibilityRole=&quot;alert&quot; style={[textStyle(theme.typeTokens.bodyMd), { color: theme.colors.error.text }]}&gt;
+            {&quot;Couldn&apos;t search messages.&quot;}
+          &lt;/Text&gt;
+          &lt;Button variant=&quot;secondary&quot; label=&quot;Retry&quot; onPress={() =&gt; setRequest({ ...request })} /&gt;
+        &lt;/View&gt;
+      ) : next ? (
+        &lt;View style={styles.footer}&gt;
+          &lt;Button variant=&quot;secondary&quot; label=&quot;Show more messages&quot; onPress={() =&gt; setRequest({ cursor: next })} /&gt;
+        &lt;/View&gt;
+      ) : null}
+    /&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  toolbar: { height: 56, justifyContent: &apos;center&apos;, alignItems: &apos;flex-start&apos; },
+  field: { position: &apos;absolute&apos;, top: 8, overflow: &apos;hidden&apos;, borderRadius: 24 },
+  emptyList: { flexGrow: 1 },
+  loader: { marginVertical: 24 },
+  section: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },

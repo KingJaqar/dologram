@@ -1,0 +1,180 @@
+      });
+    }
+    if (rows.length &lt; BATCH_SIZE) break;
+    const last = rows[rows.length - 1];
+    after = { createdAt: last.created_at, messageId: last.message_id };
+  }
+  return { matches, next: null };
+}</file><file path="apps/mobile/AGENTS.md">This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+
+## Expo has changed — do not trust your training data
+
+Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+
+1. Read the major version of the `expo` package in `package.json`.
+2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v&lt;major&gt;.0.0/`
+3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+
+## Commands
+
+Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+
+```bash
+npx expo install &lt;package&gt;  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+npx expo start              # start the dev server
+npx expo lint               # lint
+npx tsc --noEmit            # typecheck
+npx expo-doctor             # diagnose dependency and config issues
+npx expo install --fix      # fix incompatible package versions
+```
+
+Run lint and typecheck before declaring any task done.
+
+## Navigation &amp; Routing
+
+- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
+- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
+- Docs: https://docs.expo.dev/router/introduction.md
+
+## Building with EAS
+
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli &lt;command&gt;` in Bun projects, or `npx eas-cli@latest &lt;command&gt;` otherwise; substitute that for bare `eas` in docs examples.
+Docs: https://docs.expo.dev/eas/index.md
+
+## Rules
+
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md</file><file path="apps/mobile/app.json">{
+  &quot;expo&quot;: {
+    &quot;name&quot;: &quot;DoloGram&quot;,
+    &quot;slug&quot;: &quot;dologram&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;orientation&quot;: &quot;portrait&quot;,
+    &quot;scheme&quot;: &quot;dologram&quot;,
+    &quot;icon&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+    &quot;userInterfaceStyle&quot;: &quot;automatic&quot;,
+    &quot;ios&quot;: {
+      &quot;supportsTablet&quot;: true
+    },
+    &quot;android&quot;: {
+      &quot;package&quot;: &quot;com.dologram.app&quot;,
+      &quot;adaptiveIcon&quot;: {
+        &quot;foregroundImage&quot;: &quot;./assets/logo/dologram_logo.png&quot;,
+        &quot;backgroundColor&quot;: &quot;#0B6E69&quot;
+      },
+      &quot;permissions&quot;: [&quot;BLUETOOTH_CONNECT&quot;],
+      &quot;predictiveBackGestureEnabled&quot;: false
+    },
+    &quot;web&quot;: {
+      &quot;favicon&quot;: &quot;./assets/logo/dologram_logo.png&quot;
+    },
+    &quot;plugins&quot;: [
+      &quot;expo-router&quot;,
+      &quot;expo-status-bar&quot;,
+      &quot;expo-splash-screen&quot;,
+      &quot;expo-sqlite&quot;,
+      &quot;expo-audio&quot;,
+      &quot;expo-video&quot;,
+      &quot;expo-sharing&quot;,
+      &quot;expo-notifications&quot;,
+      [
+        &quot;expo-media-library&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to show them in the attachment tray.&quot;,
+          &quot;granularPermissions&quot;: [&quot;photo&quot;, &quot;video&quot;]
+        }
+      ],
+      &quot;expo-font&quot;,
+      [
+        &quot;expo-image-picker&quot;,
+        {
+          &quot;photosPermission&quot;: &quot;DoloGram needs access to your photos and videos to attach them.&quot;
+        }
+      ],
+      [
+        &quot;@livekit/react-native-expo-plugin&quot;,
+        {
+          &quot;android&quot;: {
+            &quot;audioType&quot;: &quot;communication&quot;,
+            &quot;enableScreenShareService&quot;: false
+          }
+        }
+      ],
+      [
+        &quot;@config-plugins/react-native-webrtc&quot;,
+        {
+          &quot;cameraPermission&quot;: &quot;DoloGram uses your camera for video calls.&quot;,
+          &quot;microphonePermission&quot;: &quot;DoloGram uses your microphone for calls.&quot;
+        }
+      ]
+    ],
+    &quot;extra&quot;: {
+      &quot;router&quot;: {},
+      &quot;eas&quot;: {
+        &quot;projectId&quot;: &quot;95bc3ce9-004a-43f2-97c1-05f9c609b466&quot;
+      }
+    },
+    &quot;owner&quot;: &quot;alex123superman&quot;
+  }
+}</file><file path="apps/mobile/jest.config.js">/** @type {import(&apos;jest&apos;).Config} */
+module.exports = {
+  preset: &apos;jest-expo&apos;,
+  testMatch: [
+    &apos;**/__tests__/**/*.test.{ts,tsx}&apos;,
+    &apos;**/*.test.{ts,tsx}&apos;,
+  ],
+  // Allow jest-expo to find @react-native/jest-preset from the workspace node_modules
+  modulePaths: [
+    &apos;&lt;rootDir&gt;/node_modules&apos;,
+    &apos;&lt;rootDir&gt;/../../node_modules&apos;,
+  ],
+  moduleNameMapper: {
+    &apos;^@dologram/shared$&apos;: &apos;&lt;rootDir&gt;/../../packages/shared/src/index.ts&apos;,
+    // Mock AsyncStorage so tests don&apos;t require a native module
+    &apos;^@react-native-async-storage/async-storage$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.js&apos;,
+    // Force lucide-react-native to use the CJS build so Jest doesn&apos;t see ESM
+    &apos;^lucide-react-native$&apos;:
+      &apos;&lt;rootDir&gt;/../../node_modules/lucide-react-native/dist/cjs/lucide-react-native.js&apos;,
+    // Reanimated&apos;s native worklet runtime is unavailable in Jest; use its
+    // official mock while keeping UI-thread animations in the app build.
+    &apos;^react-native-reanimated$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-reanimated.ts&apos;,
+    &apos;^react-native-gesture-handler$&apos;:
+      &apos;&lt;rootDir&gt;/test/mocks/react-native-gesture-handler.tsx&apos;,
+  },
+  // Extend jest-expo&apos;s transformIgnorePatterns to include our packages
+  transformIgnorePatterns: [
+    &apos;/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|standard-navigation|lucide-react-native|react-native-markdown-display|react-native-svg|@dologram))&apos;,
+    &apos;/node_modules/react-native-reanimated/plugin/&apos;,
+    &apos;/node_modules/@react-native/babel-preset/&apos;,
+  ],
+};</file><file path="apps/mobile/package.json">{
+  &quot;name&quot;: &quot;@dologram/mobile&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;main&quot;: &quot;expo-router/entry&quot;,
+  &quot;dependencies&quot;: {
+    &quot;@config-plugins/react-native-webrtc&quot;: &quot;15.0.2&quot;,
+    &quot;@dologram/shared&quot;: &quot;*&quot;,
+    &quot;@expo-google-fonts/inter&quot;: &quot;0.4.2&quot;,
+    &quot;@expo-google-fonts/jetbrains-mono&quot;: &quot;0.4.1&quot;,
+    &quot;@livekit/react-native&quot;: &quot;3.1.0&quot;,
+    &quot;@livekit/react-native-expo-plugin&quot;: &quot;1.1.0&quot;,
+    &quot;@livekit/react-native-webrtc&quot;: &quot;150.1.1&quot;,
+    &quot;@react-native-async-storage/async-storage&quot;: &quot;2.2.0&quot;,
+    &quot;@react-native-community/netinfo&quot;: &quot;12.0.1&quot;,
+    &quot;@supabase/supabase-js&quot;: &quot;2.119.0&quot;,
+    &quot;base64-arraybuffer&quot;: &quot;1.0.2&quot;,
+    &quot;expo&quot;: &quot;~57.0.32&quot;,
+    &quot;expo-audio&quot;: &quot;~57.0.5&quot;,
+    &quot;expo-clipboard&quot;: &quot;~57.0.2&quot;,
+    &quot;expo-constants&quot;: &quot;~57.0.23&quot;,
+    &quot;expo-crypto&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-dev-client&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-document-picker&quot;: &quot;~57.0.3&quot;,
+    &quot;expo-file-system&quot;: &quot;~57.0.7&quot;,
+    &quot;expo-font&quot;: &quot;~57.0.4&quot;,
+    &quot;expo-image-manipulator&quot;: &quot;~57.0.22&quot;,
+    &quot;expo-image-picker&quot;: &quot;~57.0.21&quot;,
+    &quot;expo-linking&quot;: &quot;~57.0.13&quot;,

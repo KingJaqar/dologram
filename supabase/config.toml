@@ -1,0 +1,17 @@
+[functions.sign-in-username]
+verify_jwt = false
+
+[functions.send-push-notifications]
+verify_jwt = false
+
+[functions.call-action]
+verify_jwt = true
+
+[functions.call-token]
+verify_jwt = true
+
+[functions.livekit-webhook]
+verify_jwt = false
+
+[functions.reconcile-calls]
+verify_jwt = false

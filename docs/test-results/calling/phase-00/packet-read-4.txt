@@ -1,0 +1,14 @@
+    &quot;scan:mobile-bundle&quot;: &quot;powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1&quot;
+  },
+  &quot;overrides&quot;: {
+    &quot;react&quot;: &quot;19.2.3&quot;,
+    &quot;react-dom&quot;: &quot;19.2.3&quot;,
+    &quot;react-native-reanimated&quot;: &quot;4.5.1&quot;,
+    &quot;react-native-worklets&quot;: &quot;0.10.1&quot;,
+    &quot;expo-asset&quot;: &quot;57.0.21&quot;,
+    &quot;expo-constants&quot;: &quot;57.0.23&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@react-native/jest-preset&quot;: &quot;0.86.3&quot;
+  }
+}</file></files></repomix>

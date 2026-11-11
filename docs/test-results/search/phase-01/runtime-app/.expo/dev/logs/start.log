@@ -1,0 +1,17 @@
+{"_e":"root:init","_t":1794410833825,"format":"v0-jsonl","version":"57.0.33"}
+{"_e":"env:mode","_t":1794410833829,"nodeEnv":"production","babelEnv":"production","mode":"production"}
+{"_e":"env:load","_t":1794410833846,"mode":"production","files":[],"env":{}}
+{"_e":"devserver:start","_t":1794410835417,"mode":"production","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1794410837516,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1794410839044,"plugins":[]}
+{"_e":"metro:instantiate","_t":1794410840547,"atlas":false,"workers":2,"host":"::","port":8085}
+{"_e":"metro:server_log","_t":1794410852998,"level":"warn","data":["Failed to download the latest version of React Native DevTools. Using a fallback version instead. Connect to the internet or check your network settings."]}
+{"_e":"root:init","_t":1794410958570,"format":"v0-jsonl","version":"57.0.33"}
+{"_e":"env:mode","_t":1794410958576,"nodeEnv":"production","babelEnv":"production","mode":"production"}
+{"_e":"env:load","_t":1794410958592,"mode":"production","files":[],"env":{}}
+{"_e":"devserver:start","_t":1794410959733,"mode":"production","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1794410961033,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1794410961496,"plugins":[]}
+{"_e":"metro:instantiate","_t":1794410962085,"atlas":false,"workers":2,"host":"::","port":8085}
+{"_e":"metro:bundling:started","_t":1794410986238,"id":"1","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794410999028,"id":"1","total":694,"ms":12790.0068}

@@ -1,0 +1,20 @@
+{
+  "serial": "127.0.0.1:16480",
+  "instance": "MuMuPlayerGlobal-12.0-3",
+  "name": "dologram",
+  "android_version": "12",
+  "primary_abi": "x86_64",
+  "package": "com.dologram.app",
+  "version_name": "1.0.0",
+  "version_code": 1,
+  "min_sdk": 24,
+  "target_sdk": 36,
+  "first_install_time": "2026-11-08 19:50:46",
+  "last_update_time": "2026-11-11 10:20:26",
+  "apk_sha256": "fb5aef22cee1a524e1e8063e11335c9a86df606ac93213b82808e6e30f090331",
+  "apk_bytes": 105754324,
+  "livekit_webrtc_native_files": [],
+  "dex_symbol_matches": [],
+  "chrome_installed": true,
+  "app_launched_or_modified": false
+}

@@ -1,0 +1,195 @@
+    "react-native-gesture-handler": "3.5.0",
+    "react-native-markdown-display": "7.0.2",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
+    "react-native-url-polyfill": "4.0.0",
+    "tus-js-client": "4.3.1"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "0.86.3",
+    "@testing-library/react-native": "13.3.3",
+    "@types/jest": "29.5.14",
+    "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.2",
+    "jest": "~29.7.0",
+    "jest-expo": "57.0.6",
+    "react-test-renderer": "19.2.3",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "lint": "expo lint"
+  },
+  "private": true
+}
+SOURCE packages/shared/src/chats/contacts.ts
+/**
+ * People the caller may put into a group (M2-07, AND-11, D-58, D-70).
+ *
+ * D-70 only allows adding a member who already shares a chat with the member adding them, so the
+ * eligible set is exactly the other members of the chats the caller already belongs to. The rows
+ * come from the local cache, which holds every synced `chat_members` row, so the list works with
+ * the same data the chat list already uses.
+ */
+import { strings } from '../strings';
+
+export type ContactCandidate = {
+  userId: string;
+  displayName: string;
+};
+
+/** One `chat_members` row joined with the cached profile name, as the SQL adapter returns it. */
+export type CachedContactRow = {
+  user_id: string;
+  display_name: string | null;
+};
+
+/** Group members besides the creator (D-58: at most 100 members, so at most 99 added). */
+export const maxSelectableMembers = 99;
+
+function compareContacts(a: ContactCandidate, b: ContactCandidate): number {
+  const left = a.displayName.toLowerCase();
+  const right = b.displayName.toLowerCase();
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0;
+}
+
+/**
+ * Distinct people who share a chat with the caller, without the caller and without `exclude`
+ * (the members a chat already has). Sorted by display name, then user id.
+ */
+export function buildContactList(
+  rows: readonly CachedContactRow[],
+  userId: string,
+  exclude: readonly string[] = [],
+): ContactCandidate[] {
+  const seen = new Set<string>(exclude);
+  const contacts: ContactCandidate[] = [];
+
+  for (const row of rows) {
+    if (row.user_id === userId || seen.has(row.user_id)) continue;
+    seen.add(row.user_id);
+    contacts.push({
+      userId: row.user_id,
+      displayName: row.display_name ?? strings.chatList.unknownMember,
+    });
+  }
+
+  return contacts.sort(compareContacts);
+}
+
+/**
+ * Adds or removes one selected member, never exceeding `max` (D-58). A selection at the limit is
+ * returned unchanged, so the screen can disable the further checkboxes.
+ */
+export function toggleContactSelection(
+  selected: readonly string[],
+  userId: string,
+  max: number,
+): readonly string[] {
+  if (selected.includes(userId)) {
+    return selected.filter((id) => id !== userId);
+  }
+  if (selected.length >= max) {
+    return selected;
+  }
+  return [...selected, userId];
+}
+SOURCE packages/shared/src/chats/direct.ts
+/**
+ * Direct-chat lookup (M2-07, D-70, C-8).
+ *
+ * chats.direct_key is unique on the server, so a second direct chat for the same pair is rejected.
+ * Before inserting the three rows of a direct chat the client checks the synced local cache for an
+ * existing chat with that member and opens it instead. Archived direct chats still count: D-70 says
+ * a user hides an unwanted direct chat by archiving it, so archiving must not create a second one.
+ * Saved Messages is a direct chat with only the caller as a member. A self-chat lookup therefore
+ * resolves to that one-member chat instead of trying to create a two-member direct chat.
+ */
+import type { ChatListSourceRow } from '../chatList/types';
+
+export type DirectChatLookup = {
+  /** The signed-in user. */
+  userId: string;
+  /** The user the caller wants to message. */
+  otherUserId: string;
+};
+
+/** The cached direct chat with `otherUserId`, or null when there is none. */
+export function findDirectChatId(
+  rows: readonly ChatListSourceRow[],
+  lookup: DirectChatLookup,
+): string | null {
+  for (const row of rows) {
+    if (row.chat.type !== 'direct') continue;
+    if (lookup.otherUserId === lookup.userId) {
+      if (row.chat.direct_key === lookup.userId) {
+        return row.chat.chat_id;
+      }
+      continue;
+    }
+    if (row.otherMemberId === lookup.otherUserId) {
+      return row.chat.chat_id;
+    }
+  }
+  return null;
+}
+SOURCE packages/shared/src/queue/types.ts
+/**
+ * Queue contracts (M2-02, M2-03, LS-1 to LS-3, LS-7 to LS-9, D-06, D-10, D-27, D-77, D-93).
+ *
+ * The queue is the device-local record of 6.2: `temp_id` equals the `message_id` the row will use
+ * (D-10), the payload is the insert it will send, and the status is the LS-2 set. Storage is a
+ * platform adapter (expo-sqlite on mobile); everything here is platform-agnostic so the state
+ * machine can be tested with a fake store, a fake clock and an injected fetch.
+ */
+
+/** LS-2. The two Low Signal labels are presentation refinements, not extra states (D-17). */
+export type QueueStatus = 'queued' | 'sending' | 'sent' | 'failed';
+
+import type { MediaType } from '../config';
+
+/** A file copied into app-private storage before a message enters the durable queue (M3-02). */
+export type QueuedAttachment = {
+  media_id: string;
+  media_type: MediaType;
+  mime: string;
+  size_bytes: number;
+  local_uri: string;
+  compressed: boolean;
+};
+
+/** The payload of an outgoing message, including its optional attachment work (M3-02). */
+export type TextQueuePayload = {
+  kind: 'text';
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  reply_to: string | null;
+  attachment_count: number;
+  attachments: QueuedAttachment[];
+  /** LS-6: the Force Low Signal Mode preference captured when the item was queued. */
+  force_low_signal?: boolean;
+  /** Device-only feedback intent, never included in the server message insert. */
+  feedback?: 'forward';
+};
+
+export type QueuePayload = TextQueuePayload;
+
+export type QueueItem = {
+  /** Equals the message_id the delivered row uses (D-10). */
+  temp_id: string;
+  /** Copy of `payload.chat_id`, so per-chat strict order needs no JSON parse (D-93). */
+  chat_id: string;
+  payload: QueuePayload;
+  status: QueueStatus;
+  /** D-77: counts only attempts made while connected that failed with a network or server error. */

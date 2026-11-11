@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "Search Phase 0 Fixture",
+    "slug": "search-phase00-fixture",
+    "scheme": "dologram",
+    "android": { "package": "com.dologram.app" }
+  }
+}

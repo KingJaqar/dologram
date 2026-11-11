@@ -1,0 +1,12 @@
+{
+  "task_server_pid": 29256,
+  "task_server_stopped": true,
+  "initial_task_cleanup": {
+    "activity_force_stopped": true,
+    "reverse_8084_removed": true,
+    "original_five_mappings_observed": true
+  },
+  "later_observation": "Emulator process and port mapping recreated under host-19 after cleanup; no task fixture node process or TCP 8084 listener found. Later state left untouched.",
+  "later_raw_state": "cleanup-later-state.json",
+  "task_native_fixture_database": "closed in finally; memory only; result emitted after closure"
+}

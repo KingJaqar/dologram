@@ -1,0 +1,95 @@
+--- baseline/Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md
++++ Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md
+@@ -344,6 +344,61 @@
+ - **Required items:** (1) baseline scripts/harness/results and input snapshots classified; (2) exact native/server package candidates, peer/version/module-loading and audio/permission APIs established without upgrading the app stack; (3) schema, service-only RPC, request/response/error and admission-fencing contracts finalized; (4) isolated targets, scheduler capabilities, test accounts, permitted media peer, artifacts/upload permissions and quota inventory recorded, with each unresolved dependency assigned to its affected gate; (5) version/config/build-change list and deterministic test/rollback procedures recorded with no material interface ambiguity.
+ - **Baseline/gate:** V0 and source/API contract verification. This phase's discovery can finish while a later external gate is blocked, provided its blocker and precise discovery/resolution step are recorded. Native two-way media and end-to-end token revocation are **Phases 2-4 tests**, not claims made by a static Phase 0 review.
+ 
++
++#### Phase 0 progress — 2026-11-11 (Asia/Manila)
++
++**Status: Complete — 100% of Phase 0; overall calling-plan progress 11%
++(5/45 equal-weight items). Phases 1–8 have not started.** This execution note
++supersedes the historical audit-only/no-phase-started statements for Phase 0
++only. No calling runtime, migration, remote configuration, build or deployment
++was implemented. Phase 0 explicitly requires feasibility/contracts rather than
++calling stubs. [Phase report](../docs/test-results/calling/phase-00.md),
++[context index](../docs/test-results/calling/phase-00/context-index.md).
++
++| Item | Initial classification | Verified completion evidence |
++| --- | --- | --- |
++| (1) Baseline/harness/snapshots | Partially done: scripts/history existed; no current baseline. | Complete: 54-file secret-free recoverable working-copy snapshot; bounded current checks with failures classified; Git ownership and concurrent changes recorded. |
++| (2) Exact SDK/module/API contracts | Not started: no LiveKit installed or exact set selected. | Complete for discovery: six exact candidates/peer ranges and integrity-verified sources; module guards, public media/permission APIs and route-observation limitation documented; in-memory config probe passed; four Deno SDK probes passed. Native compilation/media remain Phases 2–4 gates. |
++| (3) Schema/RPC/wire/fencing | Partially done: prose proposals existed. | Complete: contracts.md fixes schemas, service-only RPC arguments, response/error/status/revision serialization, ownership, concurrent admission leases, lifecycle idempotency, deletion/provisioning fencing and cleanup. No SQL/function implementation started. |
++| (4) Isolated targets/resources | Partially done: historical inventory only. | Complete discovery: named MuMu confirmed by config+ADB; local and installed APKs separately hashed/inspected; EAS account/build/actual quota read; cached Deno/SQL CLI found. Missing disposable target/provider credentials, real peer proof, upload authorization and scheduler state assigned to later gates in compatibility.md. |
++| (5) Versions/config/checks/rollback | Partially done: general versions/build notes existed. | Complete: versions.md candidate table, exact later Expo plugin/install changes, bounded test procedures and nondestructive rollback/build gates recorded. No native/config/package modification. |
++
++**Checks actually run:** typecheck passed; shared Vitest 19 files/147 tests
++passed with a pre-existing config warning; existing Deno push tests 4/4 passed;
++pinned SDK contract tests 4/4 passed; in-memory candidate config probe passed;
++Expo public config passed. Pre-existing lint: 13 errors/3 warnings. Full Jest:
++initial sandbox cache EPERM (0 tests); diagnosed writable-cache run exceeded
++180 seconds after 10 suites printed PASS, so no full-suite pass. Cleanup failure
++was diagnosed and subsequent process inventory showed no task-owned test process.
++Expo install --check failed against the offline SDK map on existing RNGH 3.5.0
++(expected ~2.32.0). Full logs and invocation errors are preserved; no suppressions
++or unrelated repairs. Document/contract preservation checks are in the phase report.
++
++**Discrepancies/instructions:** current migrations end at 028, not the audit's
++027; preserve 028 and inspect target history before allocating a calling version.
++Use repository-mandated `expo install`, despite LiveKit's generic npm-install
++example. Mobile AGENTS describes src/app while the current routes/config use app;
++Phase 0 adds no routes and preserves the current layout. Existing lint/Jest/doctor
++historical results are superseded only by the current classified evidence above.
++SDK route selection resolves void with no public current-route getter; CALL-07
++needs actual supported-state/media evidence in Phase 3, not an invented API.
++Concurrent MediaPickerPanel preview edits were detected, inspected for relevance
++and preserved. No shared theme/UI behavior changed.
++
++**Later gates, not Phase 0 acceptance credit:** dedicated Supabase target/history/
++Auth schema and disposable accounts (B1); LiveKit project/secrets/webhook/Cron
++state and project budget (B5); compatible new APK and explicit cloud source-upload
++authorization (B2); real two-endpoint media/capture support (B3); native bridge
++(B6). Deno/SQL CLI discovery resolves the PATH-only part of B4. Current EAS query
++shows 6/15 Android builds used, 9 remaining for November; no quota consumed here.
++Both inspected APKs lack LiveKit/WebRTC; installed APK differs from the local dev
++APK. No live provider, SQL RLS/concurrency, media, rollback or release gate passed.
++
++**Next phase ready to start: yes, independent Phase 1 authoring only**, using
++these contracts and a fresh local migration inventory. Live SQL/type generation
++wait for a confirmed disposable target and any required remote-write authorization.
++Do not start Phase 1 under this Phase-0-only request.
++
+ ### Phase 1 — Database, authorization, and durable scheduling
+ 
+ - **Scope/requirements:** CALL-03-CALL-06, CALL-11-CALL-12, CALL-17.
+--- baseline/docs/versions.md
++++ docs/versions.md
+@@ -70,3 +70,28 @@
+ `overrides` also pin `react`/`react-dom` to 19.2.3 and `expo-asset` 57.0.21 / `expo-constants` 57.0.23,
+ because npm otherwise hoists a second, newer React and a second `expo-asset` (SDK 58) next to the SDK
+ 57 ones. `npx expo-doctor` reports 21/21 checks passing after these pins.
++
++## Calling Phase 0 — candidates verified 2026-11-11
++
++These are exact **selected candidates, not installed packages or verified native
++build support**. Expo 57.0.32, React Native 0.86.3 and React 19.2.3 remain unchanged.
++
++| Candidate | Exact version | Intended location |
++| --- | --- | --- |
++| @livekit/react-native | 3.1.0 | Mobile; Phase 3 native integration. |
++| @livekit/react-native-webrtc | 150.1.1 | Mobile; Phase 3 native integration. |
++| @livekit/react-native-expo-plugin | 1.1.0 | Mobile Expo configuration. |
++| @config-plugins/react-native-webrtc | 15.0.2 | Mobile Expo configuration. |
++| livekit-client | 2.23.0 | Mobile transport; native imports capability-gated. |
++| livekit-server-sdk | 2.19.3 | Edge only, exact Deno npm import. |
++
++Published peer ranges, integrity-verified package sources and in-memory Expo
++plugin evaluation were checked. Deno 2.9.6 executed four pinned-server SDK probes.
++Native build/media/real token revocation remain later gates. No dependency or
++lockfile changed. See [compatibility and resource inventory](test-results/calling/phase-00/compatibility.md)
++and [finalized contracts](test-results/calling/phase-00/contracts.md).
++
++Current `expo install --check` using the offline SDK map reports an existing
++react-native-gesture-handler mismatch (installed 3.5.0, expected ~2.32.0). The
++historical doctor pass above is not current evidence for that changed dependency.
++No downgrade, broad dependency fix or native build was performed in calling Phase 0.

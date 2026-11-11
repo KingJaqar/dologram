@@ -1,0 +1,1033 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand
+
+FAIL src/__tests__/signUp.test.tsx (20.339 s)
+  ● AND-01b Create account › a duplicate email shows the taken message
+
+    Unable to find an element with text: An account with this email already exists.
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Create account
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email"
+                    editable={true}
+                    value="new@example.com"
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value="abcdefghijkl"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    At least 12 characters
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Confirm password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Confirm password"
+                    editable={true}
+                    value="abcdefghijkl"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    Passwords match
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Username"
+                    editable={true}
+                    value="new_user"
+                  />
+                </View>
+                <View>
+                  <Text
+                    accessibilityRole="alert"
+                  >
+                    Checking availability…
+                  </Text>
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    5–32 characters, starts with a letter, letters/numbers/underscores only
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Display name
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Display name"
+                    editable={true}
+                    value="New User"
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Create account"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Create account
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Already have an account? Sign in"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Already have an account? Sign in
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      138 |     fireEvent.press(createButton(screen));
+      139 |
+    > 140 |     await waitFor(() => {
+          |                  ^
+      141 |       expect(screen.getByText(strings.signUp.emailTaken)).toBeTruthy();
+      142 |     });
+      143 |   });
+
+      at Object.<anonymous> (src/__tests__/signUp.test.tsx:140:18)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● AND-01b Create account › a taken username shows the username message
+
+    Unable to find an element with text: This username is taken.
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Create account
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email"
+                    editable={true}
+                    value="new@example.com"
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value="abcdefghijkl"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    At least 12 characters
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Confirm password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Confirm password"
+                    editable={true}
+                    value="abcdefghijkl"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    Passwords match
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Username"
+                    editable={true}
+                    value="new_user"
+                  />
+                </View>
+                <View>
+                  <Text
+                    accessibilityRole="alert"
+                  >
+                    Checking availability…
+                  </Text>
+                </View>
+              </View>
+              <View>
+                <View>
+                  <View>
+                    <Text>
+                      ✓
+                    </Text>
+                  </View>
+                  <Text>
+                    5–32 characters, starts with a letter, letters/numbers/underscores only
+                  </Text>
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Display name
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Display name"
+                    editable={true}
+                    value="New User"
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Create account"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Create account
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Already have an account? Sign in"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Already have an account? Sign in
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      157 |     fireEvent.press(createButton(screen));
+      158 |
+    > 159 |     await waitFor(() => {
+          |                  ^
+      160 |       expect(screen.getByText(strings.signUp.usernameTaken)).toBeTruthy();
+      161 |     });
+      162 |   });
+
+      at Object.<anonymous> (src/__tests__/signUp.test.tsx:159:18)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+FAIL src/__tests__/signIn.test.tsx (5.357 s)
+  ● AND-01 Sign in › an invalid email shows the field error and sends nothing
+
+    Unable to find an element with accessibility label: Email
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Sign in
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email or username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email or username"
+                    editable={true}
+                    value=""
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View
+                accessibilityLabel="Save login info"
+                accessibilityRole="switch"
+                accessibilityState={
+                  {
+                    "checked": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <View>
+                  <Text>
+                    Save login info
+                  </Text>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Sign in"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Sign in
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Forgot your password?"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Forgot your password?
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Create account"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Create account
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      73 |     const screen = render(<SignInScreen />, { wrapper: Wrapper });
+      74 |
+    > 75 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.email), 'not-an-email');
+         |                                 ^
+      76 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.password), 'a-password');
+      77 |     fireEvent.press(signInButton(screen));
+      78 |
+
+      at Object.getByLabelText (src/__tests__/signIn.test.tsx:75:33)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● AND-01 Sign in › a blank password is refused before sending
+
+    Unable to find an element with accessibility label: Email
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Sign in
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email or username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email or username"
+                    editable={true}
+                    value=""
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View
+                accessibilityLabel="Save login info"
+                accessibilityRole="switch"
+                accessibilityState={
+                  {
+                    "checked": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <View>
+                  <Text>
+                    Save login info
+                  </Text>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Sign in"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Sign in
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Forgot your password?"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Forgot your password?
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Create account"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Create account
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      86 |     const screen = render(<SignInScreen />, { wrapper: Wrapper });
+      87 |
+    > 88 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.email), 'user@example.com');
+         |                                 ^
+      89 |     fireEvent.press(signInButton(screen));
+      90 |
+      91 |     await waitFor(() => {
+
+      at Object.getByLabelText (src/__tests__/signIn.test.tsx:88:33)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● AND-01 Sign in › a 400 from Auth shows the single wrong-credentials message
+
+    Unable to find an element with accessibility label: Email
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Sign in
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email or username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email or username"
+                    editable={true}
+                    value=""
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View
+                accessibilityLabel="Save login info"
+                accessibilityRole="switch"
+                accessibilityState={
+                  {
+                    "checked": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <View>
+                  <Text>
+                    Save login info
+                  </Text>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Sign in"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Sign in
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Forgot your password?"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Forgot your password?
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Create account"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Create account
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      100 |     const screen = render(<SignInScreen />, { wrapper: Wrapper });
+      101 |
+    > 102 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.email), 'user@example.com');
+          |                                 ^
+      103 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.password), 'a-password');
+      104 |     fireEvent.press(signInButton(screen));
+      105 |
+
+      at Object.getByLabelText (src/__tests__/signIn.test.tsx:102:33)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● AND-01 Sign in › a 429 from Auth shows the rate-limit message
+
+    Unable to find an element with accessibility label: Email
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView>
+        <View>
+          <View>
+            <Text>
+              DoloGram
+            </Text>
+            <Text
+              accessibilityRole="header"
+            >
+              Sign in
+            </Text>
+            <View>
+              <View>
+                <Text>
+                  Email or username
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Email or username"
+                    editable={true}
+                    value=""
+                  />
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View>
+                <Text>
+                  Password
+                </Text>
+                <View>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    editable={true}
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Show password"
+                      accessibilityRole="button"
+                      accessible={true}
+                    >
+                      <RNSVGSvgView
+                        accessibilityElementsHidden={true}
+                        accessibilityRole="image"
+                        aria-hidden="true"
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        <RNSVGGroup>
+                          <RNSVGPath />
+                          <RNSVGCircle />
+                        </RNSVGGroup>
+                      </RNSVGSvgView>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+              <View />
+              <View
+                accessibilityLabel="Save login info"
+                accessibilityRole="switch"
+                accessibilityState={
+                  {
+                    "checked": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <View>
+                  <Text>
+                    Save login info
+                  </Text>
+                </View>
+                <View>
+                  <View />
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityLabel="Sign in"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+              >
+                <Text>
+                  Sign in
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityLabel="Forgot your password?"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Forgot your password?
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Create account"
+              accessibilityRole="link"
+              accessible={true}
+            >
+              <Text>
+                Create account
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      114 |     const screen = render(<SignInScreen />, { wrapper: Wrapper });
+      115 |
+    > 116 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.email), 'user@example.com');
+          |                                 ^
+      117 |     fireEvent.changeText(screen.getByLabelText(strings.signIn.password), 'a-password');
+      118 |     fireEvent.press(signInButton(screen));
+      119 |
+
+      at Object.getByLabelText (src/__tests__/signIn.test.tsx:116:33)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+(node:2860) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Test Suites: 2 failed, 13 passed, 15 total
+Tests:       6 failed, 70 passed, 76 total
+Snapshots:   0 total
+Time:        69.854 s, estimated 86 s
+Ran all test suites.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path G:\codebase\DoloGram\apps\mobile
+npm error workspace @dologram/mobile@1.0.0
+npm error location G:\codebase\DoloGram\apps\mobile
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c jest --runInBand

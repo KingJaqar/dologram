@@ -1,0 +1,9 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand src/components/__tests__/VoiceRecordButton.test.tsx
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        18.478 s
+Ran all test suites matching src/components/__tests__/VoiceRecordButton.test.tsx.

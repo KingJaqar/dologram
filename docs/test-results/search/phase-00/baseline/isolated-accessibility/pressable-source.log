@@ -1,0 +1,12 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase00-jest-isolated-cache --runTestsByPath src/__tests__/a11yPressableSource.test.ts
+
+PASS src/__tests__/a11yPressableSource.test.ts (5.943 s)
+  √ mobile Pressable controls declare an accessibilityLabel (762 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        12.897 s
+Ran all test suites within paths "src/__tests__/a11yPressableSource.test.ts".

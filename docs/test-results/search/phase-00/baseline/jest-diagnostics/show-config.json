@@ -1,0 +1,23 @@
+{
+  "name": "show-config",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "test",
+    "--",
+    "--runInBand",
+    "--watch=false",
+    "--cacheDirectory",
+    "G:\\codebase\\DoloGram\\.tmp\\search-phase00-jest-cache",
+    "--showConfig"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 47520,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 30,
+  "seconds": 4.02,
+  "log": "docs\\test-results\\search\\phase-00\\baseline\\jest-diagnostics\\show-config.log"
+}

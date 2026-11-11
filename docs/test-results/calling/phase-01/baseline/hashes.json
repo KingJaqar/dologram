@@ -1,0 +1,207 @@
+[
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3A9730DC43FA1FD897E4B3307AC6A0E7367CE02738E3B350E5C1737A34A497C3",
+    "Path": "G:\\codebase\\DoloGram\\Plans\\DoloGram_Voice_Video_Calling_Implementation_Plan.md"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B7D381DD55800D242252E8BF89A40B026586D254E34908210931BC35582396A3",
+    "Path": "G:\\codebase\\DoloGram\\apps\\mobile\\AGENTS.md"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CE08BCBDF1499B4C6A6046DCC1BA9FF689ED2A40C8B2856DB285CA78E994B055",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\AGENTS.md"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7036F31C6E8488F38F82055803551E45E3C886005BF921F78EB9A0CCD08A3E67",
+    "Path": "G:\\codebase\\DoloGram\\package.json"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "215AAD4726B46088CA27A94F2D8F33BC4F4D84073AE3F30B919A6ED45FB135B9",
+    "Path": "G:\\codebase\\DoloGram\\apps\\mobile\\package.json"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3C8AF956C6B43D97A4826DFE89B7D8C0ED4D6167F7A8C72946648F8A4BB2F4CC",
+    "Path": "G:\\codebase\\DoloGram\\packages\\shared\\package.json"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "AAFF219EA77B970D312A167BDC705C63A02EB98B286097843422913916FA1641",
+    "Path": "G:\\codebase\\DoloGram\\packages\\shared\\tsconfig.json"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E5C29269C5FE534722D5B58FDFABDD0650D4D022FE890BE40FA9D74A962E8F15",
+    "Path": "G:\\codebase\\DoloGram\\packages\\shared\\src\\db\\database.types.ts"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9737904ECF7722826B655436C55230868A8B46E9515F10028596B727DEB7BBA4",
+    "Path": "G:\\codebase\\DoloGram\\packages\\shared\\src\\index.ts"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "249FFCD65ACB81B0B222431791984D24F51956B571E6B5F054C8328450B5DBE4",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\config.toml"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "71F006965B1C8299EE8F9CD23CF86F602F512411A19F329521B0845FF1FFC5D8",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\001_create_profiles_table.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "D0AF786A02A8EF4582A0BC73DA0477594D6D931C8394E8EB391FD54B8CDB26C5",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\002_create_chats_table.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "23F40844D120F169764A89A353974D964F6EE87BF7924149E954D035AFD1EFDA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\003_create_chat_members_table.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B726E2B434FD4DF0436A2F250A419756EA358FA585A7F400623E2BB8789D9269",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\004_create_messages_table.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "8EFE9E3C0071E2290FF1D5FC8ADBB7225402B54789A954D6A0F0A39E266F0F35",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\005_enable_rls_profiles.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9786B0EFC4E580E5335D734BD39C188859972B25F435C7D65AA64D795201D321",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\006_enable_rls_chats.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "60B825183FE5F10B3A860409D81DA7F518975EBF42C862230C87737934D79A5D",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\007_enable_rls_chat_members.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B9FE8BA196A29BC39A850EDD44D742E9C25E43526B4F89F2817FD5F9E1370DCA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\008_enable_rls_messages.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1560D149C88E71FCC98FA78352F7ADC2A415CF53AC743CE348AD40D57DB15F82",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\009_seed_owner_profile.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "827D819972E691CAD3835D205C25C1AC14B9EB59E9025CD5268862F56DF3BEFA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\010_create_test_accounts.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0170E6C92DE2A9D3667F7DA7E47142AEFEAA644C819E860D40756AD135F2722C",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\011_create_public_account_profiles.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "034712C98C379FE38A0BF4F7AB20624B8F7F3433E87D4D7D48B630493026EC65",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\012_sync_auth_users_to_profiles.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5A06063726E44C815B2665D84513CCEE9578242558426F6AF7791B19C0724C76",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\013_backfill_missing_auth_profiles.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E0A11A47AF21355F0425BCF3954AAD87659CD632524A97A7238CC06F2EC892FA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\014_create_find_user_rpc.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A6824C19EF1CC71E2BCE333B2A53F422F379E574A9B96594D6F140D7C405DB7E",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\015_restrict_find_user_rpc_grants.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "16B4819DA0E85E1C456BC5E2595C5ECDBA079259AB8E55B4A7DAB3B0C969B9F6",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\016_align_messenger_schema.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "2432DAC6472F9367A945A582D2074D7AA80F651E2D7100E4718F467497EB84AA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\017_fix_chat_member_insert_policy_recursion.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B01722C592404E36FED7E451BC3D8D1BAF3D36DE9939B76230152F6F5581955C",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\018_enable_saved_messages_self_chat.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "4BA46F162284BE227E72122310D9827A595BF95CE718BC01188646B60E1A76F0",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\019_enable_profile_avatars.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "BEC7CAED5A0E9E23299736B216C5A6F056E557AAEEF65F2FE93ABABEA1D318A9",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\020_add_profile_avatar_url.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CB74DAC0957BCC00962474F4855F44151D56A7D11A872BD102F9D459194EBFA7",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\021_enable_chat_attachment_storage.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "FE80E4927C87D840807CB21AFC5940D195FF0625921BBDB25D4E3EE3F46522F7",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\022_add_push_tokens.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E23F3A998B84EF4527E13AF736C04BE557DA28E3E621402F976B455D18E5549D",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\023_notification_delivery_preferences.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7CCBAB6B05B90A303A27312593479AD1619FC22DBEA77F22FDBA23CF976FC505",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\024_soft_delete_chat_attachments.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "EAA96AF25CB1F6CF28E14CD8C95AF3A19455CEC21258FDE4EE561B838DD47EC9",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\025_add_group_chat_avatars.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "55C9E9DC582C1A6FC099A9B2B2DDD8572B7BA34345DFACC8991FF44C520A8CD9",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\026_shared_chat_nicknames.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "4603BBE8ABE3D67ECAF76B3BFC5DBC55F821FA8A8D59544678546E063186DBD3",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\027_unique_folder_names.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "755C33CBDB3B806930CE0D3967D43A3EEB546AD9D2C65B7DFBA18DBCC641E523",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\migrations\\028_enforce_message_character_limit.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A25EF87A2CD675CCD8018CD5E5CCF0CB57B2A5225FA7B3A3A4D7531CD18BD18E",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\tests\\chat_member_insert_policy.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9075700E77A3966137BAA994F69F0BCD86F2FC185DBFDAC6759DE840E2231CB6",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\tests\\delete_chat_attachment.sql"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "DAF059DEC732033730381E246B0869C47F6ABD627BEBAD026B8B2B3F9FD725CA",
+    "Path": "G:\\codebase\\DoloGram\\supabase\\tests\\message_character_limit.sql"
+  }
+]

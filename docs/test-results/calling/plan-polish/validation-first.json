@@ -1,0 +1,27 @@
+{
+  "checks": {
+    "requirements_unique_and_complete": true,
+    "phases_unique_and_complete": true,
+    "every_phase_has_contract_and_five_items": true,
+    "fences_balanced": true,
+    "no_old_device_requirement": true,
+    "no_stale_duplicate_claim": true,
+    "not_claiming_execution": true,
+    "no_credential_markers": true,
+    "application_and_prior_evidence_unchanged": false
+  },
+  "changed_baseline_files": [
+    "apps/mobile/app/(main)/folders.tsx",
+    "apps/mobile/src/components/ChatFilterTabs.tsx",
+    "apps/mobile/src/components/Icon.tsx",
+    "packages/shared/src/db/repositories/folders.ts",
+    "packages/shared/src/strings/index.ts",
+    "packages/shared/src/theme/icons.ts"
+  ],
+  "fingerprinted_files": 288,
+  "plan_lines": 519,
+  "plan_words": 12166,
+  "requirement_count": 18,
+  "phase_count": 9,
+  "plan_sha256": "90bad5388d57739a120eb4c1c01ce3b461c65b9c0926d12d7ba03d86f09acd66"
+}

@@ -1,0 +1,195 @@
+  if (!value) return DEFAULT_CHAT_PREFERENCES;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (typeof parsed !== 'object' || parsed === null) return DEFAULT_CHAT_PREFERENCES;
+    const row = parsed as Partial<ChatPreferences>;
+    return {
+      nickname: typeof row.nickname === 'string' ? row.nickname : DEFAULT_CHAT_PREFERENCES.nickname,
+      theme: isTheme(row.theme) ? row.theme : DEFAULT_CHAT_PREFERENCES.theme,
+      emoji: typeof row.emoji === 'string' && row.emoji.length > 0 ? row.emoji : DEFAULT_CHAT_PREFERENCES.emoji,
+      notifications: typeof row.notifications === 'boolean' ? row.notifications : DEFAULT_CHAT_PREFERENCES.notifications,
+      sounds: typeof row.sounds === 'boolean' ? row.sounds : DEFAULT_CHAT_PREFERENCES.sounds,
+      blocked: typeof row.blocked === 'boolean' ? row.blocked : DEFAULT_CHAT_PREFERENCES.blocked,
+    };
+  } catch {
+    return DEFAULT_CHAT_PREFERENCES;
+  }
+}
+
+export async function loadChatPreferences(userId: string, chatId: string): Promise<ChatPreferences> {
+  return parsePreferences(await AsyncStorage.getItem(storageKey(userId, chatId)));
+}
+
+export async function saveChatPreferences(
+  userId: string,
+  chatId: string,
+  preferences: ChatPreferences,
+): Promise<void> {
+  await AsyncStorage.setItem(storageKey(userId, chatId), JSON.stringify(preferences));
+}
+
+const preferenceWrites = new Map<string, Promise<unknown>>();
+const preferenceListeners = new Map<string, Set<() => void>>();
+
+function notifyPreferenceChange(userId: string, chatId: string): void {
+  preferenceListeners.get(storageKey(userId, chatId))?.forEach((listener) => listener());
+}
+
+export function subscribeChatPreferenceChanges(userId: string, chatId: string, listener: () => void): () => void {
+  const key = storageKey(userId, chatId);
+  const listeners = preferenceListeners.get(key) ?? new Set<() => void>();
+  listeners.add(listener);
+  preferenceListeners.set(key, listeners);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) preferenceListeners.delete(key);
+  };
+}
+
+export async function updateChatPreferences(
+  userId: string,
+  chatId: string,
+  patch: Partial<ChatPreferences>,
+): Promise<ChatPreferences> {
+  const key = storageKey(userId, chatId);
+  const operation = (preferenceWrites.get(key) ?? Promise.resolve()).catch(() => undefined).then(async () => {
+    const next = { ...parsePreferences(await AsyncStorage.getItem(key)), ...patch };
+    await saveChatPreferences(userId, chatId, next);
+    notifyPreferenceChange(userId, chatId);
+    return next;
+  });
+  preferenceWrites.set(key, operation);
+  try { return await operation; }
+  finally { if (preferenceWrites.get(key) === operation) preferenceWrites.delete(key); }
+}
+
+export async function clearChatPreferences(userId: string, chatId: string): Promise<void> {
+  await AsyncStorage.removeItem(storageKey(userId, chatId));
+  notifyPreferenceChange(userId, chatId);
+}
+
+export async function loadPinnedMessageIds(userId: string): Promise<Set<string>> {
+  const value = await AsyncStorage.getItem(`${PINNED_MESSAGES_KEY}:${userId}`);
+  if (!value) return new Set();
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export async function savePinnedMessageIds(userId: string, ids: Iterable<string>): Promise<void> {
+  await AsyncStorage.setItem(`${PINNED_MESSAGES_KEY}:${userId}`, JSON.stringify([...ids]));
+}
+SOURCE apps/mobile/src/components/SearchField.tsx
+/**
+ * CMP-03: Search field — height 40, full radius, debounced filtering.
+ * 12.5, D-95
+ */
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  TextInput,
+  View,
+  Pressable,
+  StyleSheet,
+  type TextInputProps,
+} from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
+import { textStyle } from '../theme/typography';
+import { Icon } from './Icon';
+
+export interface SearchFieldProps extends Omit<TextInputProps, 'onChangeText'> {
+  /** Called ~150 ms after the user stops typing. */
+  onSearch: (query: string) => void;
+  debounceMs?: number;
+  inputRef?: React.Ref<TextInput>;
+}
+
+export function SearchField({
+  onSearch,
+  debounceMs = 150,
+  placeholder = 'Search',
+  inputRef,
+  ...inputProps
+}: SearchFieldProps) {
+  const theme = useTheme();
+  const c = theme.colors;
+  const [value, setValue] = useState('');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleChange = (text: string) => {
+    setValue(text);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (debounceMs === 0) onSearch(text);
+    else timerRef.current = setTimeout(() => onSearch(text), debounceMs);
+  };
+
+  const handleClear = () => {
+    setValue('');
+    if (timerRef.current) clearTimeout(timerRef.current);
+    onSearch('');
+  };
+
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          height: 40,
+          borderRadius: theme.radius.full,
+          backgroundColor: c.bg.surface,
+          paddingHorizontal: theme.space[3],
+        },
+      ]}
+    >
+      <Icon name="action.search" size="sm" color={c.text.muted} />
+
+      <TextInput
+        ref={inputRef}
+        style={[
+          styles.input,
+          { ...textStyle(theme.typeTokens.bodyMd), color: c.text.primary },
+        ]}
+        value={value}
+        onChangeText={handleChange}
+        placeholder={placeholder}
+        placeholderTextColor={c.text.muted}
+        returnKeyType="search"
+        clearButtonMode="never"
+        accessibilityRole="search"
+        {...inputProps}
+      />
+
+      {value.length > 0 ? (
+        <Pressable
+          onPress={handleClear}
+          accessibilityLabel="Clear search"
+          accessibilityRole="button"
+          style={styles.clearButton}
+          hitSlop={8}
+        >
+          <Icon name="nav.close" size="sm" color={c.text.muted} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  input: { flex: 1 },
+  clearButton: { padding: 2 },
+});
+SOURCE apps/mobile/src/queue/events.ts
+/** Queue change notifications used by the chat screen to repaint LS-2 status captions. */

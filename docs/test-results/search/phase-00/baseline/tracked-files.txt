@@ -1,0 +1,5 @@
+Documentation/DoloGram_Documentation_v3.docx
+Documentation/DoloGram_Documentation_v4.docx
+Documentation/DoloGram_Documentation_v5.docx
+Documentation/DoloGram_Documentation_v6.docx
+README.md

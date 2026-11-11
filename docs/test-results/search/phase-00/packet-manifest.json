@@ -1,0 +1,128 @@
+{
+  "version": "1.18.1",
+  "compression": false,
+  "security_checks": "enabled; no suspicious files",
+  "sha256": "8992e012a17905811e84a24e77547f06cb5effc75376aca27117e0e12c033538",
+  "bytes": 50942,
+  "token_estimate": 14049,
+  "selectors": "apps/mobile/AGENTS.md,supabase/AGENTS.md,package.json,apps/mobile/package.json,packages/shared/package.json,apps/mobile/app.json,apps/mobile/jest.config.js,apps/mobile/src/search/query.ts,apps/mobile/src/search/__tests__/query.test.ts,apps/mobile/src/search/__tests__/SearchScreen.test.tsx,apps/mobile/src/components/SearchField.tsx,apps/mobile/app/search.tsx,apps/mobile/app/chat/*/search.tsx",
+  "entries": [
+    {
+      "path": "apps/mobile/app/chat/[chatId]/search.tsx",
+      "sha256": "19f189bd0a81a5ede74f5ac7c7f657f8b9cb22635f5d819f862aa22642a459ca",
+      "lines": 83,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/app/search.tsx",
+      "sha256": "f77d91e5f467b8d447957ce9d0e570903c86c156f73462fcb1dc4ad78f731699",
+      "lines": 226,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/src/components/SearchField.tsx",
+      "sha256": "410c15b4412bebc2157e83f5d086ce6ca7baa8b5a6b58bb4ae634a319b7bec0b",
+      "lines": 108,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/query.test.ts",
+      "sha256": "24011de9eb4771482271c75f76f581a7efa4a31484928c650f2462e8f36f7935",
+      "lines": 92,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/src/search/__tests__/SearchScreen.test.tsx",
+      "sha256": "10417de6de16ec898beea3c49f5472db77134c423fe96c8046367905262ef046",
+      "lines": 83,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/src/search/query.ts",
+      "sha256": "7b584556cbc2139516f75a50c928351b9b9f3374ece2b2e88345a82d86a07d08",
+      "lines": 86,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/AGENTS.md",
+      "sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3",
+      "lines": 41,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "56e6165be3cdd14d0735742d811b95fe46ca03b774041a9a97292ecd56a55df6",
+      "lines": 73,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/jest.config.js",
+      "sha256": "e74ec653b4e00f652a6c5b85c68a22b042a3844a8f5a362e58031bdd045c2218",
+      "lines": 34,
+      "complete": true
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "5bbcb737d3ec3a0cf4cd53673fc1a7744f15832fa66984f91ce8051bc2917c52",
+      "lines": 72,
+      "complete": true
+    },
+    {
+      "path": "packages/shared/package.json",
+      "sha256": "3c8af956c6b43d97a4826dfe89b7d8c0ed4d6167f7a8c72946648f8a4bb2f4cc",
+      "lines": 19,
+      "complete": true
+    },
+    {
+      "path": "supabase/AGENTS.md",
+      "sha256": "ce08bcbdf1499b4c6a6046dcc1ba9ff689ed2a40c8b2856db285ca78e994b055",
+      "lines": 4,
+      "complete": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "7036f31c6e8488f38f82055803551e45e3c886005bf921f78eb9a0ccd08a3e67",
+      "lines": 26,
+      "complete": true
+    }
+  ],
+  "omissions": [],
+  "chunks": [
+    {
+      "path": "packet-read-1.txt",
+      "start_line": 1,
+      "end_line": 170,
+      "characters": 10951
+    },
+    {
+      "path": "packet-read-2.txt",
+      "start_line": 171,
+      "end_line": 350,
+      "characters": 8977
+    },
+    {
+      "path": "packet-read-3.txt",
+      "start_line": 351,
+      "end_line": 530,
+      "characters": 7173
+    },
+    {
+      "path": "packet-read-4.txt",
+      "start_line": 531,
+      "end_line": 710,
+      "characters": 10586
+    },
+    {
+      "path": "packet-read-5.txt",
+      "start_line": 711,
+      "end_line": 890,
+      "characters": 8958
+    },
+    {
+      "path": "packet-read-6.txt",
+      "start_line": 891,
+      "end_line": 980,
+      "characters": 4262
+    }
+  ]
+}

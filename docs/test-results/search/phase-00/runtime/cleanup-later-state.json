@@ -1,0 +1,13 @@
+{
+  "fixture_activity_stopped": false,
+  "added_reverse_8084_removed": false,
+  "preexisting_reverse_mappings_preserved": false,
+  "current_reverse_mappings": [
+    "host-19 tcp:8082 tcp:8082",
+    "host-13 tcp:8305 tcp:8305",
+    "host-13 tcp:8081 tcp:8081",
+    "host-13 tcp:8083 tcp:8083",
+    "host-13 tcp:8311 tcp:8311",
+    "host-19 tcp:8084 tcp:8084"
+  ]
+}

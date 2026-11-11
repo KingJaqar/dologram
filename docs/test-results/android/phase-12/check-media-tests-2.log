@@ -1,0 +1,10 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand src/media/__tests__ src/components/__tests__/MediaComposer.test.tsx
+
+
+Test Suites: 5 passed, 5 total
+Tests:       20 passed, 20 total
+Snapshots:   0 total
+Time:        17.518 s
+Ran all test suites matching src/media/__tests__|src/components/__tests__/MediaComposer.test.tsx.

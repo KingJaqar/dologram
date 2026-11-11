@@ -1,0 +1,42 @@
+{
+  "node": {
+    "version": "v24.13.1",
+    "exit_code": 0
+  },
+  "npm": {
+    "version": "11.8.0",
+    "exit_code": 0
+  },
+  "repomix": {
+    "version": "1.18.1",
+    "exit_code": 0
+  },
+  "expo": {
+    "version": "57.0.32",
+    "path": "node_modules\\expo\\package.json"
+  },
+  "expo-router": {
+    "version": "57.0.30",
+    "path": "node_modules\\expo-router\\package.json"
+  },
+  "expo-sqlite": {
+    "version": "57.0.4",
+    "path": "node_modules\\expo-sqlite\\package.json"
+  },
+  "react-native": {
+    "version": "0.86.3",
+    "path": "node_modules\\react-native\\package.json"
+  },
+  "react": {
+    "version": "19.2.3",
+    "path": "node_modules\\react\\package.json"
+  },
+  "jest": {
+    "version": "29.7.0",
+    "path": "apps\\mobile\\node_modules\\jest\\package.json"
+  },
+  "jest-expo": {
+    "version": "57.0.6",
+    "path": "apps\\mobile\\node_modules\\jest-expo\\package.json"
+  }
+}

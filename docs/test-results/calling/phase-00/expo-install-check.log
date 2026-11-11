@@ -1,0 +1,9 @@
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+Networking has been disabled
+Unable to reach well-known versions endpoint. Using local dependency map expo/bundledNativeModules.json for version validation
+Dependency validation is unreliable in offline-mode
+The following packages should be updated for best compatibility with the installed expo version:
+  react-native-gesture-handler@3.5.0 - expected version: ~2.32.0
+Your project may not work correctly until you install the expected versions of the packages.
+Found outdated dependencies

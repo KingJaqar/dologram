@@ -1,0 +1,798 @@
+<repomix><file_summary>This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where content has been formatted for parsing in xml style.<purpose>This file contains a packed representation of a subset of the repository&apos;s contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: supabase/tests/calling_phase_1.sql, packages/shared/src/db/database.types.ts
+- Files matching these patterns are excluded: node_modules, dist, .expo, .tmp, docs/test-results/calling/phase-01/baseline, *.env, *.env.*, *.pem, *.key
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been formatted for parsing in xml style
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure>packages/
+  shared/
+    src/
+      db/
+        database.types.ts
+supabase/
+  tests/
+    calling_phase_1.sql</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="packages/shared/src/db/database.types.ts">// Database types for the DoloGram Supabase project (D-56).
+//
+// PROVENANCE: transcription of the binding contract in v14 6.2 and M1-01 (column names, uuid ids,
+// timestamptz timestamps, bigint counters, smallint attachment_count, text[] premium_flags). It is
+// written in the shape `supabase gen types typescript` emits so that `npm run gen:types` can replace
+// this file unchanged once M1-01 to M1-06 are applied to the hosted project.
+//
+// Calling rows/functions are included from the Phase 1 migration contract. Target-generated output
+// remains pending until that migration is applied to a disposable target; the shared DoloGram target
+// is not an isolated verification environment. Columns written by triggers or inside the database
+// (chat_id/storage_path/sync_seq on message_media
+// and reactions) are optional on Insert, matching the client-writable column set of 10.5.
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type Database = {
+  public: {
+    Tables: {
+      calls: {
+        Row: {
+          accepted_at: string | null;
+          call_id: string;
+          callee_id: string;
+          caller_id: string;
+          chat_id: string;
+          connected_at: string | null;
+          connect_expires_at: string | null;
+          created_at: string;
+          ended_at: string | null;
+          ended_by: string | null;
+          end_reason: string | null;
+          media_type: string;
+          request_id: string;
+          revision: number;
+          ring_expires_at: string;
+          status: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          call_id?: string;
+          callee_id: string;
+          caller_id: string;
+          chat_id: string;
+          connected_at?: string | null;
+          connect_expires_at?: string | null;
+          created_at?: string;
+          ended_at?: string | null;
+          ended_by?: string | null;
+          end_reason?: string | null;
+          media_type: string;
+          request_id: string;
+          revision?: number;
+          ring_expires_at: string;
+          status: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          call_id?: string;
+          callee_id?: string;
+          caller_id?: string;
+          chat_id?: string;
+          connected_at?: string | null;
+          connect_expires_at?: string | null;
+          created_at?: string;
+          ended_at?: string | null;
+          ended_by?: string | null;
+          end_reason?: string | null;
+          media_type?: string;
+          request_id?: string;
+          revision?: number;
+          ring_expires_at?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;calls_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+        ];
+      };
+      call_participants: {
+        Row: {
+          call_id: string;
+          connected: boolean;
+          connection_generation: number;
+          joined_at: string | null;
+          left_at: string | null;
+          revision: number;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          call_id: string;
+          connected?: boolean;
+          connection_generation?: number;
+          joined_at?: string | null;
+          left_at?: string | null;
+          revision?: number;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          call_id?: string;
+          connected?: boolean;
+          connection_generation?: number;
+          joined_at?: string | null;
+          left_at?: string | null;
+          revision?: number;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;call_participants_call_id_fkey&apos;;
+            columns: [&apos;call_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;calls&apos;;
+            referencedColumns: [&apos;call_id&apos;];
+          },
+        ];
+      };
+      chat_members: {
+        Row: {
+          archived: boolean;
+          chat_id: string;
+          joined_at: string;
+          last_read_seq: number;
+          muted_until: string | null;
+          nickname?: string | null;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          archived?: boolean;
+          chat_id: string;
+          joined_at?: string;
+          last_read_seq?: number;
+          muted_until?: string | null;
+          nickname?: string | null;
+          role?: string;
+          user_id: string;
+        };
+        Update: {
+          archived?: boolean;
+          chat_id?: string;
+          joined_at?: string;
+          last_read_seq?: number;
+          muted_until?: string | null;
+          nickname?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;chat_members_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;chat_members_user_id_fkey&apos;;
+            columns: [&apos;user_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+      chats: {
+        Row: {
+          avatar_url?: string | null;
+          chat_id: string;
+          created_at: string;
+          created_by: string;
+          direct_key: string | null;
+          next_seq: number;
+          title: string | null;
+          type: string;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          chat_id: string;
+          created_at?: string;
+          created_by: string;
+          direct_key?: string | null;
+          next_seq?: number;
+          title?: string | null;
+          type: string;
+        };
+        Update: {
+          avatar_url?: string | null;
+          chat_id?: string;
+          created_at?: string;
+          created_by?: string;
+          direct_key?: string | null;
+          next_seq?: number;
+          title?: string | null;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;chats_created_by_fkey&apos;;
+            columns: [&apos;created_by&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+      folder_chats: {
+        Row: {
+          chat_id: string;
+          folder_id: string;
+        };
+        Insert: {
+          chat_id: string;
+          folder_id: string;
+        };
+        Update: {
+          chat_id?: string;
+          folder_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;folder_chats_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;folder_chats_folder_id_fkey&apos;;
+            columns: [&apos;folder_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;folders&apos;;
+            referencedColumns: [&apos;folder_id&apos;];
+          },
+        ];
+      };
+      folders: {
+        Row: {
+          folder_id: string;
+          name: string;
+          user_id: string;
+        };
+        Insert: {
+          folder_id: string;
+          name: string;
+          user_id: string;
+        };
+        Update: {
+          folder_id?: string;
+          name?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;folders_user_id_fkey&apos;;
+            columns: [&apos;user_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+      message_media: {
+        Row: {
+          chat_id: string;
+          compressed: boolean;
+          deleted_at: string | null;
+          media_id: string;
+          media_type: string;
+          message_id: string;
+          storage_path: string;
+          sync_seq: number;
+        };
+        Insert: {
+          chat_id?: string;
+          compressed?: boolean;
+          deleted_at?: string | null;
+          media_id: string;
+          media_type: string;
+          message_id: string;
+          storage_path?: string;
+          sync_seq?: number;
+        };
+        Update: {
+          chat_id?: string;
+          compressed?: boolean;
+          deleted_at?: string | null;
+          media_id?: string;
+          media_type?: string;
+          message_id?: string;
+          storage_path?: string;
+          sync_seq?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;message_media_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;message_media_message_id_fkey&apos;;
+            columns: [&apos;message_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;messages&apos;;
+            referencedColumns: [&apos;message_id&apos;];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          attachment_count: number;
+          chat_id: string;
+          content: string;
+          created_at: string;
+          deleted_at: string | null;
+          edited_at: string | null;
+          message_id: string;
+          reply_to: string | null;
+          sender_id: string;
+          seq: number;
+          sync_seq: number;
+        };
+        Insert: {
+          attachment_count?: number;
+          chat_id: string;
+          content?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          message_id: string;
+          reply_to?: string | null;
+          sender_id: string;
+          seq?: number;
+          sync_seq?: number;
+        };
+        Update: {
+          attachment_count?: number;
+          chat_id?: string;
+          content?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          message_id?: string;
+          reply_to?: string | null;
+          sender_id?: string;
+          seq?: number;
+          sync_seq?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;messages_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;messages_reply_to_fkey&apos;;
+            columns: [&apos;reply_to&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;messages&apos;;
+            referencedColumns: [&apos;message_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;messages_sender_id_fkey&apos;;
+            columns: [&apos;sender_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+      profiles: {
+        Row: {
+          avatar_url: string | null;
+          display_name: string;
+          premium_flags: string[] | null;
+          user_id: string;
+          username: string;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          display_name: string;
+          premium_flags?: string[] | null;
+          user_id: string;
+          username: string;
+        };
+        Update: {
+          avatar_url?: string | null;
+          display_name?: string;
+          premium_flags?: string[] | null;
+          user_id?: string;
+          username?: string;
+        };
+        Relationships: [];
+      };
+      push_tokens: {
+        Row: {
+          android_channel_id: string | null;
+          badges: boolean;
+          created_at: string;
+          last_seen_at: string;
+          message_previews: boolean;
+          platform: string;
+          preview_text: boolean;
+          sounds: boolean;
+          token: string;
+          user_id: string;
+          vibration: boolean;
+        };
+        Insert: {
+          android_channel_id?: string | null;
+          badges?: boolean;
+          created_at?: string;
+          last_seen_at?: string;
+          message_previews?: boolean;
+          platform?: string;
+          preview_text?: boolean;
+          sounds?: boolean;
+          token: string;
+          user_id: string;
+          vibration?: boolean;
+        };
+        Update: {
+          android_channel_id?: string | null;
+          badges?: boolean;
+          created_at?: string;
+          last_seen_at?: string;
+          message_previews?: boolean;
+          platform?: string;
+          preview_text?: boolean;
+          sounds?: boolean;
+          token?: string;
+          user_id?: string;
+          vibration?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;push_tokens_user_id_fkey&apos;;
+            columns: [&apos;user_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+      reactions: {
+        Row: {
+          chat_id: string;
+          emoji: string;
+          message_id: string;
+          removed_at: string | null;
+          sync_seq: number;
+          user_id: string;
+        };
+        Insert: {
+          chat_id?: string;
+          emoji: string;
+          message_id: string;
+          removed_at?: string | null;
+          sync_seq?: number;
+          user_id: string;
+        };
+        Update: {
+          chat_id?: string;
+          emoji?: string;
+          message_id?: string;
+          removed_at?: string | null;
+          sync_seq?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: &apos;reactions_chat_id_fkey&apos;;
+            columns: [&apos;chat_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;chats&apos;;
+            referencedColumns: [&apos;chat_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;reactions_message_id_fkey&apos;;
+            columns: [&apos;message_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;messages&apos;;
+            referencedColumns: [&apos;message_id&apos;];
+          },
+          {
+            foreignKeyName: &apos;reactions_user_id_fkey&apos;;
+            columns: [&apos;user_id&apos;];
+            isOneToOne: false;
+            referencedRelation: &apos;profiles&apos;;
+            referencedColumns: [&apos;user_id&apos;];
+          },
+        ];
+      };
+    };
+    Views: { [_ in never]: never };
+    Functions: {
+      call_complete_cleanup: {
+        Args: { p_error_code?: string | null; p_job_lease_id: string; p_outcome: string };
+        Returns: Json;
+      };
+      call_create: {
+        Args: {
+          p_actor_id: string;
+          p_chat_id: string;
+          p_client_session_id: string;
+          p_media_type: string;
+          p_request_id: string;
+        };
+        Returns: Json;
+      };
+      call_finalize_admission: {
+        Args: {
+          p_actor_id: string;
+          p_admission_id: string;
+          p_call_id: string;
+          p_client_session_id: string;
+          p_epoch: number;
+          p_token_exp: number;
+          p_token_nbf: number;
+        };
+        Returns: Json;
+      };
+      call_finalize_provisioning: {
+        Args: { p_call_id: string; p_epoch: number; p_operation_id: string; p_room_sid: string };
+        Returns: Json;
+      };
+      call_prepare_admission: {
+        Args: { p_actor_id: string; p_call_id: string; p_client_session_id: string };
+        Returns: Json;
+      };
+      call_reconcile: {
+        Args: {
+          p_call_id: string;
+          p_epoch: number;
+          p_job_lease_id: string;
+          p_observation: Json;
+          p_room_generation: number;
+        };
+        Returns: Json;
+      };
+      call_snapshot: {
+        Args: { p_actor_id: string; p_call_id?: string | null; p_client_session_id: string };
+        Returns: Json;
+      };
+      call_transition: {
+        Args: {
+          p_action: string;
+          p_actor_id: string;
+          p_call_id: string;
+          p_client_session_id: string;
+          p_request_id: string;
+        };
+        Returns: Json;
+      };
+      call_worker_tick: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
+      delete_chat_attachment: {
+        Args: { p_media_id: string };
+        Returns: Database[&apos;public&apos;][&apos;Tables&apos;][&apos;message_media&apos;][&apos;Row&apos;];
+      };
+      push_unread_counts: {
+        Args: { recipient_ids: string[] };
+        Returns: { user_id: string; unread_count: number }[];
+      };
+      find_user: {
+        Args: { username: string };
+        Returns: { display_name: string; user_id: string }[];
+      };
+      set_chat_nickname: {
+        Args: { p_chat_id: string; p_nickname: string | null; p_user_id: string };
+        Returns: Database[&apos;public&apos;][&apos;Tables&apos;][&apos;chat_members&apos;][&apos;Row&apos;][];
+      };
+    };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
+  };
+};
+
+type PublicSchema = Database[&apos;public&apos;];
+
+export type Tables&lt;T extends keyof PublicSchema[&apos;Tables&apos;]&gt; = PublicSchema[&apos;Tables&apos;][T][&apos;Row&apos;];</file><file path="supabase/tests/calling_phase_1.sql">-- Phase 1 V1 integration test. Run against an isolated migrated Supabase target with
+-- at least three Auth users. Every fixture and assertion rolls back.
+-- The service-role test below models the verified actor forwarded by call-action; it
+-- does not make a client-supplied actor safe by itself.
+
+begin;
+
+do $$
+declare
+  people uuid[];
+  chat_id uuid := extensions.gen_random_uuid();
+begin
+  select array_agg(id order by id) into people
+  from (select id from auth.users order by id limit 3) users;
+  if cardinality(people) &lt; 3 then
+    raise exception &apos;Requires three isolated Auth users&apos;;
+  end if;
+  perform set_config(&apos;test.caller&apos;, people[1]::text, true);
+  perform set_config(&apos;test.callee&apos;, people[2]::text, true);
+  perform set_config(&apos;test.outsider&apos;, people[3]::text, true);
+  perform set_config(&apos;test.chat_id&apos;, chat_id::text, true);
+  perform set_config(&apos;test.caller_session&apos;, extensions.gen_random_uuid()::text, true);
+  perform set_config(&apos;test.callee_session&apos;, extensions.gen_random_uuid()::text, true);
+  perform set_config(&apos;test.request_id&apos;, extensions.gen_random_uuid()::text, true);
+  perform set_config(&apos;test.transition_id&apos;, extensions.gen_random_uuid()::text, true);
+end;
+$$;
+
+set local role service_role;
+select set_config(&apos;request.jwt.claim.role&apos;, &apos;service_role&apos;, true);
+
+update private.call_settings
+set calling_enabled = true, pilot_user_ids = &apos;{}&apos;, ring_seconds = 30,
+    connect_seconds = 30, reconcile_seconds = 10;
+
+do $$
+declare
+  response jsonb;
+  duplicate jsonb;
+  call_id uuid;
+begin
+  insert into public.chats(chat_id, type, title, created_by)
+  values (current_setting(&apos;test.chat_id&apos;)::uuid, &apos;direct&apos;, null, current_setting(&apos;test.caller&apos;)::uuid);
+  insert into public.chat_members(chat_id, user_id, role)
+  values
+    (current_setting(&apos;test.chat_id&apos;)::uuid, current_setting(&apos;test.caller&apos;)::uuid, &apos;owner&apos;),
+    (current_setting(&apos;test.chat_id&apos;)::uuid, current_setting(&apos;test.callee&apos;)::uuid, &apos;member&apos;);
+
+  response := public.call_create(
+    current_setting(&apos;test.caller&apos;)::uuid,
+    current_setting(&apos;test.chat_id&apos;)::uuid,
+    &apos;voice&apos;,
+    current_setting(&apos;test.request_id&apos;)::uuid,
+    current_setting(&apos;test.caller_session&apos;)::uuid
+  );
+  call_id := (response-&gt;&apos;call&apos;-&gt;&gt;&apos;callId&apos;)::uuid;
+  if call_id is null or response-&gt;&apos;call&apos;-&gt;&gt;&apos;status&apos; &lt;&gt; &apos;ringing&apos; then
+    raise exception &apos;Create did not return a ringing call snapshot&apos;;
+  end if;
+  if (select count(*) from private.call_user_reservations r where r.call_id = call_id) &lt;&gt; 2 then
+    raise exception &apos;Create did not reserve both users&apos;;
+  end if;
+
+  duplicate := public.call_create(
+    current_setting(&apos;test.caller&apos;)::uuid,
+    current_setting(&apos;test.chat_id&apos;)::uuid,
+    &apos;voice&apos;,
+    current_setting(&apos;test.request_id&apos;)::uuid,
+    current_setting(&apos;test.caller_session&apos;)::uuid
+  );
+  if (duplicate-&gt;&apos;call&apos;-&gt;&gt;&apos;callId&apos;) &lt;&gt; call_id::text then
+    raise exception &apos;Duplicate create did not replay the original call&apos;;
+  end if;
+
+end;
+$$;
+
+set local role authenticated;
+select set_config(&apos;request.jwt.claim.role&apos;, &apos;authenticated&apos;, true);
+select set_config(&apos;request.jwt.claim.sub&apos;, current_setting(&apos;test.caller&apos;), true);
+
+do $$
+declare
+  test_call_id uuid := (select c.call_id from public.calls c order by c.created_at desc limit 1);
+begin
+  if (select count(*) from public.calls c where c.call_id = test_call_id) &lt;&gt; 1 then
+    raise exception &apos;Participant cannot read the call row&apos;;
+  end if;
+  begin
+    perform public.call_snapshot(current_setting(&apos;test.caller&apos;)::uuid, current_setting(&apos;test.caller_session&apos;)::uuid, test_call_id);
+    raise exception &apos;A service-only call RPC was callable unexpectedly&apos;;
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    insert into public.calls(call_id, chat_id, caller_id, callee_id, media_type, status, ring_expires_at, request_id)
+    values (extensions.gen_random_uuid(), current_setting(&apos;test.chat_id&apos;)::uuid,
+      current_setting(&apos;test.caller&apos;)::uuid, current_setting(&apos;test.callee&apos;)::uuid,
+      &apos;voice&apos;, &apos;ringing&apos;, timezone(&apos;utc&apos;::text, now()) + interval &apos;30 seconds&apos;, extensions.gen_random_uuid());
+    raise exception &apos;Authenticated client inserted a call row&apos;;
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+select set_config(&apos;request.jwt.claim.sub&apos;, current_setting(&apos;test.outsider&apos;), true);
+do $$
+begin
+  if exists (select 1 from public.calls) or exists (select 1 from public.call_participants) then
+    raise exception &apos;Outsider can read call rows&apos;;
+  end if;
+end;
+$$;
+
+set local role service_role;
+select set_config(&apos;request.jwt.claim.role&apos;, &apos;service_role&apos;, true);
+
+do $$
+declare
+  test_call_id uuid := (select c.call_id from public.calls c order by c.created_at desc limit 1);
+  response jsonb;
+  provisioned jsonb;
+  prepared jsonb;
+  op_id uuid;
+  epoch bigint;
+begin
+  response := public.call_transition(
+    current_setting(&apos;test.callee&apos;)::uuid, test_call_id, &apos;accept&apos;,
+    current_setting(&apos;test.transition_id&apos;)::uuid,
+    current_setting(&apos;test.callee_session&apos;)::uuid
+  );
+  if response-&gt;&apos;call&apos;-&gt;&gt;&apos;status&apos; &lt;&gt; &apos;accepted&apos; then
+    raise exception &apos;Accept did not persist accepted state&apos;;
+  end if;
+
+  prepared := public.call_prepare_admission(
+    current_setting(&apos;test.caller&apos;)::uuid, test_call_id, current_setting(&apos;test.caller_session&apos;)::uuid
+  );
+  if prepared-&gt;&gt;&apos;readiness&apos; &lt;&gt; &apos;provisioning&apos; or prepared-&gt;&gt;&apos;admission_id&apos; is not null then
+    raise exception &apos;Unready room issued an admission&apos;;
+  end if;
+  op_id := (prepared-&gt;&gt;&apos;operation_id&apos;)::uuid;
+  epoch := (prepared-&gt;&gt;&apos;epoch&apos;)::bigint;
+  provisioned := public.call_finalize_provisioning(test_call_id, op_id, epoch, &apos;RM_PHASE1_TEST&apos;);
+  if provisioned-&gt;&gt;&apos;roomSid&apos; &lt;&gt; &apos;RM_PHASE1_TEST&apos; or provisioned-&gt;&gt;&apos;roomGeneration&apos; &lt;&gt; &apos;2&apos; then
+    raise exception &apos;Fenced provisioning did not make the room ready&apos;;
+  end if;
+
+  prepared := public.call_prepare_admission(
+    current_setting(&apos;test.caller&apos;)::uuid, test_call_id, current_setting(&apos;test.caller_session&apos;)::uuid
+  );
+  if prepared-&gt;&gt;&apos;readiness&apos; &lt;&gt; &apos;ready&apos; or prepared-&gt;&gt;&apos;admission_id&apos; is null then
+    raise exception &apos;Ready room did not issue an admission lease&apos;;
+  end if;
+
+  response := public.call_transition(
+    current_setting(&apos;test.caller&apos;)::uuid, test_call_id, &apos;end&apos;,
+    extensions.gen_random_uuid(), current_setting(&apos;test.caller_session&apos;)::uuid
+  );
+  if response-&gt;&apos;call&apos;-&gt;&gt;&apos;status&apos; &lt;&gt; &apos;ended&apos; or response-&gt;&apos;call&apos;-&gt;&gt;&apos;endReason&apos; &lt;&gt; &apos;hangup&apos; then
+    raise exception &apos;Bound participant end did not terminate the call&apos;;
+  end if;
+  if exists (select 1 from private.call_user_reservations r where r.call_id = test_call_id) then
+    raise exception &apos;Terminal call retained a user reservation&apos;;
+  end if;
+  if not exists (select 1 from private.call_jobs j where j.diagnostic_call_id = test_call_id and j.kind = &apos;cleanup&apos;) then
+    raise exception &apos;Terminal call did not enqueue cleanup&apos;;
+  end if;
+
+  if jsonb_typeof(public.call_worker_tick(50)) &lt;&gt; &apos;array&apos; then
+    raise exception &apos;Worker tick returned invalid JSON&apos;;
+  end if;
+end;
+$$;
+
+select &apos;calling phase 1 security, lifecycle, reservation, admission and cleanup checks passed&apos; as result;
+rollback;</file></files></repomix>

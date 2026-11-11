@@ -1,0 +1,35 @@
+{
+  "checks": {
+    "requirements_unique_and_complete": true,
+    "every_requirement_has_work_and_verification": true,
+    "phases_unique_and_complete": true,
+    "every_phase_has_context_components_baseline_and_five_items": true,
+    "major_sections_complete": true,
+    "markdown_fences_balanced": true,
+    "local_markdown_links_exist": true,
+    "corrected_constraints": true,
+    "no_implementation_or_percentage_claim": true,
+    "no_credential_markers": true,
+    "source_refresh_has_no_unreviewed_changes": true
+  },
+  "status": "passed",
+  "fingerprinted_files": 288,
+  "unchanged_since_initial_baseline": 282,
+  "concurrent_external_changes_preserved": [
+    "apps/mobile/app/(main)/folders.tsx",
+    "apps/mobile/src/components/ChatFilterTabs.tsx",
+    "apps/mobile/src/components/Icon.tsx",
+    "packages/shared/src/db/repositories/folders.ts",
+    "packages/shared/src/strings/index.ts",
+    "packages/shared/src/theme/icons.ts"
+  ],
+  "unreviewed_source_changes": [],
+  "missing_links": [],
+  "plan_lines": 520,
+  "plan_words": 12233,
+  "requirements": 18,
+  "phases": 9,
+  "plan_sha256": "f6627108fb9867ae1a912e921dce2d7549e9e7fb2812c92ecf4cac3722937178",
+  "runtime_checks": "not run: planning-only scope",
+  "task_write_boundary": "existing calling plan and docs/test-results/calling/plan-polish artifacts only"
+}

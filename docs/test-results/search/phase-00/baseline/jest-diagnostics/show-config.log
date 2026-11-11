@@ -1,0 +1,217 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase00-jest-cache --showConfig
+
+{
+  "configs": [
+    {
+      "automock": false,
+      "cache": true,
+      "cacheDirectory": "G:\\codebase\\DoloGram\\.tmp\\search-phase00-jest-cache",
+      "clearMocks": false,
+      "collectCoverageFrom": [],
+      "coverageDirectory": "G:\\codebase\\DoloGram\\apps\\mobile\\coverage",
+      "coveragePathIgnorePatterns": [
+        "\\\\node_modules\\\\"
+      ],
+      "cwd": "G:\\codebase\\DoloGram\\apps\\mobile",
+      "detectLeaks": false,
+      "detectOpenHandles": false,
+      "errorOnDeprecated": false,
+      "extensionsToTreatAsEsm": [],
+      "fakeTimers": {
+        "enableGlobally": false
+      },
+      "forceCoverageMatch": [],
+      "globals": {},
+      "haste": {
+        "defaultPlatform": "ios",
+        "platforms": [
+          "android",
+          "ios",
+          "native"
+        ]
+      },
+      "id": "0bf8783bcf88e409e4fa39ef1b51d4ee",
+      "injectGlobals": true,
+      "moduleDirectories": [
+        "node_modules"
+      ],
+      "moduleFileExtensions": [
+        "js",
+        "mjs",
+        "cjs",
+        "jsx",
+        "ts",
+        "tsx",
+        "json",
+        "node"
+      ],
+      "moduleNameMapper": [
+        [
+          "^@dologram/shared$",
+          "G:\\codebase\\DoloGram\\packages\\shared\\src\\index.ts"
+        ],
+        [
+          "^@react-native-async-storage/async-storage$",
+          "G:\\codebase\\DoloGram\\node_modules\\@react-native-async-storage\\async-storage\\jest\\async-storage-mock.js"
+        ],
+        [
+          "^lucide-react-native$",
+          "G:\\codebase\\DoloGram\\node_modules\\lucide-react-native\\dist\\cjs\\lucide-react-native.js"
+        ],
+        [
+          "^react-native-reanimated$",
+          "G:\\codebase\\DoloGram\\apps\\mobile\\test\\mocks\\react-native-reanimated.ts"
+        ],
+        [
+          "^react-native-gesture-handler$",
+          "G:\\codebase\\DoloGram\\apps\\mobile\\test\\mocks\\react-native-gesture-handler.tsx"
+        ],
+        [
+          "^react-native($|/.*)",
+          "G:\\codebase\\DoloGram\\node_modules\\react-native/$1"
+        ],
+        [
+          "^react-native-vector-icons$",
+          "@expo/vector-icons"
+        ],
+        [
+          "^react-native-vector-icons/(.*)",
+          "@expo/vector-icons/$1"
+        ]
+      ],
+      "modulePathIgnorePatterns": [],
+      "modulePaths": [
+        "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules",
+        "G:\\codebase\\DoloGram\\node_modules"
+      ],
+      "openHandlesTimeout": 1000,
+      "prettierPath": "prettier",
+      "resetMocks": false,
+      "resetModules": false,
+      "resolver": "G:\\codebase\\DoloGram\\node_modules\\@react-native\\jest-preset\\jest\\resolver.js",
+      "restoreMocks": false,
+      "rootDir": "G:\\codebase\\DoloGram\\apps\\mobile",
+      "roots": [
+        "G:\\codebase\\DoloGram\\apps\\mobile"
+      ],
+      "runner": "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\jest-runner\\build\\index.js",
+      "sandboxInjectedGlobals": [],
+      "setupFiles": [
+        "G:\\codebase\\DoloGram\\node_modules\\@react-native\\jest-preset\\jest\\setup.js",
+        "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\jest-expo\\src\\preset\\setup.js"
+      ],
+      "setupFilesAfterEnv": [],
+      "skipFilter": false,
+      "slowTestThreshold": 5,
+      "snapshotFormat": {
+        "escapeString": false,
+        "printBasicPrototype": false
+      },
+      "snapshotSerializers": [],
+      "testEnvironment": "G:\\codebase\\DoloGram\\node_modules\\@react-native\\jest-preset\\jest\\react-native-env.js",
+      "testEnvironmentOptions": {},
+      "testLocationInResults": false,
+      "testMatch": [
+        "**/__tests__/**/*.test.{ts,tsx}",
+        "**/*.test.{ts,tsx}"
+      ],
+      "testPathIgnorePatterns": [
+        "\\\\node_modules\\\\"
+      ],
+      "testRegex": [],
+      "testRunner": "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\jest-circus\\runner.js",
+      "transform": [
+        [
+          "^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$",
+          "G:\\codebase\\DoloGram\\node_modules\\@react-native\\jest-preset\\jest\\assetFileTransformer.js",
+          {}
+        ],
+        [
+          "\\.[jt]sx?$",
+          "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\babel-jest\\build\\index.js",
+          {
+            "root": "G:\\codebase\\DoloGram\\apps\\mobile",
+            "babelrcRoots": "G:\\codebase\\DoloGram\\apps\\mobile",
+            "babelrc": true,
+            "configFile": true,
+            "presets": [
+              "G:\\codebase\\DoloGram\\node_modules\\expo\\internal\\babel-preset.js"
+            ],
+            "caller": {
+              "name": "metro",
+              "bundler": "jest",
+              "platform": "ios"
+            }
+          }
+        ],
+        [
+          "^.+\\.(bmp|gif|jpg|jpeg|png|psd|svg|webp|xml|m4v|mov|mp4|mpeg|mpg|webm|aac|aiff|caf|m4a|mp3|wav|html|pdf|yaml|yml|otf|ttf|zip|heic|avif|db)$",
+          "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\jest-expo\\src\\preset\\assetFileTransformer.js",
+          {}
+        ]
+      ],
+      "transformIgnorePatterns": [
+        "\\\\node_modules\\\\(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|standard-navigation|lucide-react-native|react-native-markdown-display|react-native-svg|@dologram))",
+        "\\\\node_modules\\\\react-native-reanimated\\\\plugin\\\\",
+        "\\\\node_modules\\\\@react-native\\\\babel-preset\\\\"
+      ],
+      "watchPathIgnorePatterns": []
+    }
+  ],
+  "globalConfig": {
+    "bail": 0,
+    "changedFilesWithAncestor": false,
+    "ci": true,
+    "collectCoverage": false,
+    "collectCoverageFrom": [],
+    "coverageDirectory": "G:\\codebase\\DoloGram\\apps\\mobile\\coverage",
+    "coverageProvider": "babel",
+    "coverageReporters": [
+      "json",
+      "text",
+      "lcov",
+      "clover"
+    ],
+    "detectLeaks": false,
+    "detectOpenHandles": false,
+    "errorOnDeprecated": false,
+    "expand": false,
+    "findRelatedTests": false,
+    "forceExit": false,
+    "json": false,
+    "lastCommit": false,
+    "listTests": false,
+    "logHeapUsage": false,
+    "maxConcurrency": 5,
+    "maxWorkers": 1,
+    "noStackTrace": false,
+    "nonFlagArgs": [],
+    "notify": false,
+    "notifyMode": "failure-change",
+    "onlyChanged": false,
+    "onlyFailures": false,
+    "openHandlesTimeout": 1000,
+    "passWithNoTests": false,
+    "projects": [],
+    "rootDir": "G:\\codebase\\DoloGram\\apps\\mobile",
+    "runTestsByPath": false,
+    "seed": 1600034568,
+    "skipFilter": false,
+    "snapshotFormat": {
+      "escapeString": false,
+      "printBasicPrototype": false
+    },
+    "testFailureExitCode": 1,
+    "testPathPattern": "",
+    "testSequencer": "G:\\codebase\\DoloGram\\apps\\mobile\\node_modules\\@jest\\test-sequencer\\build\\index.js",
+    "updateSnapshot": "none",
+    "useStderr": false,
+    "watch": false,
+    "watchAll": false,
+    "watchman": true,
+    "workerThreads": false
+  },
+  "version": "29.7.0"
+}

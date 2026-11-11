@@ -1,0 +1,9 @@
+{
+  "snapshot_files": 72,
+  "snapshot_hash_errors": [],
+  "restore_rehearsal": true,
+  "changed_since_baseline": [
+    "apps/mobile/app/chat/[chatId]/index.tsx",
+    "packages/shared/src/strings/index.ts"
+  ]
+}

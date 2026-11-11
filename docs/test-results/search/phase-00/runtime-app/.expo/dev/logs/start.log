@@ -1,0 +1,25 @@
+{"_e":"root:init","_t":1794409257631,"format":"v0-jsonl","version":"57.0.33"}
+{"_e":"env:mode","_t":1794409257634,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1794409257644,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1794409259286,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1794409261347,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1794409264243,"plugins":[]}
+{"_e":"metro:instantiate","_t":1794409265936,"atlas":false,"workers":2,"host":"127.0.0.1","port":8084}
+{"_e":"metro:bundling:started","_t":1794409299871,"id":"1","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794409305348,"id":"1","total":818,"ms":5476.5006}
+{"_e":"metro:bundling:started","_t":1794409346925,"id":"2","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794409347022,"id":"2","total":1,"ms":97.0729}
+{"_e":"metro:bundling:started","_t":1794409368271,"id":"3","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794409368369,"id":"3","total":1,"ms":98.305}
+{"_e":"root:init","_t":1794409398542,"format":"v0-jsonl","version":"57.0.33"}
+{"_e":"env:mode","_t":1794409398545,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1794409398559,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1794409399713,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1794409400851,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1794409401307,"plugins":[]}
+{"_e":"metro:instantiate","_t":1794409405006,"atlas":false,"workers":2,"host":"127.0.0.1","port":8084}
+{"_e":"metro:bundling:started","_t":1794409414568,"id":"1","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794409431830,"id":"1","total":818,"ms":17261.7415}
+{"_e":"metro:bundling:started","_t":1794409463421,"id":"2","platform":"android","environment":null,"entry":"index.tsx"}
+{"_e":"metro:bundling:done","_t":1794409463596,"id":"2","total":1,"ms":173.8795}
+{"_e":"metro:client_log","_t":1794409466361,"level":"info","data":["DG_SEARCH_PHASE00_RESULT","{\"fixture\":\"260 synthetic rows / 35 older-than-latest-200 matches\",\"nativeDatabase\":[{\"seq\":0,\"name\":\"main\",\"file\":\"\"}],\"networkFenceVerified\":true,\"firstPageMs\":52.934834994375706,\"totalMs\":58.436270996928215,\"deliveredMatches\":35,\"batches\":[{\"rows\":200,\"milliseconds\":31.407142996788025},{\"rows\":60,\"milliseconds\":11.292859002947807},{\"rows\":5,\"milliseconds\":5.240455001592636}],\"cancelledReadCount\":0}"]}

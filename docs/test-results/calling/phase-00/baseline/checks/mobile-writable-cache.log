@@ -1,0 +1,15 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --cacheDirectory=G:/codebase/DoloGram/.tmp/calling-phase00/jest-cache
+
+PASS src/notifications/__tests__/actionScreens.test.tsx (41.54 s)
+PASS src/__tests__/signIn.test.tsx (92.075 s)
+PASS src/chatList/__tests__/ChatOrganizationActions.test.tsx
+PASS src/__tests__/accountSwitch.test.tsx (10.204 s)
+PASS src/components/__tests__/Toast.test.tsx
+PASS src/__tests__/signUp.test.tsx (11.507 s)
+ERROR: The user name or password is incorrect.
+PASS src/components/__tests__/MediaPickerPanel.test.tsx
+PASS src/__tests__/changePassword.test.tsx (7.49 s)
+PASS src/components/__tests__/MediaPickerPanel.native.test.tsx
+PASS src/notifications/__tests__/pushNotifications.test.ts

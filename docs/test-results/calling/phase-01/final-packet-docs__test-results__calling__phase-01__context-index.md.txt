@@ -1,0 +1,78 @@
+# Calling Phase 1 context index
+
+2026-11-11, Asia/Manila. Phase 1 offline implementation pass. Entry points:
+[phase report](../phase-01.md), [plan](../../../../Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md),
+[Phase 0 contracts](../phase-00/contracts.md), [scheduler procedure](scheduler.md).
+
+## Checklist
+
+- [x] Read every applicable AGENTS.md/CLAUDE.md; only `apps/mobile/AGENTS.md` and
+  `supabase/AGENTS.md` apply. No root/hidden instruction file was found.
+- [x] Git baseline, ownership inventory, and secret-free recoverable baseline
+  saved before edits. Existing untracked work was preserved.
+- [x] Narrow ripgrep discovery confirmed migration 028, no existing call schema,
+  RPC, shared call type, or call repository.
+- [x] Phase 0 context index/contracts/report were read and reused; current target
+  migration history was independently checked read-only.
+- [x] Scoped Repomix 1.18.1 packet generated with default security checks and
+  parsed; all 53 included entries were enumerated and relevant entries were read
+  in bounded continuations.
+- [x] Relevant baseline checks ran once before editing; affected typecheck/shared
+  tests reran after editing.
+- [ ] Isolated V1 SQL/RLS/concurrency/deletion gate; target unavailable without
+  mutating the shared DoloGram project.
+
+## Ownership and baseline
+
+The repository contains substantial untracked user work. A Phase 1 baseline copy
+of the instructions, plan, manifests, current database types, migration 001–028,
+and existing SQL tests is in `phase-01/baseline/source`; no credentials, `.env`,
+keys, or signing material were copied. The exact pre-edit Git status is in
+`phase-01/baseline/git-status.txt`; hashes are in `phase-01/baseline/hashes.json`.
+
+Phase 1-owned edits are the 029 migration, calling tests, shared call types/repository/
+exports/database contract, this phase report/index/scheduler procedure, and the
+selected Phase 1 progress subsection in the plan. No unrelated user changes were
+reverted, reformatted, or overwritten.
+
+## Repomix packet
+
+- Command: Repomix 1.18.1, XML, parsable style, security checks enabled, no
+  compression, no Git sorting.
+- Selectors: plan, Phase 0 contracts/context/report, applicable instructions,
+  shared DB types/client/repositories/index/package manifests, Supabase config,
+  all migrations 001–028, and all existing SQL tests.
+- Actual included files: 53; packet manifest: `packet-manifest.json`; packet:
+  `context.xml`; packet size: 294,272 bytes / 65,699 tool-estimated tokens.
+- Exclusions: dependencies/build output/scratch/baseline copy and secret-like
+  `.env`, `.pem`, `.key` files. Repomix reported no suspicious files.
+- Read boundaries: XML metadata and directory structure (first bounded chunk),
+  all file entry identities, Phase 0 contracts in three bounded chunks, and the
+  migration/RLS/shared type entries needed for Phase 1. Original source was then
+  re-read for all edited implementation inputs. No compression gaps were used.
+- Packet token-count cache could not persist due sandbox EPERM; XML output itself
+  was written successfully and is the source packet for this phase.
+
+## Confirmed findings and unresolved questions
+
+- Current local and read-only DoloGram target migration history both end at 028;
+  029 is the correct next local filename.
+- Target is Postgres 17.11 and exposes pg_cron, pg_net, Vault, and pgTAP; it has
+  no development branches and contains shared data, so it is not a valid V1 target.
+- Target `auth.users` includes `banned_until`, `deleted_at`, and
+  `raw_app_meta_data`, resolving the Phase 0 Auth-column uncertainty. The
+  migration now checks these values without trusting user metadata.
+- Calling RPCs intentionally require a verified Edge actor forwarded through a
+  service-role request. The SQL layer does not decode or trust an unverified JWT.
+- No provider, LiveKit, Edge Function, scheduler credential, or remote schema was
+  changed. Phase 2 owns provider effects.
+
+## Verification identities
+
+- Pre-edit baseline checks: root typecheck and shared tests passed; mobile lint
+  reproduced the pre-existing 13-error/3-warning failure.
+- Post-edit root typecheck passed with exit code 0.
+- Post-edit shared tests passed: 19 files / 147 tests, with the existing Vite
+  config warning.
+- Live target SQL, generated type output, Supabase advisors after 029, Cron timing,
+  and concurrency are unresolved pending a disposable target.

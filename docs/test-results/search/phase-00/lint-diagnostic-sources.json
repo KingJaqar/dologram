@@ -1,0 +1,51 @@
+[
+  {
+    "path": "apps/mobile/app/chat/[chatId]/group-name.tsx",
+    "sha256": "cae10af4f245ae1327ab131a376d950cf6a66d07ac7de3a8d4942720cc5ef23a",
+    "in_snapshot": false,
+    "same_as_snapshot": false,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/app/chat/[chatId]/info.tsx",
+    "sha256": "9a82a3672ed83cd6b9507d863da9fe4c3750630dbf6613571dd98db230d2bdb8",
+    "in_snapshot": true,
+    "same_as_snapshot": true,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/app/chat/[chatId]/nicknames.tsx",
+    "sha256": "102c4415b613f721fb61465c174185138e410af2f3f44f4f2ac854750ee5ac58",
+    "in_snapshot": false,
+    "same_as_snapshot": false,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/app/new-group.tsx",
+    "sha256": "8a42dae5be1417cb8546553b8489be575888cecd0c3872759a465b18912f1d9c",
+    "in_snapshot": false,
+    "same_as_snapshot": false,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/src/chats/preferences.ts",
+    "sha256": "680e5b8a271ce1b27d2e5fb1a8b530fb34608921897380d7abaffc7e6f505228",
+    "in_snapshot": true,
+    "same_as_snapshot": true,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/src/components/MessageFocusOverlay.tsx",
+    "sha256": "2881a26752b4b0214a265c5b1840c746ada85bc8cae05e3f4149446ef6df072f",
+    "in_snapshot": false,
+    "same_as_snapshot": false,
+    "task_modified": false
+  },
+  {
+    "path": "apps/mobile/src/components/__tests__/Toast.test.tsx",
+    "sha256": "d0f709d969f44b29a0d0d676119220bbd68593e94c7396c65a495ee43cc8bc11",
+    "in_snapshot": false,
+    "same_as_snapshot": false,
+    "task_modified": false
+  }
+]

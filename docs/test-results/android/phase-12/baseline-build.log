@@ -1,0 +1,170 @@
+env: load .env
+env: export EXPO_PUBLIC_DG_DEV_TOOLS EXPO_PUBLIC_DG_LATENCY_LOG EXPO_PUBLIC_SUPABASE_KEY EXPO_PUBLIC_SUPABASE_URL
+Expo Autolinking module resolution enabled
+Starting Metro Bundler
+
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+
+Failed to generate Hermes bytecode for: G:\codebase\DoloGram\node_modules\expo-router\entry.js
+
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:869:13: warning: the variable "Promise" was not declared in anonymous function
+    var z = Promise,
+            ^~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:3444:24: warning: the variable "URL" was not declared in anonymous arrow function
+        props[0] = new URL(props[0], window.location?.origin).toString();
+                       ^~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:3469:42: warning: the variable "fetch" was not declared in anonymous function
+      value: wrapFetchWithWindowLocation(fetch)
+                                         ^~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:5799:57: warning: the variable "AbortSignal" was not declared in anonymous function
+        if (signal !== undefined && !(signal instanceof AbortSignal)) {
+                                                        ^~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:6053:71: warning: the variable "performance" was not declared in anonymous function
+      this._timeStamp = initTimestamp !== undefined ? initTimestamp : performance.now();
+                                                                      ^~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:18391:7: warning: the variable "setTimeout" was not declared in function "logUncaughtError"
+      setTimeout(function () {
+      ^~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:21169:31: warning: the variable "nativeFabricUIManager" was not declared in anonymous function
+  var _nativeFabricUIManage = nativeFabricUIManager,
+                              ^~~~~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:21233:21: warning: the variable "clearTimeout" was not declared in anonymous function
+    cancelTimeout = clearTimeout;
+                    ^~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:26097:15: warning: the variable "Blob" was not declared in anonymous function
+          new Blob();
+              ^~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:26236:24: warning: the variable "FileReader" was not declared in function "readBlobAsArrayBuffer"
+      var reader = new FileReader();
+                       ^~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:26289:40: warning: the variable "FormData" was not declared in anonymous function
+        } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
+                                       ^~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:26291:44: warning: the variable "URLSearchParams" was not declared in anonymous function
+        } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+                                           ^~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:26544:23: warning: the variable "XMLHttpRequest" was not declared in anonymous function
+        var xhr = new XMLHttpRequest();
+                      ^~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:30950:25: warning: the variable "ErrorUtils" was not declared in anonymous function
+    var globalHandler = ErrorUtils.getGlobalHandler();
+                        ^~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:31035:22: warning: the variable "DOMException" was not declared in function "timeout"
+    var reason = new DOMException('The signal timed out.', 'TimeoutError');
+                     ^~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:31772:35: warning: the variable "TransformStream" was not declared in anonymous function
+  class TextDecoderStream extends TransformStream {
+                                  ^~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:31774:25: warning: the variable "TextDecoder" was not declared in anonymous function
+      var decoder = new TextDecoder(label, options);
+                        ^~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:31811:25: warning: the variable "TextEncoder" was not declared in anonymous function
+      var encoder = new TextEncoder();
+                        ^~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:34097:50: warning: the variable "Request" was not declared in anonymous arrow function
+      return 'body' in input || input instanceof Request || input[Symbol.toStringTag] === 'Request';
+                                                 ^~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:37574:13: warning: the variable "clearImmediate" was not declared in anonymous arrow function
+            clearImmediate(flushQueueImmediate);
+            ^~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:39202:32: warning: the variable "requestAnimationFrame" was not declared in anonymous function
+        this._animationFrame = requestAnimationFrame(() => this.onUpdate());
+                               ^~~~~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:55858:22: warning: the variable "ReadableStream" was not declared in function "wrapWithConsumption"
+    var stream = new ReadableStream({
+                     ^~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:56129:18: warning: the variable "Headers" was not declared in anonymous function
+      return new Headers(this._rawHeaders);
+                 ^~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:56762:16: warning: Direct call to eval(), but lexical scope is not supported.
+        return eval(body);
+               ^~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:57835:21: warning: the variable "Image" was not declared in anonymous arrow function
+      var img = new Image();
+                    ^~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:70572:9: warning: the variable "REACT_NAVIGATION_DEVTOOLS" was not declared in anonymous arrow function
+        REACT_NAVIGATION_DEVTOOLS.set(refContainer.current, {
+        ^~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:78520:11: warning: the variable "cancelAnimationFrame" was not declared in anonymous arrow function
+          cancelAnimationFrame(animationFrame);
+          ^~~~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:86240:26: warning: the variable "ResizeObserver" was not declared in anonymous arrow function
+      var observer = new ResizeObserver(entries => {
+                         ^~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:87418:16: warning: the variable "requestIdleCallback" was not declared in anonymous arrow function
+      var id = requestIdleCallback(() => {
+               ^~~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:87421:20: warning: the variable "cancelIdleCallback" was not declared in anonymous arrow function
+      return () => cancelIdleCallback(id);
+                   ^~~~~~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:121204:9: warning: the variable "clearInterval" was not declared in anonymous arrow function
+        clearInterval(this._workerHeartbeatTimer);
+        ^~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:121558:28: warning: the variable "Worker" was not declared in anonymous function
+      this.workerRef = new Worker(objectUrl);
+                           ^~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:123986:12: warning: the variable "btoa" was not declared in anonymous arrow function
+    return btoa(binary);
+           ^~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:123991:26: warning: the variable "atob" was not declared in anonymous function
+        this.authToken = atob(protocols[1].slice(AUTH_TOKEN_PREFIX.length));
+                         ^~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:137563:20: warning: the variable "setInterval" was not declared in anonymous function
+      var ticker = setInterval(() => this._autoRefreshTokenTick(), constants_1.AUTO_REFRESH_TICK_DURATION_MS);
+                   ^~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:139872:7: warning: the variable "__magic__" was not declared in function "polyfillGlobalThis"
+      __magic__.globalThis = __magic__;
+      ^~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:141787:21: warning: the variable "Intl" was not declared in function "daysBetweenLocalDates"
+    var parts = new Intl.DateTimeFormat(opts.locale ?? 'en-US', {
+                    ^~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:326343:56: warning: the variable "WeakRef" was not declared in function "registerDatabaseForDevToolsAsync"
+    registeredDatabases.set(database.databasePath, new WeakRef(database));
+                                                       ^~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:332264:18: warning: the variable "WritableStream" was not declared in anonymous function
+      return new WritableStream(new _internalStreams.FileSystemWritableSink(super.open(_FileTypes.FileMode.WriteOnly)));
+                 ^~~~~~~~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:332274:18: warning: the variable "Response" was not declared in anonymous function
+      return new Response(await this.arrayBuffer(), {
+                 ^~~~~~~~
+C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js:339274:25: warning: the variable "localStorage" was not declared in anonymous function
+    var originalValue = localStorage.getItem(key);
+                        ^~~~~~~~~~~~
+Failed to write file C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.hbc: permission denied
+
+Android Bundling failed 52853ms node_modules\expo-router\entry.js (3747 modules)
+
+Error: G:\codebase\DoloGram\node_modules\hermes-compiler/hermesc/win64-bin/hermesc.exe -emit-binary -out C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.hbc C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{23b73845-67b5-4e0b-8fff-08e5eb718656}\Temp\expo-bundler-0.9672679567391529-1794297286012\index.js -O exited with non-zero code: 6

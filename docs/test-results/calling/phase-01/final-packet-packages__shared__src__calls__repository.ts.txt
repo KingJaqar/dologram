@@ -1,0 +1,63 @@
+import { classifyError } from '../errors';
+import type { DgClient } from '../db/client';
+import type { Tables } from '../db/database.types';
+import type { DgResult } from '../db/result';
+import { CALL_HISTORY_PAGE_SIZE, type CallHistoryCursor, type CallHistoryPage, type CallHistoryRow } from './types';
+
+type CallRow = Tables<'calls'>;
+
+function toCallState(row: CallRow): CallHistoryRow {
+  return {
+    callId: row.call_id,
+    chatId: row.chat_id,
+    callerId: row.caller_id,
+    calleeId: row.callee_id,
+    mediaType: row.media_type as CallHistoryRow['mediaType'],
+    status: row.status as CallHistoryRow['status'],
+    createdAt: row.created_at,
+    ringExpiresAt: row.ring_expires_at,
+    acceptedAt: row.accepted_at,
+    connectExpiresAt: row.connect_expires_at,
+    connectedAt: row.connected_at,
+    endedAt: row.ended_at,
+    endedBy: row.ended_by,
+    endReason: row.end_reason as CallHistoryRow['endReason'],
+    revision: String(row.revision),
+  };
+}
+
+/** Reads the server-backed, participant-scoped call history with a strict tuple cursor. */
+export async function listCallHistory(
+  client: DgClient,
+  chatId: string,
+  cursor?: CallHistoryCursor,
+): Promise<DgResult<CallHistoryPage>> {
+  let query = client
+    .from('calls')
+    .select('*')
+    .eq('chat_id', chatId)
+    .order('created_at', { ascending: false })
+    .order('call_id', { ascending: false })
+    .limit(CALL_HISTORY_PAGE_SIZE);
+
+  if (cursor) {
+    query = query.or(
+      `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},call_id.lt.${cursor.callId})`,
+    );
+  }
+
+  const { data, error, status } = await query;
+  if (error) {
+    return { data: null, error: classifyError(error, status) };
+  }
+
+  const rows = data.map(toCallState);
+  const last = rows.at(-1);
+  return {
+    data: {
+      rows,
+      nextCursor: last ? { createdAt: last.createdAt, callId: last.callId } : null,
+    },
+    error: null,
+  };
+}

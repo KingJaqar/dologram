@@ -1,0 +1,16 @@
+{
+  "name": "typecheck",
+  "command": [
+    "npm.cmd",
+    "run",
+    "typecheck"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 50840,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 300,
+  "seconds": 28.75,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-00\\final-checks\\typecheck.log"
+}

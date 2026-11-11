@@ -1,0 +1,12 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase01-jest --runTestsByPath src/__tests__/a11yPressableSource.test.ts src/components/__tests__/a11yLabels.test.tsx
+
+PASS src/components/__tests__/a11yLabels.test.tsx (91.266 s)
+PASS src/__tests__/a11yPressableSource.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        94.733 s
+Ran all test suites within paths "src/__tests__/a11yPressableSource.test.ts", "src/components/__tests__/a11yLabels.test.tsx".

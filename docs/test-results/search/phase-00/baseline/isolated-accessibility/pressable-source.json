@@ -1,0 +1,25 @@
+{
+  "name": "pressable-source",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "test",
+    "--",
+    "--runInBand",
+    "--watch=false",
+    "--cacheDirectory",
+    "G:\\codebase\\DoloGram\\.tmp\\search-phase00-jest-isolated-cache",
+    "--runTestsByPath",
+    "src/__tests__/a11yPressableSource.test.ts"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 32872,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 120,
+  "seconds": 18.38,
+  "cleanup": "not_needed",
+  "log": "docs\\test-results\\search\\phase-00\\baseline\\isolated-accessibility\\pressable-source.log"
+}

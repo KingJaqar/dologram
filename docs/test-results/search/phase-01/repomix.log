@@ -1,0 +1,60 @@
+
+📦 Repomix v1.18.1
+
+No custom config found at repomix.config.ts, repomix.config.mts, repomix.config.cts, repomix.config.js, repomix.config.mjs, repomix.config.cjs, repomix.config.json5, repomix.config.jsonc, repomix.config.json or global config at C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.ts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.mts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.cts, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.js, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.mjs, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.cjs, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.json5, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.jsonc, C:\Users\User\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{d48599cd-3047-47cb-bdd7-c01e3a09a222}\Repomix\repomix.config.json.
+You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
+[K[?25l⠋ Initializing...
+[K[1A[K[?25l⠙ Searching for files...
+[K[1A[K[?25l⠹ Searching for files...
+[K[1A[K[?25l⠸ Searching for files...
+[K[1A[K[?25l⠼ Searching for files...
+[K[1A[K[?25l⠴ Searching for files...
+[K[1A[K[?25l⠦ Searching for files...
+[K[1A[K[?25l⠧ Searching for files...
+[K[1A[K[?25l⠇ Searching for files...
+[K[1A[K[?25l⠏ Searching for files...
+[K[1A[K[?25l⠋ Searching for files...
+[K[1A[K[?25l⠙ Searching for files...
+[K[1A[K[?25l⠹ Searching for files...
+[K[1A[K[?25l⠸ Searching for files...
+[K[1A[K[?25l⠼ Searching for files...
+[K[1A[K[?25l⠴ Searching for files...
+[K[1A[K[?25l⠦ Processing file... (15/15) package.json
+[K[1A[K[?25l⠧ Processing file... (15/15) package.json
+[K[1A[K[?25l⠇ Processing file... (15/15) package.json
+[K[1A[K[?25l⠏ Processing file... (15/15) package.json
+[K[1A[K[?25l⠋ Processing file... (15/15) package.json
+[K[1A[K[?25l⠙ Running security check... (15/15) package.json
+[K[1A[K[?25l⠹ Generating output...
+[K[1A[K[?25l⠸ Generating output...
+[K[1A[K[?25l⠼ Generating output...
+[K[1A[K[?25l⠴ Generating output...
+[K[1A[K[?25l⠦ Calculating metrics... (15/15) package.json
+[K[1A[K[?25l⠧ Calculating metrics... (15/15) package.json
+[K[1A[K[?25l✔ Packing completed successfully!
+[?25h
+📈 Top 5 Files by Token Count:
+──────────────────────────────
+1.  apps/mobile/src/chats/preferences.ts (1,203 tokens, 4,966 chars, 9.1%)
+2.  apps/mobile/src/search/__tests__/SearchScreen.test.tsx (1,117 tokens, 4,446 chars, 8.4%)
+3.  apps/mobile/src/search/__tests__/query.test.ts (1,108 tokens, 4,390 chars, 8.4%)
+4.  packages/shared/src/queue/types.ts (1,060 tokens, 4,168 chars, 8%)
+5.  apps/mobile/src/search/query.ts (940 tokens, 3,846 chars, 7.1%)
+
+🔎 Security Check:
+──────────────────
+✔ No suspicious files detected.
+
+
+📊 Pack Summary:
+────────────────
+  Total Files: 15 files
+ Total Tokens: 13,228 tokens
+  Total Chars: 49,374 chars
+       Output: docs\test-results\search\phase-01\context.xml
+     Security: ✔ No suspicious files detected
+
+🎉 All Done!
+Your repository has been successfully packed.
+
+💡 Repomix is now available in your browser! Try it at https://repomix.com

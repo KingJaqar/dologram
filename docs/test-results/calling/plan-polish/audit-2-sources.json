@@ -1,0 +1,49 @@
+{
+  "plan_before_sha256": "f6627108fb9867ae1a912e921dce2d7549e9e7fb2812c92ecf4cac3722937178",
+  "changed_sources": {
+    "apps/mobile/jest.config.js": {
+      "prior_validated_sha256": "8e5c94e330005f415a0d0073ab0449c14abec26c6403fa5b9f2fcad267f9d131",
+      "current_sha256": "02311786d1f4e01d893a1196f8dfd391486ffa86de7c01a076b81f3641da844a"
+    },
+    "apps/mobile/package.json": {
+      "prior_validated_sha256": "68a7401c58f0659a7295c248369a3217d64e499d95fc7ca80b651c493a4bb907",
+      "current_sha256": "215aad4726b46088ca27a94f2d8f33bc4f4d84073ae3f30b919a6ed45fb135b9"
+    },
+    "apps/mobile/src/components/BottomSheet.tsx": {
+      "prior_validated_sha256": "e2d0189795092d4558fff463458f8613362ed5267bb9cf2d5df454c60a1a2c2f",
+      "current_sha256": "fc2f4c72acc27a423cec0b2670b73ea28aa3a74318e3fa165d84071a1f014193"
+    },
+    "apps/mobile/src/components/ChatComposer.tsx": {
+      "prior_validated_sha256": "d7a34a410c2d9faf08f06c4027728ef4b15d87e8ec8a1acd52baea6b23edf783",
+      "current_sha256": "db8342f2eea2a784b1e2750ea668ba14328472a5974c0a72ee2672e694261286"
+    },
+    "apps/mobile/src/components/DoloGramHeader.tsx": {
+      "prior_validated_sha256": "40ca07c6be3ec62ef839c7dd09ed4463fb36191c4e41d372bfe2a2801208d00d",
+      "current_sha256": "3d95129126ae0adb726efcad73edd54fe6a3b53f1cce97ddb72a914266f014d8"
+    },
+    "apps/mobile/src/components/HeaderNavActions.tsx": {
+      "prior_validated_sha256": "7a701a8a8d098252032d46c1cd67769aba05219a0b9e2d60a90dec5bab0880f1",
+      "current_sha256": "cca5ceaf9639d07700c6acde2cbd9f45a3bb660582b1f82385c5226344151749"
+    },
+    "apps/mobile/src/components/MediaPickerPanel.tsx": {
+      "prior_validated_sha256": "d558d043d6acef4f4e3a8e4cc3bcbd07a4704231c9163350459369883b8808f3",
+      "current_sha256": "bf1ff018e637d9f4b33357281155fe493294c9053f73209da6d77df326dc3eb7"
+    },
+    "package-lock.json": {
+      "prior_validated_sha256": "6ad2c4d3056618a94ac9c746581934a2101bd844faed77dafdb35c02e5b55857",
+      "current_sha256": "a3bf6ce60d985504975ca834c4f223d693d497339d344fe70b2be74b2911fed1"
+    }
+  },
+  "additional_source_identities": {
+    "supabase/migrations/027_unique_folder_names.sql": "4603bbe8abe3d67ecaf76b3bfc5dbc55f821fa8a8d59544678546e063186dbd3",
+    "apps/mobile/test/mocks/react-native-reanimated.ts": "33c226289bd24397e5a3027dac8e5c00efb8d2cf857aa8082b2476a78b59e476"
+  },
+  "reused_prior_context_identities": 280,
+  "scope_notes": [
+    "Mobile manifest relevant versions/scripts re-inspected and unchanged; no LiveKit dependency.",
+    "Changed Jest mapping and referenced mock existence verified statically; no operational result inferred.",
+    "Migration 027 read to establish current numbering and folder-only scope; not modified.",
+    "Changed DoloGramHeader/HeaderNavActions and lockfile preserved; unrelated header contents not reread and no dependency compatibility pass claimed.",
+    "Final fingerprint also observed concurrent BottomSheet.tsx, ChatComposer.tsx and MediaPickerPanel.tsx edits. Their contents were not reread: no audited calling contract relies on an unchanged parent implementation. Their dependent S4 consumer findings require C0 refresh before edits; child recorder/player contracts and plan references were not modified by this task. No operational result is claimed."
+  ]
+}

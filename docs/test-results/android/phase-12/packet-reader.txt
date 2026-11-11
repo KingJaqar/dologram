@@ -1,0 +1,977 @@
+
+FILE apps/mobile/app/chat/[chatId]/media/[mediaId].tsx
+/**
+ * AND-09: Media viewer screen placeholder.
+ * Phase 12 will complete this screen.
+ */
+import React from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../../../../src/theme/ThemeProvider';
+import { TopBar } from '../../../../src/components/TopBar';
+⋮----
+export default function MediaViewerScreen()
+
+FILE apps/mobile/app/chat/[chatId]/index.tsx
+/** AND-05 chat screen (M2-09, M2-11, M2-12, F3, F6, F7, D-57, D-92, D-118, D-143). */
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+  type ListRenderItem,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  addReaction,
+  config,
+  dgTrim,
+  editMessage,
+  listChatMembers,
+  setReactionRemoved,
+  softDeleteMessage,
+  strings,
+  updateOwnMember,
+  validateMessageText,
+} from '@dologram/shared';
+⋮----
+import { supabase } from '../../../src/lib/supabase';
+import { useAuth } from '../../../src/auth/AuthProvider';
+import { useNetState } from '../../../src/net/netState';
+import { useTheme } from '../../../src/theme/ThemeProvider';
+import { useToast } from '../../../src/components/Toast';
+import { TopBar } from '../../../src/components/TopBar';
+import { IconButton } from '../../../src/components/Button';
+import { OfflineBanner } from '../../../src/components/ConnectionBanner';
+import { EmptyState } from '../../../src/components/EmptyState';
+import { DateSeparator, JumpToBottom, UnreadDivider } from '../../../src/components/DateSeparator';
+import { ChatComposer } from '../../../src/components/ChatComposer';
+import { MessageBubble, type BubbleStatus } from '../../../src/components/MessageBubble';
+import { MessageFocusOverlay } from '../../../src/components/MessageFocusOverlay';
+import { Dialog } from '../../../src/components/Dialog';
+import { loadCachedReaction, loadChatSnapshot, mergeChatSnapshots, type ChatMessageItem, type ChatScreenSnapshot } from '../../../src/chat/query';
+import { cacheMembers, flushPendingReadStates, markChatRead, type ReadStateSender } from '../../../src/chat/readState';
+import { startChatRealtime, type ChatRealtimeHandle } from '../../../src/chat/realtime';
+import { getLocalDatabase } from '../../../src/queue/db';
+import { discardQueueItem, enqueueTextMessage, retryQueueItem } from '../../../src/queue/localQueue';
+import { subscribeQueueChange } from '../../../src/queue/events';
+import { notifyCacheChange, subscribeCacheChange } from '../../../src/sync/cacheEvents';
+import { createSqliteCacheStore } from '../../../src/sync/cacheStore';
+⋮----
+type TypingEntry = { name: string; expiresAt: number };
+⋮----
+function resolvedParam(value: string | string[] | undefined): string
+⋮----
+function dateLabel(value: string): string
+⋮----
+function shouldSeparate(previous: ChatMessageItem | undefined, current: ChatMessageItem): boolean
+⋮----
+function maxDeliveredSeq(messages: readonly ChatMessageItem[]): number
+⋮----
+
+⋮----
+onCancelMode=
+⋮----
+onDiscard=
+
+FILE apps/mobile/src/chat/query.ts
+/** Local message history and header reads for AND-05 (M2-09, M2-12, D-44, D-70, D-92). */
+import type { SQLiteDatabase } from 'expo-sqlite';
+import {
+  strings,
+  type ChatMemberRow,
+  type ChatRow,
+  type MessageRow,
+  type QueueItem,
+  type ReactionRow,
+} from '@dologram/shared';
+import { getUnsentItems } from '../queue/localQueue';
+⋮----
+export type ChatMessageItem = {
+  messageId: string;
+  chatId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  replyTo: string | null;
+  attachmentCount: number;
+  createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
+  seq: number | null;
+  reactions: ReactionRow[];
+  pending: Pick<QueueItem, 'temp_id' | 'status' | 'last_error' | 'row_may_exist'> | null;
+};
+⋮----
+export type ChatScreenSnapshot = {
+  chat: ChatRow;
+  members: ChatMemberRow[];
+  messages: ChatMessageItem[];
+  title: string;
+  subtitle: string;
+  savedMessages: boolean;
+  myLastReadSeq: number;
+  unreadCount: number;
+  hasMoreBefore: boolean;
+};
+⋮----
+type PayloadRow = { payload: string };
+type MemberPayloadRow = { user_id: string; payload: string };
+type ProfilePayloadRow = { user_id: string; display_name: string; payload: string };
+type ReactionPayloadRow = { message_id: string; payload: string };
+⋮----
+function asRecord(value: unknown): Record<string, unknown> | null
+⋮----
+function parsePayload<T>(value: string): T | null
+⋮----
+function isChatRow(value: ChatRow | null): value is ChatRow
+⋮----
+function isMemberRow(value: ChatMemberRow | null): value is ChatMemberRow
+⋮----
+function isMessageRow(value: MessageRow | null): value is MessageRow
+⋮----
+function isReactionRow(value: ReactionRow | null): value is ReactionRow
+⋮----
+/** Reads one reaction including a removed row so D-76 re-add uses UPDATE, not INSERT. */
+export async function loadCachedReaction(
+  db: SQLiteDatabase,
+  messageId: string,
+  userId: string,
+  emoji: string,
+): Promise<ReactionRow | null>
+⋮----
+function pendingMessage(item: QueueItem): ChatMessageItem
+⋮----
+function mergeMessages(
+  delivered: readonly ChatMessageItem[],
+  pending: readonly ChatMessageItem[],
+): ChatMessageItem[]
+⋮----
+export function mergeChatSnapshots(
+  current: ChatScreenSnapshot,
+  latest: ChatScreenSnapshot,
+): ChatScreenSnapshot
+⋮----
+function profileName(profiles: ReadonlyMap<string, string>, userId: string): string
+⋮----
+export async function loadChatSnapshot(
+  db: SQLiteDatabase,
+  chatId: string,
+  userId: string,
+  options: { beforeSeq?: number; limit?: number } = {},
+): Promise<ChatScreenSnapshot>
+
+FILE apps/mobile/src/components/BottomSheet.tsx
+/**
+ * CMP-15: Bottom sheet — animated translateY with PanResponder, scrim, back-button close.
+ * 12.6, D-95
+ */
+import React, { useEffect, useRef } from 'react';
+import {
+  Animated,
+  BackHandler,
+  Modal,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
+⋮----
+export interface BottomSheetProps {
+  visible: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+}
+⋮----
+// Animate in/out
+⋮----
+// Android back button
+⋮----
+// Pan responder for drag-to-dismiss
+⋮----
+{/* Scrim */}
+⋮----
+{/* Sheet */}
+⋮----
+{/* Handle */}
+⋮----
+{/* Content area — stopPropagation so taps don't fall through to scrim */}
+
+FILE apps/mobile/src/components/ChatComposer.tsx
+/** CMP-10: the Phase 9 text composer. Media actions remain present for later attachment phases. */
+import React from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { config, strings } from '@dologram/shared';
+import { useTheme } from '../theme/ThemeProvider';
+import { textStyle } from '../theme/typography';
+import { Icon } from './Icon';
+⋮----
+export type ChatComposerProps = {
+  value: string;
+  onChangeText: (value: string) => void;
+  onSend: () => void;
+  sending?: boolean;
+  replyPreview?: { senderName: string; content: string; deleted: boolean };
+  editing?: boolean;
+  onCancelMode?: () => void;
+};
+⋮----
+const handleChangeText = (next: string) =>
+⋮----
+// TextInput maxLength counts native string units; the contract counts Unicode code points.
+
+FILE apps/mobile/src/components/MessageBubble.tsx
+/** CMP-07, CMP-08 and CMP-12: message bubble, reply quote and reactions. */
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { strings } from '@dologram/shared';
+import { useTheme } from '../theme/ThemeProvider';
+import { textStyle } from '../theme/typography';
+import { Icon } from './Icon';
+import { MessageText } from './MessageText';
+import type { ChatMessageItem } from '../chat/query';
+⋮----
+export type BubbleStatus = 'sent' | 'seen' | null;
+⋮----
+export type ReplyPreview = { senderName: string; content: string; deleted: boolean };
+⋮----
+export type MessageBubbleProps = {
+  item: ChatMessageItem;
+  own: boolean;
+  userId: string;
+  status: BubbleStatus;
+  showTime: boolean;
+  onPress: () => void;
+  onLongPress?: () => void;
+  onDoubleTap?: () => void;
+  onReactionPress?: (emoji: string) => void;
+  reactionDisabled?: boolean;
+  replyPreview?: ReplyPreview;
+  onRetry?: () => void;
+  onDiscard?: () => void;
+  discardDisabled?: boolean;
+};
+⋮----
+function formatTime(value: string): string
+⋮----
+function statusLabel(item: ChatMessageItem, status: BubbleStatus): string | null
+⋮----
+function groupReactions(item: ChatMessageItem, userId: string):
+⋮----
+const handlePress = () =>
+⋮----
+
+FILE apps/mobile/src/queue/attachmentFiles.ts
+import { File } from 'expo-file-system';
+import type { QueueItem, QueuedAttachment } from '@dologram/shared';
+⋮----
+async function removeFiles(attachments: readonly QueuedAttachment[]): Promise<void>
+⋮----
+export async function deleteQueuedAttachmentFiles(items: readonly QueueItem[]): Promise<void>
+⋮----
+export async function deleteQueuedAttachmentCopies(attachments: readonly QueuedAttachment[]): Promise<void>
+
+FILE apps/mobile/src/queue/attachments.ts
+/** Android attachment queue entry points (M3-02, D-100). Picker UI is Phase 12. */
+import { Directory, File, Paths } from 'expo-file-system';
+import {
+  config,
+  validateAttachment,
+  validateAttachmentCount,
+  validateMessageText,
+  type EnqueueResult,
+  type MediaType,
+  type QueuedAttachment,
+} from '@dologram/shared';
+import { ids } from '../lib/ids';
+import { notifyQueueChange } from './events';
+import { getQueueCore } from './localQueue';
+import { deleteQueuedAttachmentCopies } from './attachmentFiles';
+⋮----
+export type AttachmentSource = {
+  uri: string;
+  mediaType: MediaType;
+  mime: string;
+  sizeBytes: number;
+};
+⋮----
+export type AttachmentEnqueueResult =
+  | EnqueueResult
+  | { ok: false; reason: 'tooManyAttachments' | 'invalidText' | 'invalidAttachment' | 'copyFailed' };
+⋮----
+function attachmentCopyPath(messageId: string, mediaId: string): File
+⋮----
+/** Copies source files before inserting the queue row, so picker URIs never become dependencies. */
+export async function enqueueAttachmentMessage(input: {
+  chatId: string;
+  senderId: string;
+  content: string;
+  replyTo?: string | null;
+  attachments: readonly AttachmentSource[];
+}): Promise<AttachmentEnqueueResult>
+
+FILE apps/mobile/src/queue/worker.ts
+/**
+ * Foreground delivery worker (LS-3, LS-7, D-77, D-109, D-117, M2-03).
+ *
+ * It attempts delivery on every connectivity change and on the D-27 timer, only while the app is
+ * in the foreground and the device reports a connection. Queued items send on the next open; the
+ * worker never runs in the background.
+ */
+import { AppState, type AppStateStatus } from 'react-native';
+import { File } from 'expo-file-system';
+import {
+  config,
+  classifyError,
+  createQueueRunner,
+  insertMessageMedia,
+  insertMessage,
+  uploadAttachment,
+  type DeliveryResult,
+  type QueueItem,
+  type QueueRunner,
+} from '@dologram/shared';
+import { supabase } from '../lib/supabase';
+import { subscribeNetState } from '../net/netState';
+import { cleanupSentQueueItems, getQueueCore, setActiveRunner } from './localQueue';
+import { notifyQueueChange } from './events';
+import { uploadMobileAttachment } from './mediaUploader';
+⋮----
+export type QueueWorkerHandle = { stop: () => void };
+⋮----
+/**
+ * The message-row insert of M2-03. `message_id` is the client-generated id, so a retry of a stored
+ * row is rejected with 23505, which is a delivery (LS-8) and not a failure.
+ */
+export async function deliverQueueItem(item: QueueItem): Promise<DeliveryResult>
+⋮----
+async function deliverAttachments(item: QueueItem): Promise<DeliveryResult>
+⋮----
+export function startQueueWorker(): QueueWorkerHandle
+⋮----
+// NetInfo answers soon after subscribing, so the worker waits for that first answer rather than
+// assuming a connection and counting an attempt while offline (D-77).
+⋮----
+// D-77: a returning connection makes every queued item due at once.
+⋮----
+// The queue is unusable without its database; report it instead of failing silently.
+⋮----
+stop(): void
+
+FILE apps/mobile/AGENTS.md
+This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+
+## Expo has changed — do not trust your training data
+
+Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+
+1. Read the major version of the `expo` package in `package.json`.
+2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
+3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+
+## Commands
+
+Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+
+```bash
+npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
+npx expo start              # start the dev server
+npx expo lint               # lint
+npx tsc --noEmit            # typecheck
+npx expo-doctor             # diagnose dependency and config issues
+npx expo install --fix      # fix incompatible package versions
+```
+
+Run lint and typecheck before declaring any task done.
+
+## Navigation & Routing
+
+- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
+- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
+- Docs: https://docs.expo.dev/router/introduction.md
+
+## Building with EAS
+
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
+Docs: https://docs.expo.dev/eas/index.md
+
+## Rules
+
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+FILE apps/mobile/package.json
+{
+  "name": "@dologram/mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@dologram/shared": "*",
+    "@expo-google-fonts/inter": "0.4.2",
+    "@expo-google-fonts/jetbrains-mono": "0.4.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "@supabase/supabase-js": "2.119.0",
+    "base64-arraybuffer": "1.0.2",
+    "expo": "~57.0.32",
+    "expo-audio": "~57.0.5",
+    "expo-clipboard": "~57.0.2",
+    "expo-constants": "~57.0.23",
+    "expo-crypto": "~57.0.4",
+    "expo-dev-client": "~57.0.21",
+    "expo-document-picker": "~57.0.3",
+    "expo-file-system": "~57.0.7",
+    "expo-font": "~57.0.4",
+    "expo-image-manipulator": "~57.0.22",
+    "expo-image-picker": "~57.0.21",
+    "expo-linking": "~57.0.13",
+    "expo-router": "~57.0.30",
+    "expo-sharing": "~57.0.25",
+    "expo-splash-screen": "~57.0.11",
+    "expo-sqlite": "~57.0.4",
+    "expo-status-bar": "~57.0.1",
+    "expo-video": "~57.0.5",
+    "lucide-react-native": "1.70.0",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-markdown-display": "7.0.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
+    "react-native-url-polyfill": "4.0.0",
+    "tus-js-client": "4.3.1"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "0.86.3",
+    "@testing-library/react-native": "13.3.3",
+    "@types/jest": "30.0.0",
+    "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.2",
+    "jest": "30.5.2",
+    "jest-expo": "57.0.6",
+    "react-test-renderer": "19.2.3",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "lint": "expo lint"
+  },
+  "private": true
+}
+
+FILE docs/test-results/android/phase-12/requirements-v14.txt
+| F5 Send photo, video, voice note or file | Success: the attachment is uploaded to Storage, a message_media row links it to its message, and members see it. Delivery follows LS-5. / Empty: N/A: no list state. / Offline: the item is queued (LS-1) and uploaded after reconnection; an app restart does not lose it (LS-9). / Permission-denied: Storage policy rejects upload to, or download from, a chat the user is not a member of (Section 5.3). If the OS denies camera, microphone or media access, the action does not start; message: D-35. / Validation: type and size are checked on the client and by the Storage bucket limits (Section 5.5); limits: D-29, D-75, in bytes per D-116; at most 10 attachments per message, each bound to its own uploaded object (D-90). The platform ceiling is 50 MB per file on the Supabase Free plan (Section 7.1). |
+| T-11 | Non-member requests a media file | Upload and download are denied. A signed URL stops working after its 10-minute lifetime (D-113). | Section 5.3, D-113 |
+| T-20 | Send a photo with text on a throttled connection | The text reaches other members before the upload completes. The item shows sent only after every attachment is uploaded. | LS-4, F5 |
+| T-52 | Send each media type, then test the bucket limits through the API | A sends a photo, a video, a voice note and a file, and B opens each on the other client. As A through the API, a photo object of exactly 10,485,760 bytes is accepted by chat-media-small and one of 10,485,761 bytes is refused; a file of 52,428,801 bytes is refused by chat-media-large; an object declared as application/x-msdownload is refused by both buckets (D-29, D-75, D-116). | F5, 3.2 Photos, videos, voice notes, files, Section 5.5, D-29, D-75, D-116 |
+| D-29 | Size caps: photos and voice notes 10 MB, videos and files 50 MB, with 1 MB = 1,048,576 bytes (D-116). Allowed types are listed in Section 5.5. Each cap is enforced by its bucket (D-75). Signed URLs last 1 hour. Uploads above 6 MB are resumable (TUS). The send limit is a token bucket with a burst of 200 and 60 messages per minute. Backup is a weekly manual database export. The Supabase region is the one closest to the owner and contacts (fixed as Tokyo by D-48). Amended by D-113 (signed URLs last 10 minutes), D-116 (units) and D-122 (bucket refill rates). | Closes OD-10 (default backup A, with values). Settles PF-3; the region is D-48 (PF-1). |
+| D-35 | Platform accessibility defaults plus WCAG 2.2 AA on web. The theme follows the system, with a manual override. The web layout is a single column below 768 px and list plus chat side by side from 768 px; Android tablets are not targeted. Message delivery latency is under 2 seconds at the 95th percentile on a good connection. UI wording lives in one strings module and is written during M4-03. The WCAG 2.2 AA review is dropped by D-54. Latency measurement: D-82; theme setting: D-83; loading, error and accessibility checks: D-95. | Closes OD-16 (default A with values). Settles PF-7. |
+| D-75 | Chat media lives in two private buckets by size class: chat-media-small (photos and voice notes; 10 MB; the image and audio types of 5.5) and chat-media-large (videos and files; 50 MB; every type of 5.5). The bucket follows message_media.media_type and the path stays {chat_id}/{media_id} (D-39), so every cap and type rule of D-29 is enforced by Storage as well as by the client. Upload requires chat membership. Download and signed URLs also require a message_media row for the object whose message is neither deleted nor expired, so a deleted message's files stop being readable at once (amended by D-113: new downloads and signed URLs stop at once; a URL issued earlier lasts at most 10 minutes). The monthly purge deletes, through the Storage API, the files of deleted or expired messages and objects with no message_media row that are older than 24 hours. Amends D-29, D-39 and D-55 (PF-18). | Closes two v7 conflicts: 5.5 claimed per-type caps on the server that a single 50 MB bucket cannot enforce, and the message_media read rule hid deleted rows while their files stayed downloadable. |
+| D-90 | Message integrity is enforced by triggers. messages.attachment_count (0 to 10) is written at insert and cannot change. A message whose kind is text and whose attachment_count is 0 must not have blank content. A message_media insert is rejected once the message has attachment_count rows. reply_to must name a message in the same chat. content is at most 4096 characters, or in a secret chat at most 22,000 characters of base64 (^[A-Za-z0-9+/=]*$), so plaintext cannot be stored there by mistake. An update is rejected once expires_at has passed. On message_media the trigger sets storage_path to {chat_id}/{media_id} and requires an object at that path in the bucket of the media_type, whose owner_id is the caller and whose declared type matches the media_type (photo image/*, voice audio/*, video video/*, file any type of 5.5). Clients show one placeholder for each attachment that has no row yet. Assumption: Storage compares allowed_mime_types with the declared Content-Type, not the file bytes; accepted, because every reader is a chat member and the apps never execute a file. Amends D-30, D-39, D-68 and D-75. Amended by D-111 (the expiry cleanup), D-116 (counting) and D-120 (payload ranges and poll rows). | Closes the v8 gaps that the empty-text rule had no server check, that the 4096-character check contradicted the 22,000-character secret-chat limit, that sticker, location and poll messages have no text, and that a media row could point at any object. |
+| D-100 | Fixed implementation choices, which v8 labelled as Assumptions: one repository with the 10.2 layout and npm workspaces; the 10.2 variable names; Next.js App Router with chat screens as Client Components; Vitest for unit and API tests; UUID v4 from crypto.randomUUID on web and expo-crypto on mobile; topic names chat:<chat_id>, call:<chat_id> and user:<user_id>; the bucket names of D-75 and D-72; the push_tokens table; expo-image-picker, expo-document-picker, expo-audio and expo-video for F5 (checked at M0-08, fallback expo-av, D-85); device preferences in AsyncStorage on mobile and localStorage on web; attachments copied to app-private storage at enqueue on mobile, so an upload never depends on the picker's URI; app lock offered only when expo-local-authentication reports enrolled credentials. Amends D-55. | v8 labelled the project's own choices as Assumptions, which made them look unverified. |
+| D-113 | Signed URL lifetime. Signed URLs last 10 minutes instead of 1 hour. A signed URL stays valid until its expiry whatever the policies say (Supabase Storage serving documentation, checked 31 October 2026), so the Storage SELECT policy of D-75 stops new downloads and new signed URLs at once, and a URL issued before a delete or an expiry keeps working for at most 10 minutes. Uploads set cacheControl to 600 seconds so no cached response outlives the URL. Clients request a new URL when one expires (AND-09, WEB-10). Enforced by the Storage policy and the lifetime the client requests from the shared config module; tested by T-11 and T-29. Amends D-29, D-69 and D-75. | v11 conflict: D-75 promised that a deleted message's files stop being readable at once, but an issued signed URL is not re-checked. |
+| D-116 | Units and text measurement, for every limit. (1) A character is a Unicode code point, as Postgres char_length counts it; clients count with Array.from(text).length, never String.length. (2) Trimming removes leading and trailing space, tab, line feed, carriage return, form feed and vertical tab, with the same character class in Postgres and JavaScript; blank means empty after trimming. (3) 1 KB = 1,024 bytes and 1 MB = 1,048,576 bytes; bucket limits are set in bytes (10,485,760; 52,428,800; 524,288), as are the 5 MB threshold (5,242,880) and the 6 MB TUS threshold (6,291,456). (4) The client accepts an email that matches ^[^\s@]+@[^\s@]+\.[^\s@]+$; Supabase Auth's own validation is the server rule. Enforced by the CHECK constraints and triggers of D-89, D-90, D-94 and D-109, by the bucket limits and by the shared validation module (M2-01); tested by T-39 and T-52. Amends D-28, D-29, D-30, D-89, D-94 and D-109. | v11 ambiguity: Postgres and JavaScript count and trim text differently, and "MB" had two readings. |
+| D-29 (OD-10) | Caps 10 MB (photos, voice notes) and 50 MB (video, files); allowed types in 5.5; signed URL 10 minutes (D-113); TUS above 6 MB; rate limit burst 200 and 60 per minute; weekly manual backup; region Tokyo (ap-northeast-1) (D-48). | M0-03, M1-06, M3-01, M3-08, M4-05 | Backup B: accept the risk, skip the restore drill in M4-05. Choosing resumable (TUS) uploads changes the upload call in M3-01. |
+| D-35 (OD-16) | Platform defaults (the WCAG AA review is dropped, D-54); system theme with manual override; latency 2 s at the 95th percentile; web breakpoint 768 px. | M2-01, M2-08, M4-02, M4-03, M4-04 | B: project-specific standards replace the defaults in M4-02 and M4-03. |
+| D-75 | Two buckets by size class; downloads need a live media row; orphan purge. | M1-06, M3-01, M3-03, M4-05 | Per-type caps fall back to the client only, and deleted media stays downloadable until the purge. |
+| D-90 | Trigger checks on attachments, replies, length and media objects. | M1-01, M1-03, M3-01, M3-02, M5-02 to M5-07 | The empty-text and media rules fall back to the client. |
+| D-100 | Fixed implementation choices. | M0-02, M0-08, M0-09, M1-05, M1-06, M1-07, M2-01, M3-02, M3-03, M5-09, M5-10 | Each choice is reopened when its task starts. |
+| D-113 | Signed URLs last 10 minutes; cacheControl 600 seconds. | M1-06, M3-01, M3-03 | A deleted file stays readable through an issued URL for up to an hour. |
+| D-116 | Code points, one trimming rule, binary MB, client email pattern. | M1-01, M1-03, M1-06, M2-01, M3-01 | Client and server disagree at the limits. |
+| M3-03 | F5 send and display UI (both clients). Build the attach flows. Mobile: Expo modules for the camera and media picker, document picker, audio recording and media playback (expo-image-picker, expo-document-picker, expo-audio and expo-video; fallback expo-av, D-85, D-100). Web: file input and the browser MediaRecorder for voice notes. If the OS denies camera, microphone or media access the action does not start and shows the D-35 message. / Satisfies: F5; 3.2 Media; 6.1 Mobile client; 6.1 Web client; 6.1 Media storage | Attach menu, voice recorder, attachment rows and viewers with signed-URL refresh, on both clients. | User A sends a photo, a video, a voice note and a file; B opens each; with camera permission denied the camera action does not start and the message shows; a non-member cannot fetch any of them. / Test: T-11 (re-run), T-20, T-52. | M3-02. Types and caps: D-29. |
+| T-11 | M1 | C uploads, downloads and requests a signed URL for a chat-media-small object; A creates a signed URL and retries after the D-113 lifetime (a short test lifetime is injected). | L, H; API |
+| T-20 | M3 | Photo with text on a throttled connection; B watches text arrive before the upload completes. | H; D |
+| T-52 | M3 | A on D sends each media type to B on W; API uploads as A of 10,485,760-, 10,485,761- and 52,428,801-byte objects and of an object declared application/x-msdownload. | H; D + W; API |
+| F5 | Send photo, video, voice note or file. | M1-06, M3-01, M3-02, M3-03 |
+| T-11 | Non-member requests a media file. | M1-09, M4-07 |
+| T-20 | Send a photo with text on a throttled connection. | M3-09, M4-07 |
+| T-52 | Each media type end to end and the bucket byte limits. | M3-09, M4-07 |
+| D-90 Message integrity | Server checks on blank text, attachments, replies, length and media objects. | M1-01, M1-03, M3-01, M3-02 |
+| D-113 Signed URL lifetime | 10-minute signed URLs; cacheControl 600 seconds. | M1-06, M3-01, M3-03 |
+| D-116 Units and counting | Code points, trimming set, binary byte units, client email pattern. | M1-01, M1-03, M1-06, M2-01, M3-01 |
+| AND-08 | Attach menu. From Attach. | Camera (photo or video, expo-image-picker), Gallery (multi-select, at most 10 per message, D-90) and File (expo-document-picker). Each item is checked against the type list and size caps before it is queued (D-29), and a refused item shows its reason. If the OS denies the camera, microphone or media permission, the action does not start and the D-35 message shows. Photos are compressed under the Automatic and Forced rows (LS-5, D-28). | MVP; F5, F8; D-28, D-29, D-90, D-100 |
+| AND-09 | Media viewer. A tap on an attachment. | Photo with pinch zoom; video playback with expo-video; an inline voice-note player with position and 1x or 2x speed; a file opens in another app through the Android share sheet. Signed URLs last 10 minutes and refresh when they expire (D-113). | MVP; F5; D-29, D-100, D-113 |
+| CMP-11 | Attachment tile | Android, web | Bubbles, composer strip, media viewer entry. |
+| AND-08 Attach menu | Not a route (sheet) | AND-05 Attach | System pickers, back to AND-05 | Bottom sheet |
+| AND-09 Media viewer | chat/[chatId]/media/[mediaId].tsx | A tap on a tile | Back | Push, fade, full screen |
+| CMP-11 | AttachmentTile, VoiceNoteRow, FileRow | Image, expo-audio and expo-video (D-100) | <img>, <audio>, <video> | No |
+
+FILE packages/shared/src/config/index.ts
+/**
+ * Every tunable value fixed by v14 (D-27, D-28, D-29, D-30, D-57, D-89, D-95, D-109, D-116, D-122).
+ * Later phases import these values instead of repeating numbers (M2-01, 10.9).
+ */
+⋮----
+export type MediaType = 'photo' | 'video' | 'voice' | 'file';
+⋮----
+export type MuteOptionId = 'oneHour' | 'eightHours' | 'oneWeek' | 'untilUnmuted';
+⋮----
+export interface DgConfig {
+  queue: {
+    timerMs: number;
+    backoffBaseMs: number;
+    backoffFactor: number;
+    backoffCapMs: number;
+    jitter: number;
+    maxAttempts: number;
+    maxUnsent: number;
+  };
+  lowSignal: {
+    largeMediaBytes: number;
+    photoLongEdgePx: number;
+    photoQuality: number;
+    photoOutputMime: string;
+  };
+  media: {
+    smallBucket: string;
+    largeBucket: string;
+    smallMaxBytes: number;
+    largeMaxBytes: number;
+    tusThresholdBytes: number;
+    maxAttachments: number;
+    signedUrlSeconds: number;
+    cacheControlSeconds: number;
+    allowedTypes: Record<MediaType, readonly string[]>;
+  };
+  message: {
+    maxChars: number;
+    counterFromChars: number;
+  };
+  reactions: {
+    palette: readonly string[];
+    extraPalette: readonly string[];
+    maxActivePerMessage: number;
+  };
+  typing: {
+    sendEveryMs: number;
+    hideAfterMs: number;
+  };
+  folders: {
+    nameMaxChars: number;
+    maxPerUser: number;
+  };
+  groups: {
+    maxMembers: number;
+    titleMaxChars: number;
+  };
+  profile: {
+    usernamePattern: RegExp;
+    displayNameMaxChars: number;
+  };
+  password: {
+    minLength: number;
+  };
+  ui: {
+    loadingDelayMs: number;
+  };
+  list: {
+    pageSize: number;
+  };
+  sync: {
+    pageSize: number;
+  };
+  latency: {
+    budgetMs: number;
+    samples: number;
+  };
+  mute: {
+    options: readonly { id: MuteOptionId; seconds: number | null }[];
+  };
+}
+⋮----
+/**
+ * The `chat_members.muted_until` value for a mute option (D-109 rule 1). "Until I unmute" is the
+ * Postgres timestamptz literal `infinity`, which no client ever reaches by arithmetic.
+ */
+export function mutedUntil(option: MuteOptionId, now: Date): string
+
+FILE packages/shared/src/db/repositories/media.ts
+/**
+ * Attachment reads for the sync resync (M2-05, 6.4, D-40). message_media is read-only for the MVP
+ * sync; Phase 11 inserts rows.
+ */
+import { config, type MediaType } from '../../config';
+import { classifyError, type ClassifiedError } from '../../errors';
+import type { DgClient } from '../client';
+import type { Tables } from '../database.types';
+import type { DgResult } from '../result';
+⋮----
+export type MessageMediaRow = Tables<'message_media'>;
+⋮----
+export type MediaUploadOptions = {
+  bucket: string;
+  path: string;
+  mime: string;
+  cacheControl: number;
+};
+⋮----
+export type ResumableMediaUpload = (options: MediaUploadOptions) => Promise<DgResult<null>>;
+⋮----
+export type UploadAttachmentInput = {
+  chatId: string;
+  mediaId: string;
+  mediaType: MediaType;
+  mime: string;
+  sizeBytes: number;
+  body?: ArrayBuffer;
+  resumableUpload?: ResumableMediaUpload;
+};
+⋮----
+export type InsertMessageMediaInput = {
+  mediaId: string;
+  messageId: string;
+  mediaType: MediaType;
+  compressed: boolean;
+};
+⋮----
+export function mediaBucket(mediaType: MediaType): string
+⋮----
+export function mediaStoragePath(chatId: string, mediaId: string): string
+⋮----
+/** Storage uses a different error shape from PostgREST; duplicate objects are successful retries. */
+export function isAlreadyExistsError(error: unknown): boolean
+⋮----
+function storageError(error: unknown): ClassifiedError
+⋮----
+/** Uploads one object with ArrayBuffer or an injected TUS implementation (M3-01, D-29, D-39). */
+export async function uploadAttachment(
+  client: DgClient,
+  input: UploadAttachmentInput,
+): Promise<DgResult<null>>
+⋮----
+/** Inserts the trigger-bound media row; a repeated media_id is an idempotent success (M3-01). */
+export async function insertMessageMedia(
+  client: DgClient,
+  input: InsertMessageMediaInput,
+): Promise<DgResult<MessageMediaRow | null>>
+⋮----
+/** Creates the 10-minute signed URL used by the later media viewer (D-113). */
+export async function createMediaSignedUrl(
+  client: DgClient,
+  mediaType: MediaType,
+  storagePath: string,
+  expiresIn = config.media.signedUrlSeconds,
+): Promise<DgResult<string>>
+⋮----
+/** Rows of one chat with sync_seq > afterSyncSeq, ascending, at most `limit` (D-40). */
+export async function listMessageMediaAfter(
+  client: DgClient,
+  chatId: string,
+  afterSyncSeq: number,
+  limit: number,
+): Promise<DgResult<MessageMediaRow[]>>
+
+FILE packages/shared/src/db/repositories/messages.ts
+import { classifyError } from '../../errors';
+import type { DgClient } from '../client';
+import type { Tables } from '../database.types';
+import type { DgResult } from '../result';
+⋮----
+export type MessageRow = Tables<'messages'>;
+⋮----
+/** Only the client-writable columns of 10.5: seq, sync_seq and the timestamps are server-assigned. */
+export type InsertMessageInput = {
+  message_id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  reply_to: string | null;
+  attachment_count: number;
+};
+⋮----
+export async function insertMessage(
+  client: DgClient,
+  input: InsertMessageInput,
+): Promise<DgResult<MessageRow>>
+⋮----
+/** Rows of one chat with sync_seq > afterSyncSeq, ascending, at most `limit` (M2-05, D-40). */
+export async function listMessagesAfter(
+  client: DgClient,
+  chatId: string,
+  afterSyncSeq: number,
+  limit: number,
+): Promise<DgResult<MessageRow[]>>
+⋮----
+/** D-22: the sender may update content only; edited_at is set by the server. */
+export async function editMessage(
+  client: DgClient,
+  messageId: string,
+  content: string,
+): Promise<DgResult<MessageRow>>
+⋮----
+/** D-22 and D-76: a delete sets deleted_at; the server clears the content. */
+export async function softDeleteMessage(
+  client: DgClient,
+  messageId: string,
+): Promise<DgResult<MessageRow>>
+
+FILE packages/shared/src/queue/runner.ts
+/**
+ * The foreground delivery worker core (M2-03, LS-3, LS-7, D-77).
+ *
+ * It owns the drain loop and nothing platform-specific: the caller injects the send function
+ * (so tests can drop a response after the server stored the row), and the mobile adapter injects
+ * the connectivity source, the foreground state and the timer. One drain runs at a time, so an
+ * item is never attempted twice concurrently.
+ */
+import type { ClassifiedError } from '../errors';
+import { classifyError } from '../errors';
+import type { AttemptOutcome, QueueCore } from './core';
+import type { QueueItem } from './types';
+⋮----
+/** Sends one item. Resolves null when the row is stored, or the classified failure. */
+export type DeliverFn = (item: QueueItem) => Promise<ClassifiedError | null>;
+⋮----
+/** Attachment delivery may store the message row before a later upload fails (LS-4, D-93). */
+export type DeliveryResult = {
+  error: ClassifiedError | null;
+  rowStored: boolean;
+};
+⋮----
+export type AttachmentDeliverFn = (item: QueueItem) => Promise<ClassifiedError | null | DeliveryResult>;
+⋮----
+export type DrainSummary = {
+  attempted: number;
+  sent: number;
+  failed: number;
+  retrying: number;
+  deferred: number;
+};
+⋮----
+export type AttemptRecord = { tempId: string; outcome: AttemptOutcome };
+⋮----
+export type QueueRunner = {
+  /** Attempts every due item once. Safe to call while a drain is running. */
+  drain(): Promise<DrainSummary>;
+  /** Connectivity-change handler: regaining a connection makes every queued item due (D-77). */
+  handleConnectivity(connected: boolean): Promise<DrainSummary>;
+};
+⋮----
+/** Attempts every due item once. Safe to call while a drain is running. */
+drain(): Promise<DrainSummary>;
+/** Connectivity-change handler: regaining a connection makes every queued item due (D-77). */
+handleConnectivity(connected: boolean): Promise<DrainSummary>;
+⋮----
+export type QueueRunnerDeps = {
+  core: QueueCore;
+  deliver: AttachmentDeliverFn;
+  onAttempt?: (record: AttemptRecord) => void;
+};
+⋮----
+export function createQueueRunner(
+⋮----
+async function runDrain(): Promise<DrainSummary>
+⋮----
+function drain(): Promise<DrainSummary>
+⋮----
+async function handleConnectivity(connected: boolean): Promise<DrainSummary>
+⋮----
+function isDeliveryResult(value: ClassifiedError | null | DeliveryResult): value is DeliveryResult
+
+FILE packages/shared/src/queue/types.ts
+/**
+ * Queue contracts (M2-02, M2-03, LS-1 to LS-3, LS-7 to LS-9, D-06, D-10, D-27, D-77, D-93).
+ *
+ * The queue is the device-local record of 6.2: `temp_id` equals the `message_id` the row will use
+ * (D-10), the payload is the insert it will send, and the status is the LS-2 set. Storage is a
+ * platform adapter (expo-sqlite on mobile); everything here is platform-agnostic so the state
+ * machine can be tested with a fake store, a fake clock and an injected fetch.
+ */
+⋮----
+/** LS-2. The two Low Signal labels are presentation refinements, not extra states (D-17). */
+export type QueueStatus = 'queued' | 'sending' | 'sent' | 'failed';
+⋮----
+import type { MediaType } from '../config';
+⋮----
+/** A file copied into app-private storage before a message enters the durable queue (M3-02). */
+export type QueuedAttachment = {
+  media_id: string;
+  media_type: MediaType;
+  mime: string;
+  size_bytes: number;
+  local_uri: string;
+  compressed: boolean;
+};
+⋮----
+/** The payload of an outgoing message, including its optional attachment work (M3-02). */
+export type TextQueuePayload = {
+  kind: 'text';
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  reply_to: string | null;
+  attachment_count: number;
+  attachments: QueuedAttachment[];
+};
+⋮----
+export type QueuePayload = TextQueuePayload;
+⋮----
+export type QueueItem = {
+  /** Equals the message_id the delivered row uses (D-10). */
+  temp_id: string;
+  /** Copy of `payload.chat_id`, so per-chat strict order needs no JSON parse (D-93). */
+  chat_id: string;
+  payload: QueuePayload;
+  status: QueueStatus;
+  /** D-77: counts only attempts made while connected that failed with a network or server error. */
+  retry_count: number;
+  /** Epoch milliseconds; the worker attempts the item only once this has passed (D-77). */
+  next_attempt_at: number;
+  /**
+   * True once an insert was attempted, so the row may exist on the server. Discard needs a
+   * connection and a soft delete in that case, and works offline only while this is false (D-93).
+   */
+  row_may_exist: boolean;
+  /** Whether the message row is absent, may exist, or is confirmed stored (D-93). */
+  row_state: 'absent' | 'unknown' | 'stored';
+  /** The kind of the last failure, for the item's caption in the chat (D-17, D-93). */
+  last_error: 'network' | 'server' | 'rateLimited' | null;
+  created_at: number;
+};
+⋮----
+/** Equals the message_id the delivered row uses (D-10). */
+⋮----
+/** Copy of `payload.chat_id`, so per-chat strict order needs no JSON parse (D-93). */
+⋮----
+/** D-77: counts only attempts made while connected that failed with a network or server error. */
+⋮----
+/** Epoch milliseconds; the worker attempts the item only once this has passed (D-77). */
+⋮----
+/**
+   * True once an insert was attempted, so the row may exist on the server. Discard needs a
+   * connection and a soft delete in that case, and works offline only while this is false (D-93).
+   */
+⋮----
+/** Whether the message row is absent, may exist, or is confirmed stored (D-93). */
+⋮----
+/** The kind of the last failure, for the item's caption in the chat (D-17, D-93). */
+⋮----
+/** The D-27 values the queue machine needs; `config.queue` satisfies it. */
+export type QueueTiming = {
+  timerMs: number;
+  backoffBaseMs: number;
+  backoffFactor: number;
+  backoffCapMs: number;
+  jitter: number;
+  maxAttempts: number;
+  maxUnsent: number;
+};
+⋮----
+/**
+ * The storage contract every platform adapter implements (M2-02). The cache, cache rows and
+ * `sync_state` belong to the same database (6.2) but are not reached here yet.
+ */
+export interface LocalQueueStore {
+  /** Creates or upgrades the schema. Idempotent. */
+  init(): Promise<void>;
+  insert(item: QueueItem): Promise<void>;
+  update(item: QueueItem): Promise<void>;
+  get(tempId: string): Promise<QueueItem | null>;
+  /** Every item that is not yet sent, oldest first (LS-7 counts queued, sending and failed). */
+  listUnsent(): Promise<QueueItem[]>;
+  countUnsent(): Promise<number>;
+  /** LS-9: items left in `sending` at startup return to `queued`. */
+  resetSending(): Promise<void>;
+  /** D-77: a returning connection makes every queued item due at once without resetting counts. */
+  makeAllDue(now: number): Promise<void>;
+  delete(tempId: string): Promise<void>;
+  /** Removes sent items; the chat shows delivered rows from the server from then on. */
+  deleteSent(): Promise<void>;
+  /** Returns sent items before cleanup so mobile can remove their private attachment copies. */
+  listSent(): Promise<QueueItem[]>;
+}
+⋮----
+/** Creates or upgrades the schema. Idempotent. */
+init(): Promise<void>;
+insert(item: QueueItem): Promise<void>;
+update(item: QueueItem): Promise<void>;
+get(tempId: string): Promise<QueueItem | null>;
+/** Every item that is not yet sent, oldest first (LS-7 counts queued, sending and failed). */
+listUnsent(): Promise<QueueItem[]>;
+countUnsent(): Promise<number>;
+/** LS-9: items left in `sending` at startup return to `queued`. */
+resetSending(): Promise<void>;
+/** D-77: a returning connection makes every queued item due at once without resetting counts. */
+makeAllDue(now: number): Promise<void>;
+delete(tempId: string): Promise<void>;
+/** Removes sent items; the chat shows delivered rows from the server from then on. */
+deleteSent(): Promise<void>;
+/** Returns sent items before cleanup so mobile can remove their private attachment copies. */
+listSent(): Promise<QueueItem[]>;
+⋮----
+export type EnqueueResult =
+  | { ok: true; item: QueueItem }
+  | { ok: false; reason: 'queueFull' };
+
+FILE packages/shared/src/validation/attachment.ts
+import { config, type MediaType } from '../config';
+⋮----
+export type AttachmentInput = {
+  mediaType: MediaType;
+  mime: string;
+  sizeBytes: number;
+};
+⋮----
+export type AttachmentResult =
+  | { ok: true }
+  | { ok: false; reason: 'unsupportedType' | 'tooLarge' };
+⋮----
+/**
+ * Photos and voice notes go to the 10 MiB bucket, videos and files to the 50 MiB bucket (D-29, D-75),
+ * and only the types of 5.5 are accepted (D-90, D-116).
+ */
+export function validateAttachment(input: AttachmentInput): AttachmentResult
+⋮----
+/** A message carries at most 10 attachments (D-90). */
+export function validateAttachmentCount(count: number): boolean
+
+FILE packages/shared/src/validation/message.ts
+import { config } from '../config';
+import { codePointLength, isBlank } from './text';export { dgTrim, isBlank } from './text';
+export type MessageTextResult
+ =
+  | { ok: true }
+  | { ok: false; reason: 'blank' | 'tooLong' };
+⋮----
+/**
+ * D-30, D-90 and D-116: at most 4096 code points, and blank text is refused only when the message
+ * has no attachment (PF-13).
+ */
+export function validateMessageText(content: string, attachmentCount: number): MessageTextResult
+
+FILE packages/shared/package.json
+{
+  "name": "@dologram/shared",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "6.3.5",
+    "vitest": "5.1.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.119.0"
+  }
+}

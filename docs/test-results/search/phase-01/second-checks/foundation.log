@@ -1,0 +1,18 @@
+
+> @dologram/mobile@1.0.0 test
+> jest --runInBand --watch=false --cacheDirectory G:\codebase\DoloGram\.tmp\search-phase01-jest --runTestsByPath src/search/__tests__/query.test.ts src/search/__tests__/matching.test.ts src/search/__tests__/people.test.ts src/search/__tests__/useMessageSearch.test.tsx src/search/__tests__/SearchResultRow.test.tsx src/components/__tests__/SearchField.test.tsx
+
+(node:17272) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/search/__tests__/people.test.ts (8.927 s)
+PASS src/components/__tests__/SearchField.test.tsx
+PASS src/search/__tests__/useMessageSearch.test.tsx
+PASS src/search/__tests__/query.test.ts
+PASS src/search/__tests__/SearchResultRow.test.tsx
+PASS src/search/__tests__/matching.test.ts
+
+Test Suites: 6 passed, 6 total
+Tests:       35 passed, 35 total
+Snapshots:   0 total
+Time:        23.746 s
+Ran all test suites within paths "src/search/__tests__/query.test.ts", "src/search/__tests__/matching.test.ts", "src/search/__tests__/people.test.ts", "src/search/__tests__/useMessageSearch.test.tsx", "src/search/__tests__/SearchResultRow.test.tsx", "src/components/__tests__/SearchField.test.tsx".

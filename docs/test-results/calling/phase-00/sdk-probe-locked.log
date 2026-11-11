@@ -1,0 +1,8 @@
+running 4 tests from ./docs/test-results/calling/phase-00/sdk-contract.test.ts
+five-minute voice source and room grants ... ok (7ms)
+five-minute video source and room grants ... ok (933µs)
+removal serializes a seconds bigint cutoff and uses a bounded request ... ok (11ms)
+webhook verification rejects a modified raw body ... ok (3ms)
+
+ok | 4 passed | 0 failed (36ms)
+

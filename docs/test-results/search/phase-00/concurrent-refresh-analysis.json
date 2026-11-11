@@ -1,0 +1,5 @@
+{
+  "path": "packages/shared/src/strings/index.ts",
+  "latest_change_only_carriage_return_bytes": false,
+  "normalized_diff": "--- \n+++ \n@@ -528,5 +528,5 @@\n     callFailed: \"Couldn't connect the call. Try again.\",\n     providerUnavailable: 'Calling is temporarily unavailable. Try again shortly.',\n-    missingNative: 'Install the latest DoloGram build to use voice calls.',\n+    missingNative: 'Install the latest DoloGram build to use calls.',\n     micDenied: 'Microphone access is required to join a call.',\n     blocked: 'This caller is blocked on this device.',\n"
+}

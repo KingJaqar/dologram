@@ -1,0 +1,77 @@
+[
+  {
+    "path": "apps/mobile/AGENTS.md",
+    "chars": 2585,
+    "sha256": "c0c8360c8a2352556c9fd65071bc80dbcfacd735e8ddf4a19543d80e09449166"
+  },
+  {
+    "path": "docs/test-results/calling/phase-01/context-index.md",
+    "chars": 4413,
+    "sha256": "b921e75b7faaadb12ca1f497a163f74697e387d2c563f2f5a26999a55d71629e"
+  },
+  {
+    "path": "docs/test-results/calling/phase-01/scheduler.md",
+    "chars": 1964,
+    "sha256": "73bbe3d53953c510f5455fef4eae2cf1a3a6cd4b2a8d0c7895edfc8f22980b85"
+  },
+  {
+    "path": "docs/test-results/calling/phase-01.md",
+    "chars": 4898,
+    "sha256": "6910a22c1042a61e9d38a3392109b56e14588965c0e6b699aa3083715222a24c"
+  },
+  {
+    "path": "packages/shared/src/calls/index.ts",
+    "chars": 396,
+    "sha256": "28b5566c2cd13cce96859654332919025af2a96f2f523f8ccc8823706c6db9ac"
+  },
+  {
+    "path": "packages/shared/src/calls/repository.ts",
+    "chars": 1926,
+    "sha256": "c3bbc57684ccb33f55b581f8d2fbac3e97cd3ac484f01acf6b66921f2fb049a0"
+  },
+  {
+    "path": "packages/shared/src/calls/types.ts",
+    "chars": 1962,
+    "sha256": "743b82815f4ceb686d79cdf302bfa2bda2a6cbf99027d812d4c19b78b6ac3510"
+  },
+  {
+    "path": "packages/shared/src/db/database.types.ts",
+    "chars": 17350,
+    "sha256": "79939735e66e47c16af5e4406b5013d482d45f7e6b879742ccb9d83b628af969"
+  },
+  {
+    "path": "packages/shared/src/index.ts",
+    "chars": 5666,
+    "sha256": "d9870247d8fc4fdcbe5f85e1cb81a85d43288834220ea49ccbe5a31aad5b452a"
+  },
+  {
+    "path": "packages/shared/package.json",
+    "chars": 366,
+    "sha256": "dd94514115ea8562b51af207db386456f1a7c7b18043459c21dae93783c60cb6"
+  },
+  {
+    "path": "Plans/DoloGram_Voice_Video_Calling_Implementation_Plan.md",
+    "chars": 122098,
+    "sha256": "06122a3e73bf31cf7def15189d3e7f6fe11bf688cc6ab7923c827fd3af4136ce"
+  },
+  {
+    "path": "supabase/migrations/029_calling_state_and_authorization.sql",
+    "chars": 63399,
+    "sha256": "53f2111d6ec78dfd4d034890e5ff51769d339a91064dbe3047d93224ffb90754"
+  },
+  {
+    "path": "supabase/tests/calling_concurrency.sql",
+    "chars": 873,
+    "sha256": "ca6b39e3a06c155d8bab62ff2d547414dcc13c487bf26aa7de3bd3b7d945c0c0"
+  },
+  {
+    "path": "supabase/tests/calling_phase_1.sql",
+    "chars": 7113,
+    "sha256": "dcad29fb0fd49cbc487aed23fd299def3742e6c086f0d4d7958736c0d26a4450"
+  },
+  {
+    "path": "supabase/AGENTS.md",
+    "chars": 362,
+    "sha256": "fce92817d3b9107edc59ccdcbdf4a7d98fd33ca5fec5e49ed2b8a2020b3bbde8"
+  }
+]

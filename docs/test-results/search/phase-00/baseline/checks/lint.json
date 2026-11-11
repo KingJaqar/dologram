@@ -1,0 +1,17 @@
+{
+  "name": "lint",
+  "command": [
+    "npm.cmd",
+    "--workspace",
+    "@dologram/mobile",
+    "run",
+    "lint"
+  ],
+  "cwd": "G:\\codebase\\DoloGram",
+  "pid": 26300,
+  "status": "passed",
+  "exit_code": 0,
+  "timeout_seconds": 300,
+  "seconds": 7.82,
+  "log": "docs\\test-results\\search\\phase-00\\baseline\\checks\\lint.log"
+}

@@ -1,0 +1,32 @@
+Download https://registry.npmjs.org/livekit-server-sdk
+Download https://registry.npmjs.org/@bufbuild%2fprotobuf
+Download https://registry.npmjs.org/@livekit%2fprotocol
+Download https://registry.npmjs.org/jose
+Download https://registry.npmjs.org/livekit-server-sdk/-/livekit-server-sdk-2.19.3.tgz
+Download https://registry.npmjs.org/jose/-/jose-5.10.0.tgz
+Download https://registry.npmjs.org/@bufbuild/protobuf/-/protobuf-1.10.1.tgz
+Download https://registry.npmjs.org/@livekit/protocol/-/protocol-1.53.0.tgz
+Check docs/test-results/calling/phase-00/sdk-contract.test.ts
+Uncaught error from ./docs/test-results/calling/phase-00/sdk-contract.test.ts FAILED
+
+ ERRORS 
+
+./docs/test-results/calling/phase-00/sdk-contract.test.ts (uncaught error)
+error: (in promise) NotCapable: Requires env access to "BUF_BIGINT_DISABLE", run again with the --allow-env flag
+            process.env.BUF_BIGINT_DISABLE !== "1");
+                        ^
+    at Object.getEnv [as get] (ext:deno_os/30_os.js:1:1291)
+    at denoEnvGet (ext:deno_node/_process/process.ts:1:1219)
+    at Object.get (ext:deno_node/_process/process.ts:1:1360)
+    at makeInt64Support (file:///G:/codebase/DoloGram/.tmp/calling-phase00/deno-cache/npm/registry.npmjs.org/@bufbuild/protobuf/1.10.1/dist/esm/proto-int64.js:26:25)
+    at file:///G:/codebase/DoloGram/.tmp/calling-phase00/deno-cache/npm/registry.npmjs.org/@bufbuild/protobuf/1.10.1/dist/esm/proto-int64.js:113:27
+This error was not caught from a test and caused the test runner to fail on the referenced module.
+It most likely originated from a dangling promise, event/timeout handler or top-level code.
+
+ FAILURES 
+
+./docs/test-results/calling/phase-00/sdk-contract.test.ts (uncaught error)
+
+FAILED | 0 passed | 1 failed (0ms)
+
+error: Test failed
