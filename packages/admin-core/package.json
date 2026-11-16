@@ -1,0 +1,36 @@
+{
+  "name": "@dologram/admin-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "react-server": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "react-server": "./src/env.ts",
+      "default": "./src/env.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@dologram/shared": "*",
+    "@supabase/supabase-js": "2.119.0",
+    "postgres": "4.1.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

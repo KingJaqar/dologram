@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { strings, updateOwnMember, type ChatListItem } from '@dologram/shared';
+import { conversationIdentity, markChatRead as persistChatRead, strings, type ChatListItem } from '@dologram/shared';
+import { memoPreference } from '../memos/organization';
 import { useAuth } from '../auth/AuthProvider';
 import { markChatsRead } from '../chat/readState';
 import { Button } from '../components/Button';
@@ -9,10 +10,11 @@ import { supabase } from '../lib/supabase';
 import { useNetState } from '../net/netState';
 import { getLocalDatabase } from '../queue/db';
 import { notifyCacheChange } from '../sync/cacheEvents';
+import { resyncChatNow } from '../sync/lifecycle';
 import { useTheme } from '../theme/ThemeProvider';
 
-/** This belongs to the archive scene so changing sections cannot resize the shared header. */
-export function ArchiveListToolbar({ items }: { items: readonly ChatListItem[] }) {
+/** Shared list toolbar so Archive and Ignored use the same read-all behavior. */
+export function ArchiveListToolbar({ items, title = strings.chatList.archivedChats }: { items: readonly ChatListItem[]; title?: string }) {
   const { session } = useAuth();
   const net = useNetState();
   const theme = useTheme();
@@ -28,9 +30,11 @@ export function ArchiveListToolbar({ items }: { items: readonly ChatListItem[] }
     setBusy(true);
     try {
       const db = await getLocalDatabase();
-      await markChatsRead(db, unread.map((item) => item.chatId), userId, net.isConnected,
-        (chatId, seq) => updateOwnMember(supabase, chatId, userId, { last_read_seq: seq }),
-        async () => false);
+      await Promise.all(unread.filter((item) => conversationIdentity(item.chatId).kind === 'memo').map((item) => memoPreference(item.chatId, 'unread', false)));
+      await markChatsRead(db, unread.filter((item) => conversationIdentity(item.chatId).kind === 'chat').map((item) => item.chatId), userId, net.isConnected,
+        (chatId, seq, membershipJoinedAt, signal) => persistChatRead(supabase, chatId, seq, membershipJoinedAt, signal),
+        async () => false,
+        { onMembershipChanged: resyncChatNow });
       notifyCacheChange();
     } catch {
       showToast({ message: strings.chatList.readAllFailed });
@@ -47,7 +51,7 @@ export function ArchiveListToolbar({ items }: { items: readonly ChatListItem[] }
         style={[styles.title, { color: theme.colors.text.primary }]}
         numberOfLines={1}
       >
-        {strings.chatList.archivedChats}
+        {title}
       </Text>
       <Button label={strings.chatList.readAll} variant="text" loading={busy} disabled={unread.length === 0} onPress={() => void readAll()} />
     </View>

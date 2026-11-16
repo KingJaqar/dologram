@@ -3,14 +3,14 @@
  * Track: 48 × 28, thumb: 22 × 22, row min-height 56.
  * 12.5, D-95
  */
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
-  Animated,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { ThemeText as Text, THEME_TRANSITION_DURATION, THEME_TRANSITION_EASING } from '../theme/ThemeSurface';
 import { useTheme } from '../theme/ThemeProvider';
 import { textStyle } from '../theme/typography';
 
@@ -20,6 +20,7 @@ export interface SwitchRowProps {
   value: boolean;
   onValueChange: (value: boolean) => void;
   disabled?: boolean;
+  animationDuration?: number;
 }
 
 const TRACK_WIDTH = 48;
@@ -33,19 +34,11 @@ export function SwitchRow({
   value,
   onValueChange,
   disabled = false,
+  animationDuration,
 }: SwitchRowProps) {
   const theme = useTheme();
   const c = theme.colors;
-
-  const translateX = useRef(new Animated.Value(value ? THUMB_TRAVEL : 0)).current;
-
-  useEffect(() => {
-    Animated.timing(translateX, {
-      toValue: value ? THUMB_TRAVEL : 0,
-      duration: theme.reduceMotion ? 0 : theme.motion.duration.fast,
-      useNativeDriver: true,
-    }).start();
-  }, [value, theme.reduceMotion, theme.motion.duration.fast, translateX]);
+  const thumbDuration = animationDuration ?? THEME_TRANSITION_DURATION;
 
   return (
     <Pressable
@@ -54,6 +47,7 @@ export function SwitchRow({
         { minHeight: 56, opacity: disabled ? 0.5 : 1 },
       ]}
       onPress={() => !disabled && onValueChange(!value)}
+      disabled={disabled}
       accessibilityRole="switch"
       accessibilityLabel={label}
       accessibilityState={{ checked: value, disabled }}
@@ -74,7 +68,7 @@ export function SwitchRow({
       </View>
 
       {/* Track */}
-      <View
+      <Animated.View
         style={[
           styles.track,
           {
@@ -86,6 +80,9 @@ export function SwitchRow({
                 ? c.text.muted
                 : c.bg.input,
             borderRadius: TRACK_HEIGHT / 2,
+            transitionProperty: 'backgroundColor',
+            transitionDuration: theme.reduceMotion ? 0 : thumbDuration,
+            transitionTimingFunction: THEME_TRANSITION_EASING,
           },
         ]}
       >
@@ -94,13 +91,16 @@ export function SwitchRow({
           style={[
             styles.thumb,
             {
-              transform: [{ translateX }],
+              transform: [{ translateX: value ? THUMB_TRAVEL : 0 }],
+              transitionProperty: ['transform', 'backgroundColor'],
+              transitionDuration: theme.reduceMotion ? 0 : thumbDuration,
+              transitionTimingFunction: THEME_TRANSITION_EASING,
               backgroundColor: value || theme.scheme === 'light' ? c.bg.surface : c.text.inverse,
               shadowColor: c.shadow,
             },
           ]}
         />
-      </View>
+      </Animated.View>
     </Pressable>
   );
 }

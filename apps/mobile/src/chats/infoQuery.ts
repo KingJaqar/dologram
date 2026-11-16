@@ -26,12 +26,16 @@ function parsePayload<T>(payload: string | null): T | null {
 export async function loadChatInfoSource(
   db: SQLiteDatabase,
   chatId: string,
+  userId: string,
 ): Promise<ChatInfoSource> {
   const chatRow = await db.getFirstAsync<{ payload: string }>(
-    'SELECT payload FROM cache_chats WHERE chat_id = ?',
-    [chatId],
+    `SELECT chat.payload FROM cache_chats chat
+       JOIN cache_chat_members own ON own.chat_id = chat.chat_id AND own.user_id = ?
+      WHERE chat.chat_id = ?`,
+    [userId, chatId],
   );
   const chat = parsePayload<ChatRow>(chatRow?.payload ?? null);
+  if (!chat) return { chat: null, members: [], profiles: [] };
 
   const memberRows = await db.getAllAsync<{ payload: string }>(
     'SELECT payload FROM cache_chat_members WHERE chat_id = ?',
@@ -59,7 +63,7 @@ export async function loadChatInfoSource(
   return { chat, members, profiles };
 }
 
-export type CachedContactRow = { user_id: string; display_name: string | null };
+export type CachedContactRow = { user_id: string; display_name: string | null; avatar_url?: string | null };
 
 /**
  * Every other member of every cached chat: the people the caller already shares a chat with, which
@@ -67,10 +71,12 @@ export type CachedContactRow = { user_id: string; display_name: string | null };
  */
 export async function loadCachedContacts(db: SQLiteDatabase, userId: string): Promise<CachedContactRow[]> {
   return db.getAllAsync<CachedContactRow>(
-    `SELECT DISTINCT m.user_id AS user_id, p.display_name AS display_name
+    `SELECT DISTINCT m.user_id AS user_id, p.display_name AS display_name,
+       CASE WHEN json_valid(p.payload) THEN json_extract(p.payload, '$.avatar_url') END AS avatar_url
        FROM cache_chat_members m
+       JOIN cache_chat_members own ON own.chat_id = m.chat_id AND own.user_id = ?
        LEFT JOIN cache_profiles p ON p.user_id = m.user_id
       WHERE m.user_id <> ?`,
-    [userId],
+    [userId, userId],
   );
 }

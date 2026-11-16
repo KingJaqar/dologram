@@ -9,3 +9,15 @@ apps/mobile/*.log
 
 # Local Jest transform cache
 apps/mobile/.jest-cache/
+
+# Local backups and temporary files
+/.1 backups/
+.tmp/
+.expo/
+/test-output.txt
+
+# Generated Repomix packs and logs
+/supabase/repomix/
+
+# Supabase CLI local state
+/supabase/.temp/

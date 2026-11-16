@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0';
 import type { CallSnapshot } from '../../../packages/shared/src/calls/types.ts';
+import { assertAccountAccess } from './accountAccess.ts';
 import {
   CallHttpError,
   exactKeys,
@@ -97,7 +98,15 @@ export async function authenticate(request: Request): Promise<AuthContext> {
   });
   const { data, error } = await authClient.auth.getUser(token);
   if (error || !data.user) throw new CallHttpError(401, 'CALL_UNAUTHENTICATED', false);
-  return { actorId: requireUuid(data.user.id), admin: createAdminClient() };
+  // getUser reads current Auth metadata; a stale JWT flag cannot open the
+  // service-role paths shared by calls, memo-sync and memo-pin-reset.
+  assertAccountAccess(data.user.app_metadata);
+  const actorId = requireUuid(data.user.id);
+  const admin = createAdminClient();
+  const access = await admin.rpc('account_access_allowed', { p_user_id: actorId }).abortSignal(AbortSignal.timeout(10000));
+  if (access.error) throw providerError('CALL_PROVIDER_UNAVAILABLE', true);
+  if (access.data !== true) throw new CallHttpError(403, 'CALL_NOT_ALLOWED', false);
+  return { actorId, admin };
 }
 
 function rpcCode(error: unknown): string | null {

@@ -1,0 +1,5 @@
+.tabs { display: flex; align-items: center; gap: var(--dg-space-1); padding-inline: var(--dg-space-2); overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--dg-color-border-subtle); }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { display: inline-flex; align-items: center; flex-shrink: 0; min-height: 44px; padding-inline: var(--dg-space-3); border-bottom: 2px solid transparent; color: var(--dg-color-text-secondary); font: var(--dg-type-label-lg); text-decoration: none; white-space: nowrap; }
+.tab[aria-selected="true"] { border-bottom-color: var(--dg-color-brand-primary); color: var(--dg-color-text-primary); }
+.tab:hover { color: var(--dg-color-text-primary); }

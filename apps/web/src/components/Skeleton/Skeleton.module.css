@@ -1,0 +1,4 @@
+.skeleton { height: var(--dg-space-6); width: 100%; border-radius: var(--dg-radius-sm); background: var(--dg-color-skeleton-base); background-image: linear-gradient(90deg, transparent, var(--dg-color-skeleton-highlight), transparent); background-size: 200% 100%; animation: shimmer var(--dg-motion-duration-shimmer) linear infinite; }
+.skeleton[data-shape="circle"] { width: 56px; height: 56px; border-radius: var(--dg-radius-full); }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background-image: none; } }

@@ -32,6 +32,8 @@ export type SyncDeliveryStatus = 'connected' | 'disconnected';
 
 export type SyncDeliveryHandlers = {
   onChange: (change: ChangePayload) => void;
+  /** A DELETE or malformed/key-only member event must trigger a bounded complete snapshot refresh. */
+  onMembersInvalidated: (chatId: string) => void;
   onStatus: (status: SyncDeliveryStatus) => void;
 };
 
@@ -43,7 +45,7 @@ export interface SyncDelivery {
   subscribe(handlers: SyncDeliveryHandlers): () => void;
 }
 
-/** Server reads the resync needs. All of them are scoped by RLS, never by a client filter. */
+/** Server reads the resync needs. RLS authorizes every read. */
 export interface SyncSource {
   /** Rows of `messages` with sync_seq > afterSyncSeq, ascending, at most `limit`. */
   fetchMessagesAfter(
@@ -78,18 +80,20 @@ export interface SyncSource {
 
 /**
  * The local cache contract (6.2). Rows are merged by key, so applying the same row twice is
- * harmless (D-40); the cursor is the highest sync_seq received for the chat and never a device
+ * harmless (D-40); the cursor is the confirmed common sync_seq boundary for the chat and never a device
  * timestamp.
  */
 export interface SyncCacheStore {
   /** Opens or upgrades the cache schema. Idempotent. */
   init(): Promise<void>;
-  /** Highest sync_seq received for the chat, 0 when the chat was never synced. */
+  /** Atomically reset legacy checkpoints once, retaining all rows and local work. Requires exclusive ownership. */
+  upgradeCheckpoints(): Promise<void>;
+  /** Confirmed complete common page boundary, 0 when the chat was never synced. */
   getCursor(chatId: string): Promise<number>;
   /** Raises the cursor; it must never move backwards. */
   setCursor(chatId: string, cursor: number): Promise<void>;
   hasChat(chatId: string): Promise<boolean>;
-  /** Every chat id the cache holds; used to find chats the server no longer lists (D-91). */
+  /** Cached chats for the active account, used to find memberships the server no longer lists. */
   listChatIds(): Promise<string[]>;
   upsertChat(row: ChatRow): Promise<void>;
   upsertMember(row: ChatMemberRow): Promise<void>;
@@ -98,7 +102,9 @@ export interface SyncCacheStore {
   upsertReaction(row: ReactionRow): Promise<void>;
   /** Display names of chat members, merged by `user_id`. */
   upsertProfile(row: ProfileRow): Promise<void>;
-  /** Removes the chat, its members, messages, media, reactions and sync cursor (D-91). */
+  /** Reconciles one validated complete member snapshot and removes absent members atomically. */
+  replaceMembers(chatId: string, rows: readonly ChatMemberRow[]): Promise<void>;
+  /** Removes the active account's access to the cached chat (D-91). */
   deleteChat(chatId: string): Promise<void>;
 }
 
@@ -106,8 +112,8 @@ export interface SyncCacheStore {
 export type SyncSummary = {
   /** Chats the server listed for this user. */
   chats: number;
-  /** Chats removed from the device because the server no longer lists them (D-91). */
+  /** Cached memberships removed because the server no longer lists them (D-91). */
   pruned: number;
-  /** Chats whose resync failed; the cursor is unchanged for them. */
+  /** Chats with an incomplete/failed pass; only confirmed safe page boundaries are retained. */
   failed: number;
 };

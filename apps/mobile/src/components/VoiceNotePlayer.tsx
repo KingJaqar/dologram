@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useFocusEffect } from 'expo-router';
 import { strings } from '@dologram/shared';
@@ -14,7 +14,7 @@ function time(seconds: number): string {
   return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
 }
 
-export function VoiceNotePlayer({ uri, onError }: { uri: string; onError: () => void }) {
+export function VoiceNotePlayer({ uri, onError, onLongPress }: { uri: string; onError: () => void; onLongPress?: () => void }) {
   const theme = useTheme();
   const player = useAudioPlayer(null);
   const restore = useRef<{ position: number; playing: boolean; speed: number } | null>(null);
@@ -54,7 +54,7 @@ export function VoiceNotePlayer({ uri, onError }: { uri: string; onError: () => 
       }
     } catch { onError(); }
   };
-  return <View style={styles.row}>
+  const content = <View style={styles.row}>
     {!status.isLoaded || status.isBuffering ? <DelayedActivityIndicator active={!status.isLoaded || status.isBuffering} color={theme.colors.brand.primary} accessibilityLabel="Loading voice note" /> : null}
     <View style={styles.controls}>
       <Button label={status.playing ? strings.media.pause : strings.media.play} variant="text" onPress={() => void play()} disabled={!status.isLoaded} />
@@ -66,5 +66,6 @@ export function VoiceNotePlayer({ uri, onError }: { uri: string; onError: () => 
     <Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.text.secondary }]}>{time(status.currentTime)} / {time(status.duration)}</Text>
     <Button label={strings.media.restart} variant="text" disabled={!status.isLoaded} onPress={() => { void player.seekTo(0).catch(onError); }} />
   </View>;
+  return onLongPress ? <Pressable onLongPress={onLongPress} delayLongPress={400} accessibilityHint="Long press for message actions">{content}</Pressable> : content;
 }
 const styles = StyleSheet.create({ row: { width: 240, maxWidth: '100%', gap: 4 }, controls: { flexDirection: 'row', flexWrap: 'wrap' }, track: { height: 4, borderRadius: 2 }, progress: { height: 4, borderRadius: 2 } });

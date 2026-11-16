@@ -3,6 +3,8 @@ import { strings, type MediaType, type QueueItem, type QueueStatus } from '@dolo
 import { attachmentLabel } from '../media/model';
 import { normalizeSearch, searchPreview } from './matching';
 import { readSearch, SEARCH_DEADLINE_MS, SearchFailure } from './request';
+import { loadChatListPreferences } from '../chatList/preferences';
+import { loadChatPreferences } from '../chats/preferences';
 
 export { normalizeSearch } from './matching';
 export type SearchCursor = { createdAt: string; messageId: string };
@@ -51,8 +53,15 @@ async function* scanMatches(
   db: SQLiteDatabase, scope: SearchScope, query: string, cursor: SearchCursor | null,
   signal: AbortSignal, deadline: number,
 ): AsyncGenerator<MessageMatch> {
-  const ids = scopeIds(scope);
+  let ids = scopeIds(scope);
   if (!query || ids.length === 0) return;
+  // A route allowlist can outlive a block/delete action while the screen is covered.
+  // Recheck device preferences at the read boundary, including direct scoped links.
+  const organization = await readSearch(() => loadChatListPreferences(scope.userId), signal, deadline);
+  const preferences = await readSearch(() => Promise.all(ids.map((id) => loadChatPreferences(scope.userId, id))), signal, deadline);
+  ids = ids.filter((id, index) => !organization.deleted.includes(id) && !preferences[index].blocked);
+  if (scope.chatId !== undefined && !ids.includes(scope.chatId)) throw new SearchFailure('unavailable');
+  if (ids.length === 0) return;
   let after = cursor;
   while (!signal.aborted) {
     const rows = await readSearch(() => db.getAllAsync<CachedMessage>(

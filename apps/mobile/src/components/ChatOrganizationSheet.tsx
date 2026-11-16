@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { strings, type ChatListItem, type MuteOptionId } from '@dologram/shared';
 import { BottomSheet } from './BottomSheet';
 import { Icon } from './Icon';
+import { MuteOptionGrid } from './MuteOptionGrid';
 import { useTheme } from '../theme/ThemeProvider';
 import { textStyle } from '../theme/typography';
 
@@ -22,6 +23,8 @@ type Props = {
   onIgnore?: () => void;
   ignored?: boolean;
   onUnignore?: () => void;
+  blocked?: boolean;
+  onUnblock?: () => void;
   onAddMembers?: () => void;
   onMute: (option: MuteOptionId) => void;
   onUnmute: () => void;
@@ -29,14 +32,47 @@ type Props = {
   onLeaveGroup?: () => void;
   onDelete?: () => void;
   onToggleFolder: (folderId: string, containsChat: boolean) => void;
+  /** Called after the sheet has fully slid down and unmounted. */
+  onExited?: () => void;
 };
 
 type Mode = 'actions' | 'mute' | 'folders';
 
 /** Messenger-style long-press conversation actions. */
 export function ChatOrganizationSheet(props: Props) {
-  return props.visible && props.item ? <SheetContent key={props.item.chatId} {...props} /> : null;
+  // The parent clears its selection immediately after an action. Keep the last
+  // item rendered until BottomSheet finishes its native-driven exit transition.
+  const [retainedItem, setRetainedItem] = useState<ChatListItem | null>(props.item);
+
+  useEffect(() => {
+    if (props.item) {
+      // This state mirrors the latest selection solely to keep the exit view
+      // mounted after the parent clears its selection.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRetainedItem(props.item);
+    }
+  }, [props.item]);
+
+  const displayItem = props.item ?? retainedItem;
+  if (!displayItem) return null;
+
+  return (
+    <SheetContent
+      key={displayItem.chatId}
+      {...props}
+      item={displayItem}
+      visible={props.visible && props.item !== null}
+      onExited={() => {
+        if (props.item === null) setRetainedItem(null);
+        // Deferred actions (navigate, or open a dialog) must wait for the exit
+        // transition, otherwise the newly presented UI interrupts it.
+        props.onExited?.();
+      }}
+    />
+  );
 }
+
+type SheetContentProps = Props;
 
 function SheetContent({
   visible,
@@ -52,6 +88,8 @@ function SheetContent({
   onIgnore,
   ignored = false,
   onUnignore,
+  blocked = false,
+  onUnblock,
   onAddMembers,
   onMute,
   onUnmute,
@@ -59,15 +97,21 @@ function SheetContent({
   onLeaveGroup,
   onDelete,
   onToggleFolder,
-}: Props) {
+  onExited,
+}: SheetContentProps) {
   const theme = useTheme();
   const c = theme.colors;
   const [mode, setMode] = useState<Mode>('actions');
+  const wasVisibleRef = useRef(false);
 
-  const close = () => {
-    setMode('actions');
-    onClose();
-  };
+  // Reset the submenu on open, not on close: swapping the rows while the sheet
+  // slides down changes its measured height and makes the exit jump.
+  useEffect(() => {
+    if (visible && !wasVisibleRef.current) {
+      setMode('actions');
+    }
+    wasVisibleRef.current = visible;
+  }, [visible]);
 
   if (item === null) return null;
 
@@ -100,7 +144,12 @@ function SheetContent({
           <Icon name={iconName} size="lg" color={color} />
         </View>
         <Text style={[textStyle(theme.typeTokens.bodyLg), { color, flex: 1 }]}>{label}</Text>
-        {options.selected ? <Text style={{ color }}>✓</Text> : null}
+        {options.selected ? (
+          <View
+            testID="selected-folder-indicator"
+            style={[styles.selectedIndicator, { backgroundColor: c.connection.stable }]}
+          />
+        ) : null}
       </Pressable>
     );
   };
@@ -121,7 +170,11 @@ function SheetContent({
             item.archived ? onUnarchive : onArchive,
             { disabled: networkDisabled },
           ),
-          actionRow('action.ignore', ignored ? strings.organization.unignore : strings.organization.ignore, ignored ? onUnignore : onIgnore),
+          actionRow(
+            'action.ignore',
+            blocked ? strings.organization.unblock : ignored ? strings.organization.unignore : strings.organization.ignore,
+            blocked ? onUnblock : ignored ? onUnignore : onIgnore,
+          ),
           ...(group && item.canAddMembers
             ? [actionRow('action.addMembers', strings.organization.addMembers, onAddMembers, { disabled: networkDisabled })]
             : []),
@@ -144,17 +197,10 @@ function SheetContent({
             : []),
           actionRow('action.delete', strings.organization.deleteConversation, onDelete, { destructive: true }),
         ]
-      : mode === 'mute'
-        ? [
-            actionRow('action.mute', strings.organization.oneHour, () => onMute('oneHour'), { disabled: networkDisabled }),
-            actionRow('action.mute', strings.organization.eightHours, () => onMute('eightHours'), { disabled: networkDisabled }),
-            actionRow('action.mute', strings.organization.oneWeek, () => onMute('oneWeek'), { disabled: networkDisabled }),
-            actionRow('action.mute', strings.organization.untilUnmuted, () => onMute('untilUnmuted'), { disabled: networkDisabled }),
-          ]
-        : folders.length > 0
+      : folders.length > 0
           ? folders.map((folder) =>
               actionRow(
-                'action.folder',
+                folder.containsChat ? 'action.removeFromFolder' : 'action.addToFolder',
                 folder.name,
                 () => onToggleFolder(folder.folderId, folder.containsChat),
                 { disabled: networkDisabled, selected: folder.containsChat },
@@ -163,7 +209,7 @@ function SheetContent({
           : [actionRow('action.folder', strings.folders.noFolders, () => undefined, { disabled: true })];
 
   return (
-    <BottomSheet visible={visible} onClose={close}>
+    <BottomSheet visible={visible} onClose={onClose} onExited={onExited}>
       <View style={styles.content} accessibilityLabel={`${item.title} conversation actions`}>
         {mode !== 'actions' ? (
           <View style={styles.header}>
@@ -185,9 +231,13 @@ function SheetContent({
             {strings.common.noConnection}
           </Text>
         ) : null}
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          {rows}
-        </ScrollView>
+        {mode === 'mute' ? (
+          <MuteOptionGrid disabled={networkDisabled} onSelect={onMute} />
+        ) : (
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            {rows}
+          </ScrollView>
+        )}
       </View>
     </BottomSheet>
   );
@@ -200,4 +250,5 @@ const styles = StyleSheet.create({
   offline: { paddingHorizontal: 20, paddingBottom: 8 },
   row: { minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 20 },
   iconBox: { width: 28, alignItems: 'center' },
+  selectedIndicator: { width: 16, height: 16, borderRadius: 8 },
 });

@@ -67,6 +67,17 @@ export async function loadChatPreferences(userId: string, chatId: string): Promi
   return parsePreferences(await AsyncStorage.getItem(storageKey(userId, chatId)));
 }
 
+/** One native storage request for the list, regardless of the number of chats. */
+export async function loadBlockedChatIds(userId: string, chatIds: readonly string[]): Promise<Set<string>> {
+  if (chatIds.length === 0) return new Set();
+  const entries = await AsyncStorage.multiGet(chatIds.map((id) => storageKey(userId, id)));
+  const blocked = new Set<string>();
+  entries.forEach(([, value], index) => {
+    if (parsePreferences(value).blocked) blocked.add(chatIds[index]);
+  });
+  return blocked;
+}
+
 export async function saveChatPreferences(
   userId: string,
   chatId: string,
@@ -77,9 +88,11 @@ export async function saveChatPreferences(
 
 const preferenceWrites = new Map<string, Promise<unknown>>();
 const preferenceListeners = new Map<string, Set<() => void>>();
+const userPreferenceListeners = new Map<string, Set<() => void>>();
 
 function notifyPreferenceChange(userId: string, chatId: string): void {
   preferenceListeners.get(storageKey(userId, chatId))?.forEach((listener) => listener());
+  userPreferenceListeners.get(userId)?.forEach((listener) => listener());
 }
 
 export function subscribeChatPreferenceChanges(userId: string, chatId: string, listener: () => void): () => void {
@@ -90,6 +103,16 @@ export function subscribeChatPreferenceChanges(userId: string, chatId: string, l
   return () => {
     listeners.delete(listener);
     if (listeners.size === 0) preferenceListeners.delete(key);
+  };
+}
+
+export function subscribeAllChatPreferenceChanges(userId: string, listener: () => void): () => void {
+  const listeners = userPreferenceListeners.get(userId) ?? new Set<() => void>();
+  listeners.add(listener);
+  userPreferenceListeners.set(userId, listeners);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) userPreferenceListeners.delete(userId);
   };
 }
 

@@ -1,0 +1,13 @@
+.rail { display: none; }
+.item, .mark { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 48px; height: 48px; box-sizing: border-box; padding: 0; border: 0; border-radius: var(--dg-radius-md); background: transparent; color: var(--dg-color-text-primary); text-decoration: none; cursor: pointer; }
+.mark { font: var(--dg-type-heading1); font-weight: 700; }
+.logo { width: 32px; height: 32px; border-radius: var(--dg-radius-sm); }
+.item[aria-current="page"] { background: var(--dg-color-bg-surface); }
+.item[aria-current="page"] svg { stroke-width: 2.5; }
+.item:hover, .mark:hover { background: var(--dg-color-bg-pressed); }
+.profile { margin-top: auto; }
+.item::after, .mark::after { content: attr(data-tooltip); display: none; position: absolute; left: calc(100% + var(--dg-space-2)); padding: var(--dg-space-2); border-radius: var(--dg-radius-sm); background: var(--dg-color-bg-elevated); color: var(--dg-color-text-primary); box-shadow: var(--dg-elevation-2); font: var(--dg-type-body-md); white-space: nowrap; z-index: var(--dg-z-sticky); pointer-events: none; }
+.item:hover::after, .item:focus-visible::after, .mark:hover::after, .mark:focus-visible::after { display: block; }
+@media (min-width: 768px) {
+  .rail { display: flex; flex-direction: column; align-items: center; gap: var(--dg-space-2); padding-block: var(--dg-space-2); min-height: 0; background: var(--dg-color-bg-app); }
+}

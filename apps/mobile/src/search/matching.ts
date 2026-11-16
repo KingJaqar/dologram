@@ -60,6 +60,29 @@ export function highlightRanges(text: string, query: string): HighlightRange[] {
   return ranges;
 }
 
+const HIGHLIGHT_CACHE_LIMIT = 256;
+const highlightCache = new Map<string, HighlightRange[]>();
+
+/** Reuses the bounded range result for unchanged displayed text/query pairs. */
+export function memoizedHighlightRanges(text: string, query: string): HighlightRange[] {
+  const key = JSON.stringify([text, normalizeSearch(query)]);
+  const cached = highlightCache.get(key);
+  if (cached) {
+    // Refresh the entry so frequently rendered rows remain in the bounded cache.
+    highlightCache.delete(key);
+    highlightCache.set(key, cached);
+    return cached;
+  }
+
+  const ranges = highlightRanges(text, query);
+  highlightCache.set(key, ranges);
+  if (highlightCache.size > HIGHLIGHT_CACHE_LIMIT) {
+    const oldest = highlightCache.keys().next().value;
+    if (oldest !== undefined) highlightCache.delete(oldest);
+  }
+  return ranges;
+}
+
 export function searchPreview(content: string, query: string): string {
   const match = highlightRanges(content, query)[0];
   let start = Math.max(0, (match?.start ?? 0) - 36);

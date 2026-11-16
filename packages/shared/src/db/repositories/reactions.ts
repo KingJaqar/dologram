@@ -17,14 +17,17 @@ export async function listReactionsAfter(
   chatId: string,
   afterSyncSeq: number,
   limit: number,
+  signal?: Parameters<ReturnType<DgClient['rpc']>['abortSignal']>[0],
 ): Promise<DgResult<ReactionRow[]>> {
-  const { data, error, status } = await client
+  const query = client
     .from('reactions')
     .select('*')
     .eq('chat_id', chatId)
     .gt('sync_seq', afterSyncSeq)
     .order('sync_seq', { ascending: true })
     .limit(limit);
+  if (signal) { query.abortSignal(signal); query.retry(false); }
+  const { data, error, status } = await query;
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }

@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'expo-router';
 import {
   config,
+  conversationIdentity,
   strings,
   validateFolderName,
   type ChatListItem,
@@ -24,8 +25,8 @@ import { useTheme } from '../../src/theme/ThemeProvider';
 import { textStyle } from '../../src/theme/typography';
 import { Icon } from '../../src/components/Icon';
 import { IconButton, Button } from '../../src/components/Button';
-import { ChatRow } from '../../src/components/ChatRow';
 import { FolderTabs } from '../../src/components/FolderTabs';
+import { FilterTabs } from '../../src/components/FilterTabs';
 import { TextField } from '../../src/components/TextField';
 import { EmptyState, ErrorState } from '../../src/components/EmptyState';
 import { Dialog } from '../../src/components/Dialog';
@@ -37,7 +38,10 @@ import { useChatList } from '../../src/chatList/useChatList';
 import { mutationErrorMessage } from '../../src/chats/errors';
 import { useDelayedFlag } from '../../src/hooks/useDelayedFlag';
 import { FolderListTransition } from '../../src/chatList/FolderListTransition';
+import { FolderScreenTransition } from '../../src/chatList/FolderScreenTransition';
 import { ChatOrganizationActions } from '../../src/chatList/ChatOrganizationActions';
+import { ChatListModeHeader, ChatSelectionToolbar, ChatSwipeableRow, useChatSwipeMutations, type ChatSelectionPhase, type ChatSwipeActionKey } from '../../src/chatList/ChatSwipeActions';
+import { FloatingActionButton } from '../../src/components/FloatingActionButton';
 
 type NameDialogProps = {
   visible: boolean;
@@ -254,6 +258,9 @@ export default function FoldersScreen() {
   const selectedFolder = folderState.folders.find((folder) => folder.folder_id === activeFolderId);
   const folderList = useChatList(selectedFolder?.chatIds);
   const [organizationItem, setOrganizationItem] = useState<ChatListItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
+  const [selectionPhase, setSelectionPhase] = useState<ChatSelectionPhase>('idle');
+  const [pendingDelete, setPendingDelete] = useState<string[] | null>(null);
   const offline = !net.isConnected;
   const allChats = useMemo(
     () => [...chatList.active, ...chatList.archived].sort((a, b) => a.title.localeCompare(b.title)),
@@ -266,12 +273,46 @@ export default function FoldersScreen() {
   const [selectedChats, setSelectedChats] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const folderItems = folderList.active;
+  const selectionMode = selectionPhase !== 'idle';
+  const { execute, confirmDelete, busy: swipeBusy } = useChatSwipeMutations(setPendingDelete);
   const currentItem = organizationItem
     ? folderItems.find((item) => item.chatId === organizationItem.chatId) ?? organizationItem
     : null;
 
+  const toggleSelected = useCallback((item: ChatListItem) => {
+    setSelectedIds((current) => {
+      if (current === null) return [item.chatId];
+      return current.includes(item.chatId) ? current.filter((id) => id !== item.chatId) : [...current, item.chatId];
+    });
+  }, []);
+  const beginSelection = useCallback((item: ChatListItem) => {
+    setSelectedIds([item.chatId]);
+    setSelectionPhase('entering');
+  }, []);
+  const leaveSelection = useCallback(() => {
+    setSelectionPhase((current) => current === 'idle' ? current : 'exiting');
+  }, []);
+  const finishSelectionEntry = useCallback(() => {
+    setSelectionPhase((current) => current === 'entering' ? 'active' : current);
+  }, []);
+  const finishSelectionExit = useCallback(() => {
+    setSelectedIds(null);
+    setSelectionPhase('idle');
+  }, []);
+  const runAction = useCallback((item: ChatListItem, action: ChatSwipeActionKey) => {
+    void execute([{ item, action, section: 'chats' }]);
+  }, [execute]);
+  const runSelectedAction = useCallback((action: ChatSwipeActionKey) => {
+    if (!selectedIds) return;
+    const selectedItems = folderItems.filter((item) => selectedIds.includes(item.chatId));
+    setSelectionPhase('exiting');
+    void execute(selectedItems.map((item) => ({ item, action, section: 'chats' })));
+  }, [execute, folderItems, selectedIds]);
+
   const openChat = useCallback((chatId: string) => {
-    router.push({ pathname: '/chat/[chatId]', params: { chatId } });
+    const identity = conversationIdentity(chatId);
+    if (identity.kind === 'memo') router.push({ pathname: '/memo/[memoId]', params: { memoId: identity.memoId } });
+    else router.push({ pathname: '/chat/[chatId]', params: { chatId } });
   }, [router]);
 
   const showError = useCallback((error: ClassifiedError | null, fallback: string) => {
@@ -344,38 +385,21 @@ export default function FoldersScreen() {
 
   const folderForMenu = folderState.folders.find((folder) => folder.folder_id === menuFolderId);
   const folderForEdit = folderState.folders.find((folder) => folder.folder_id === editFolderId);
-  const showLoading = useDelayedFlag(folderState.loading && folderState.folders.length === 0);
+  const foldersLoading = folderState.loading && folderState.folders.length === 0;
+  const showLoading = useDelayedFlag(foldersLoading);
 
   const folderSectionTabs = (
-    <View style={styles.sectionTabs} accessibilityRole="tablist">
-      {([
-        ['chat', strings.folders.chatFolders],
-        ['manage', strings.folders.manageFolders],
-      ] as const).map(([section, label]) => {
-        const active = activeSection === section;
-        return (
-          <Pressable
-            key={section}
-            style={({ pressed }) => [styles.sectionTab, pressed ? { backgroundColor: c.bg.pressed } : null]}
-            onPress={() => setActiveSection(section)}
-            accessibilityRole="tab"
-            accessibilityLabel={label}
-            accessibilityState={{ selected: active }}
-          >
-            <Text
-              style={[
-                textStyle(theme.typeTokens.labelMd),
-                { color: active ? c.text.primary : c.text.secondary },
-              ]}
-              maxFontSizeMultiplier={1.5}
-            >
-              {label}
-            </Text>
-            {active ? <View style={[styles.sectionIndicator, { backgroundColor: c.brand.primary }]} /> : null}
-          </Pressable>
-        );
-      })}
-    </View>
+    <FilterTabs<FolderSection>
+      tabs={[
+        { value: 'chat', label: strings.folders.chatFolders },
+        { value: 'manage', label: strings.folders.manageFolders },
+      ]}
+      activeValue={activeSection}
+      onSelect={(nextSection) => {
+        if (!selectionMode) setActiveSection(nextSection);
+      }}
+      indicatorTestID="folder-section-indicator"
+    />
   );
 
   const manageFolders = (
@@ -385,9 +409,6 @@ export default function FoldersScreen() {
           iconName="action.folder"
           title={strings.folders.noFolders}
           message={strings.folders.noFoldersBody}
-          actionLabel={strings.folders.newFolder}
-          onAction={openNew}
-          actionDisabled={offline || busy}
         />
       ) : (
         <>
@@ -435,67 +456,97 @@ export default function FoldersScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg.app }]}> 
-      <View style={[styles.screenToolbar, { borderBottomColor: c.separator }]}> 
-        {folderSectionTabs}
-        <Pressable
+      {folderSectionTabs}
+      {offline ? <Text style={[textStyle(theme.typeTokens.bodySm), styles.offline, { color: c.text.secondary }]}>{strings.common.noConnection}</Text> : null}
+      <FolderScreenTransition
+        viewKey={foldersLoading ? 'loading' : folderState.error && folderState.folders.length === 0 ? 'error' : activeSection}
+      >
+        {foldersLoading ? (
+          <View accessible={showLoading} accessibilityLabel={showLoading ? 'Loading' : undefined} style={styles.center}>
+            {showLoading ? <Text style={{ color: c.text.secondary }}>Loading…</Text> : null}
+          </View>
+        ) : folderState.error && folderState.folders.length === 0 ? (
+          <ErrorState onRetry={() => void folderState.refresh()} />
+        ) : activeSection === 'manage' ? (
+          manageFolders
+        ) : folderState.folders.length === 0 ? (
+          <EmptyState
+            iconName="action.folder"
+            title={strings.folders.noFolders}
+            message={strings.folders.noFoldersBody}
+          />
+        ) : (
+          <View style={styles.folderContent}>
+            <ChatListModeHeader
+              phase={selectionPhase}
+              defaultContent={(
+                <FolderTabs
+                  folders={folderState.folders}
+                  activeId={selectedFolder?.folder_id ?? null}
+                  onSelect={setActiveFolderId}
+                />
+              )}
+              selectionContent={(
+                <ChatSelectionToolbar
+                  items={folderItems}
+                  section="chats"
+                  selectedIds={selectedIds ?? []}
+                  onClose={leaveSelection}
+                  onSelectAll={() => setSelectedIds((current) => current?.length === folderItems.length ? [] : folderItems.map((item) => item.chatId))}
+                  onAction={runSelectedAction}
+                  busy={swipeBusy}
+                />
+              )}
+              onEntered={finishSelectionEntry}
+              onExited={finishSelectionExit}
+            />
+            <FolderListTransition
+              folderId={selectedFolder?.folder_id ?? null}
+              items={folderItems}
+              renderList={(visibleItems) => folderList.error && visibleItems.length === 0 ? (
+                <ErrorState onRetry={() => void folderList.reload()} />
+              ) : (
+                <FlatList
+                  data={visibleItems}
+                  keyExtractor={(item) => item.chatId}
+                  renderItem={({ item }) => (
+                    <ChatSwipeableRow
+                      item={item}
+                      section="chats"
+                      compactPreview
+                      onPress={openChat}
+                      onLongPress={setOrganizationItem}
+                      onSelect={selectionMode ? toggleSelected : beginSelection}
+                      selected={selectedIds?.includes(item.chatId) ?? false}
+                      selectionMode={selectionMode}
+                      selectionPhase={selectionPhase}
+                      onAction={runAction}
+                    />
+                  )}
+                  getItemLayout={(_, index) => ({ length: 72, offset: 72 * index, index })}
+                  initialNumToRender={12}
+                  maxToRenderPerBatch={12}
+                  windowSize={7}
+                  removeClippedSubviews={false}
+                  refreshControl={<RefreshControl refreshing={folderList.refreshing} onRefresh={() => void folderList.refresh()} tintColor={c.brand.primary} colors={[c.brand.primary]} />}
+                  ListEmptyComponent={folderList.loading ? null : <EmptyState title={strings.chatList.emptyTitle} message={strings.chatList.emptyBody} />}
+                  contentContainerStyle={visibleItems.length === 0 ? styles.emptyContent : undefined}
+                />
+              )}
+            />
+          </View>
+        )}
+      </FolderScreenTransition>
+
+      {!selectionMode ? (
+        <FloatingActionButton
+          accessibilityLabel={strings.folders.newFolder}
           onPress={openNew}
           disabled={offline || busy}
-          accessibilityRole="button"
-          accessibilityLabel={strings.folders.newFolder}
-          accessibilityState={{ disabled: offline || busy }}
-          style={{ paddingHorizontal: 8, opacity: offline || busy ? 0.5 : 1 }}
-        >
-          <Text style={[textStyle(theme.typeTokens.labelLg), { color: c.brand.primary }]}>{strings.folders.newFolder}</Text>
-        </Pressable>
-      </View>
-      {offline ? <Text style={[textStyle(theme.typeTokens.bodySm), styles.offline, { color: c.text.secondary }]}>{strings.common.noConnection}</Text> : null}
-      {showLoading ? (
-        <View accessible accessibilityLabel="Loading" style={styles.center}><Text style={{ color: c.text.secondary }}>Loading…</Text></View>
-      ) : folderState.error && folderState.folders.length === 0 ? (
-        <ErrorState onRetry={() => void folderState.refresh()} />
-      ) : activeSection === 'manage' ? (
-        manageFolders
-      ) : folderState.folders.length === 0 ? (
-        <EmptyState
-          iconName="action.folder"
-          title={strings.folders.noFolders}
-          message={strings.folders.noFoldersBody}
-          actionLabel={strings.folders.newFolder}
-          onAction={openNew}
-          actionDisabled={offline || busy}
         />
-      ) : (
-        <View style={styles.folderContent}>
-          <FolderTabs
-            folders={folderState.folders}
-            activeId={selectedFolder?.folder_id ?? null}
-            onSelect={setActiveFolderId}
-          />
-          <FolderListTransition
-            folderId={selectedFolder?.folder_id ?? null}
-            items={folderItems}
-            renderList={(visibleItems) => folderList.error && visibleItems.length === 0 ? (
-              <ErrorState onRetry={() => void folderList.reload()} />
-            ) : (
-              <FlatList
-                data={visibleItems}
-                keyExtractor={(item) => item.chatId}
-                renderItem={({ item }) => <ChatRow item={item} compactPreview onPress={openChat} onLongPress={setOrganizationItem} />}
-                getItemLayout={(_, index) => ({ length: 72, offset: 72 * index, index })}
-                initialNumToRender={12}
-                maxToRenderPerBatch={12}
-                windowSize={7}
-                removeClippedSubviews={false}
-                refreshControl={<RefreshControl refreshing={folderList.refreshing} onRefresh={() => void folderList.refresh()} tintColor={c.brand.primary} colors={[c.brand.primary]} />}
-                ListEmptyComponent={folderList.loading ? null : <EmptyState title={strings.chatList.emptyTitle} message={strings.chatList.emptyBody} />}
-                contentContainerStyle={visibleItems.length === 0 ? styles.emptyContent : undefined}
-              />
-            )}
-          />
-        </View>
-      )}
+      ) : null}
 
-      <ChatOrganizationActions item={currentItem} folders={folderState} onClose={() => setOrganizationItem(null)} />
+      {!selectionMode ? <ChatOrganizationActions item={currentItem} folders={folderState} onClose={() => setOrganizationItem(null)} /> : null}
 
       <FolderMenu
         visible={folderForMenu !== undefined}
@@ -542,37 +593,26 @@ export default function FoldersScreen() {
         onDismiss={() => setDeleteFolderId(null)}
         destructive
       />
+      <Dialog
+        visible={pendingDelete !== null}
+        title={strings.chatInfo.deleteTitle}
+        message={strings.chatInfo.deleteBody}
+        confirmLabel={strings.organization.deleteConversation}
+        destructive
+        busy={swipeBusy}
+        onDismiss={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const ids = pendingDelete;
+          setPendingDelete(null);
+          if (ids) void confirmDelete(ids);
+        }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  screenToolbar: {
-    minHeight: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingLeft: 0,
-    paddingRight: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  sectionTabs: { flex: 1, flexDirection: 'row', alignSelf: 'stretch' },
-  sectionTab: {
-    minWidth: 120,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionIndicator: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 0,
-    height: 3,
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
-  },
   folderContent: { flex: 1 },
   emptyContent: { flexGrow: 1 },
   manageContent: { flexGrow: 1, paddingTop: 16, paddingBottom: 24 },

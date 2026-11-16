@@ -37,6 +37,8 @@ import { useTheme } from '../theme/ThemeProvider';
 export interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
+  /** Called after the exit transition has finished and the native modal unmounts. */
+  onExited?: () => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
@@ -57,6 +59,7 @@ function clamp(value: number, min: number, max: number): number {
 export function BottomSheet({
   visible,
   onClose,
+  onExited,
   children,
   style,
 }: BottomSheetProps) {
@@ -68,7 +71,10 @@ export function BottomSheet({
   const [mounted, setMounted] = useState(visible);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
   const onCloseRef = useRef(onClose);
+  const onExitedRef = useRef(onExited);
+  const wasVisibleRef = useRef(false);
   onCloseRef.current = onClose;
+  onExitedRef.current = onExited;
 
   const translateY = useSharedValue(maxHeight);
   const scrimOpacity = useSharedValue(0);
@@ -84,11 +90,21 @@ export function BottomSheet({
 
   const finishExit = useCallback(() => {
     setMounted(false);
+    onExitedRef.current?.();
   }, []);
 
   const transitionTiming = useCallback((toValue: number) => ({
     duration,
     easing: Easing.out(Easing.cubic),
+  }), [duration]);
+
+  // Closing retraces the opening path in reverse: same distance, same duration
+  // and the mirrored curve. Using the compact sheet height instead shortened
+  // the travel without shortening the time, so the exit crawled through a slow
+  // tail while the opening decelerated smoothly into place.
+  const exitTiming = useCallback(() => ({
+    duration,
+    easing: Easing.in(Easing.cubic),
   }), [duration]);
 
   const sheetAnimatedStyle = useAnimatedStyle(() => ({
@@ -116,36 +132,44 @@ export function BottomSheet({
     collapsedHeight.value = nextCollapsedHeight;
     expandedHeight.value = maxHeight;
 
-    if (sheetHeight.value === 0 || !visible) {
+    // Preserve the current height while closing. Resetting an expanded sheet
+    // to its compact height here causes a visible snap before translateY runs.
+    if (sheetHeight.value === 0) {
       sheetHeight.value = nextCollapsedHeight;
     } else {
       sheetHeight.value = clamp(sheetHeight.value, nextCollapsedHeight, maxHeight);
     }
   }, [contentHeight, expandedHeight, collapsedHeight, maxHeight, sheetHeight, visible]);
 
-  // Open and close with the same 240 ms timing curve. The mounted flag is
+  // Open with an ease-out curve and close with its time-reverse, so the sheet
+  // leaves with the same motion it arrived with. The mounted flag is
   // intentionally delayed on close so the native Modal does not cut off the
-  // slide-down transition.
+  // slide-down transition. Do not reset the starting position on unrelated
+  // renders (for example, rotation or a reduce-motion preference change):
+  // that reset is a one-frame flicker on physical devices.
   useEffect(() => {
     cancelAnimation(translateY);
     cancelAnimation(scrimOpacity);
 
     if (visible) {
       setMounted(true);
-      translateY.value = maxHeight;
-      scrimOpacity.value = 0;
+      if (!wasVisibleRef.current) {
+        translateY.value = maxHeight;
+        scrimOpacity.value = 0;
+      }
       translateY.value = withTiming(0, transitionTiming(0));
       scrimOpacity.value = withTiming(1, transitionTiming(1));
+      wasVisibleRef.current = true;
     } else {
-      translateY.value = withTiming(maxHeight, {
-        ...transitionTiming(maxHeight),
-        easing: Easing.in(Easing.cubic),
-      }, (finished) => {
+      wasVisibleRef.current = false;
+      // Travel the full opening distance so the exit plays at the same pace as
+      // the entrance instead of finishing early at a visibly different speed.
+      translateY.value = withTiming(maxHeight, exitTiming(), (finished) => {
         if (finished) runOnJS(finishExit)();
       });
-      scrimOpacity.value = withTiming(0, transitionTiming(0));
+      scrimOpacity.value = withTiming(0, exitTiming());
     }
-  }, [duration, finishExit, maxHeight, scrimOpacity, transitionTiming, translateY, visible]);
+  }, [duration, exitTiming, finishExit, maxHeight, scrimOpacity, transitionTiming, translateY, visible]);
 
   // Android back button: let the sheet close before the route handles back.
   useEffect(() => {
@@ -194,9 +218,12 @@ export function BottomSheet({
         (atCompact && event.translationY > 0 && event.velocityY > DISMISS_VELOCITY);
 
       if (shouldDismiss) {
+        // Gesture callbacks run on the UI runtime. Keep the timing config in
+        // the worklet instead of synchronously calling the JS-only
+        // transitionTiming callback from here.
         translateY.value = withTiming(maxHeight, {
           duration,
-          easing: Easing.in(Easing.cubic),
+          easing: Easing.out(Easing.cubic),
         });
         scrimOpacity.value = withTiming(0, { duration });
         runOnJS(closeFromGesture)();

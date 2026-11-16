@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
+  AppState,
   ActivityIndicator,
   FlatList,
   InteractionManager,
@@ -14,6 +15,7 @@ import {
   Text,
   View,
   type ListRenderItem,
+  type ViewToken,
 } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -25,6 +27,8 @@ import {
   setReactionRemoved,
   softDeleteMessage,
   strings,
+  markChatRead as persistChatRead,
+  selectReadStatus,
   updateOwnMember,
   validateMessageText,
 } from '@dologram/shared';
@@ -34,9 +38,11 @@ import { useAuth } from '../../../src/auth/AuthProvider';
 import { useNetState } from '../../../src/net/netState';
 import { isLowSignalActive } from '../../../src/net/lowSignal';
 import { useTheme } from '../../../src/theme/ThemeProvider';
+import { textStyle } from '../../../src/theme/typography';
 import { actionToast, performToastAction } from '../../../src/notifications/toastCopy';
 import { useToast } from '../../../src/components/Toast';
 import { TopBar } from '../../../src/components/TopBar';
+import { Avatar } from '../../../src/components/Avatar';
 import { goBackOrReplace } from '../../../src/navigation/goBackOrReplace';
 import { Button, IconButton } from '../../../src/components/Button';
 import { Icon } from '../../../src/components/Icon';
@@ -46,17 +52,22 @@ import { DateSeparator, JumpToBottom, UnreadDivider } from '../../../src/compone
 import { ChatComposer } from '../../../src/components/ChatComposer';
 import { MessageBubble, type BubbleStatus } from '../../../src/components/MessageBubble';
 import { MessageFocusOverlay } from '../../../src/components/MessageFocusOverlay';
+import { SeenBySheet } from '../../../src/components/SeenBySheet';
 import { Dialog } from '../../../src/components/Dialog';
 import { loadCachedReaction, loadChatSnapshot, loadChatSnapshotForMessage, mergeChatSnapshots, type ChatMessageItem, type ChatScreenSnapshot } from '../../../src/chat/query';
 import { useCall } from '../../../src/calls/useCall';
-import { cacheMembers, flushPendingReadStates, markChatRead, type ReadStateSender } from '../../../src/chat/readState';
-import { updateChatListPreferences } from '../../../src/chatList/preferences';
+import { cacheMembers, markChatRead, type ReadStateSender } from '../../../src/chat/readState';
+import { createReadHintRefresh } from '../../../src/chat/readHintRefresh';
+import { canPublishIgnoredChatReadReceipt } from '../../../src/chat/ignoredChat';
+import { deleteChatFromDevice } from '../../../src/chatList/deleteChat';
+import { loadChatListPreferences, setChatListPreference, updateChatListPreferences } from '../../../src/chatList/preferences';
 import { startChatRealtime, type ChatRealtimeHandle } from '../../../src/chat/realtime';
 import { getLocalDatabase } from '../../../src/queue/db';
 import { discardQueueItem, enqueueTextMessage, retryQueueItem } from '../../../src/queue/localQueue';
 import { subscribeQueueChange } from '../../../src/queue/events';
 import { notifyCacheChange, subscribeCacheChange } from '../../../src/sync/cacheEvents';
 import { createSqliteCacheStore } from '../../../src/sync/cacheStore';
+import { resyncChatNow } from '../../../src/sync/lifecycle';
 import { enqueueAttachmentMessage } from '../../../src/queue/attachments';
 import { draftFromMediaLibraryAsset, pickAttachments, type PickerKind } from '../../../src/media/pickers';
 import { remainingAttachments, type DraftAttachment } from '../../../src/media/model';
@@ -64,11 +75,14 @@ import { BottomSheet } from '../../../src/components/BottomSheet';
 import { useDelayedFlag } from '../../../src/hooks/useDelayedFlag';
 import { DelayedActivityIndicator } from '../../../src/components/DelayedActivityIndicator';
 import { MediaPickerPanel, type MediaLibraryAsset } from '../../../src/components/MediaPickerPanel';
+import { IgnoredChatActionBar } from '../../../src/components/IgnoredChatActionBar';
 import {
   CHAT_THEME_OPTIONS,
+  clearChatPreferences,
   loadChatPreferences,
   loadPinnedMessageIds,
   savePinnedMessageIds,
+  updateChatPreferences,
   type ChatPreferences,
 } from '../../../src/chats/preferences';
 
@@ -99,21 +113,22 @@ function shouldSeparate(previous: ChatMessageItem | undefined, current: ChatMess
   return previousDate.toDateString() !== currentDate.toDateString() || gap >= 60 * 60 * 1000;
 }
 
-function maxDeliveredSeq(messages: readonly ChatMessageItem[]): number {
-  return messages.reduce((max, message) => (message.seq === null ? max : Math.max(max, message.seq)), 0);
+export default function ChatScreen() {
+  const { session } = useAuth();
+  const userId = session?.user.id ?? '';
+  return <AccountChatScreen key={userId} userId={userId} />;
 }
 
-export default function ChatScreen() {
-  const params = useLocalSearchParams<{ chatId?: string | string[]; focusMessageId?: string | string[] }>();
+function AccountChatScreen({ userId }: { userId: string }) {
+  const params = useLocalSearchParams<{ chatId?: string | string[]; focusMessageId?: string | string[]; searchQuery?: string | string[] }>();
   const chatId = resolvedParam(params.chatId);
   const focusMessageId = resolvedParam(params.focusMessageId);
+  const searchQuery = resolvedParam(params.searchQuery);
   const router = useRouter();
-  const { session } = useAuth();
   const theme = useTheme();
   const call = useCall();
   const net = useNetState();
   const toast = useToast();
-  const userId = session?.user.id ?? '';
   const listRef = useRef<FlatList<ChatMessageItem>>(null);
   const realtimeRef = useRef<ChatRealtimeHandle | null>(null);
   const typingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -140,6 +155,23 @@ export default function ChatScreen() {
   const [typing, setTyping] = useState<Map<string, TypingEntry>>(new Map());
   const [atBottom, setAtBottom] = useState(true);
   const [focusMessage, setFocusMessage] = useState<ChatMessageItem | null>(null);
+  const [detailsMessage, setDetailsMessage] = useState<ChatMessageItem | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const restoreDetailsFocusRef = useRef(false);
+  const restoreDetailsMessageRef = useRef<ChatMessageItem | null>(null);
+  const [searchHighlightActive, setSearchHighlightActive] = useState(true);
+  const [focusUnavailable, setFocusUnavailable] = useState(false);
+  const focusedRef = useRef(false);
+  const appActiveRef = useRef(AppState.currentState === 'active');
+  const layoutReadyRef = useRef(false);
+  const lastDisplayedSeqRef = useRef(0);
+  const displayedTargetSeqRef = useRef(0);
+  const currentViewableSeqRef = useRef(0);
+  const readScopeGenerationRef = useRef(0);
+  const displayedReadPromiseRef = useRef<Promise<void> | null>(null);
+  const markDisplayedReadRef = useRef<(seq: number) => Promise<void>>(async () => undefined);
+  const readHintRefreshRef = useRef<ReturnType<typeof createReadHintRefresh> | null>(null);
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60, minimumViewTime: 100 }).current;
   const showLoading = useDelayedFlag(loading && snapshot === null);
   const announcementsReadyRef = useRef(false);
   const previousMessageStateRef = useRef(new Map<string, { senderId: string; status: string | null }>());
@@ -148,25 +180,77 @@ export default function ChatScreen() {
   const [deleteTarget, setDeleteTarget] = useState<ChatMessageItem | null>(null);
   const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
   const [chatPreferences, setChatPreferences] = useState<ChatPreferences | null>(null);
+  const [ignoredState, setIgnoredState] = useState<{ chatId: string; value: boolean } | null>(null);
+  const ignored = ignoredState?.chatId === chatId ? ignoredState.value : null;
+  const ignoredRef = useRef<boolean | null>(null);
+  const [archivedState, setArchivedState] = useState<{ chatId: string; value: boolean } | null>(null);
+  const cachedArchived = Boolean(snapshot?.members.find((member) => member.user_id === userId)?.archived);
+  const archived = archivedState?.chatId === chatId ? archivedState.value : cachedArchived;
+  const archivedRef = useRef(archived);
+  archivedRef.current = archived;
+  const [ignoredActionBusy, setIgnoredActionBusy] = useState(false);
+  const [blockIgnoredVisible, setBlockIgnoredVisible] = useState(false);
+  const [deleteIgnoredVisible, setDeleteIgnoredVisible] = useState(false);
   snapshotRef.current = snapshot;
+
+  useEffect(() => {
+    ignoredRef.current = null;
+    readScopeGenerationRef.current += 1;
+    layoutReadyRef.current = false;
+    lastDisplayedSeqRef.current = 0;
+    displayedTargetSeqRef.current = 0;
+    currentViewableSeqRef.current = 0;
+    displayedReadPromiseRef.current = null;
+    return () => {
+      readScopeGenerationRef.current += 1;
+      layoutReadyRef.current = false;
+    };
+  }, [chatId, userId]);
 
   useEffect(() => {
     historicalEnd.current = undefined;
     followFocus.current = true;
     scrolledToMessage.current = '';
     scrollToLatest.current = false;
-  }, [chatId, focusMessageId, userId]);
+    const frame = requestAnimationFrame(() => {
+      setSearchHighlightActive(true);
+      setFocusUnavailable(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [chatId, focusMessageId, searchQuery, userId]);
 
   useFocusEffect(
     useCallback(() => {
       if (!userId || !chatId) return;
+      let active = true;
       const task = InteractionManager.runAfterInteractions(() => {
-        void updateChatListPreferences(userId, chatId, { unread: false, deleted: false }).catch(() => {
-          toast.showToast({ message: strings.organization.actionFailed });
-        });
-        void loadChatPreferences(userId, chatId).then(setChatPreferences).catch(() => setChatPreferences(null));
+        void Promise.all([loadChatListPreferences(userId), loadChatPreferences(userId, chatId)])
+          .then(([listPreferences, preferences]) => {
+            if (!active) return;
+            // A successful send or explicit action may have unignored the chat
+            // while these reads were in flight. Never restore stale ignore state.
+            const isIgnored = ignoredRef.current === false ? false : listPreferences.ignored.includes(chatId);
+            ignoredRef.current = isIgnored;
+            setIgnoredState({ chatId, value: isIgnored });
+            setChatPreferences(preferences);
+            void updateChatListPreferences(userId, chatId, isIgnored
+              ? { deleted: false }
+              : { unread: false, deleted: false })
+              .catch(() => toast.showToast({ message: strings.organization.actionFailed }));
+            if (!isIgnored) {
+              const visible = currentViewableSeqRef.current;
+              if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
+            }
+          })
+          .catch(() => {
+            if (!active) return;
+            ignoredRef.current = null;
+            setIgnoredState(null);
+            setChatPreferences(null);
+            toast.showToast({ message: strings.organization.actionFailed });
+          });
       });
-      return () => task.cancel();
+      return () => { active = false; task.cancel(); };
     }, [chatId, toast, userId]),
   );
 
@@ -243,11 +327,12 @@ export default function ChatScreen() {
       const initialFocus = following && focusMessageId && beforeSeq === undefined && scrolledToMessage.current !== focusMessageId;
       const result = initialFocus
         ? await loadChatSnapshotForMessage(db, chatId, userId, focusMessageId, config.list.pageSize)
-        : { snapshot: await loadChatSnapshot(db, chatId, userId, { limit: config.list.pageSize, beforeSeq }), beforeSeq };
+        : { snapshot: await loadChatSnapshot(db, chatId, userId, { limit: config.list.pageSize, beforeSeq }), beforeSeq, targetAvailable: true };
       if (followFocus.current !== following) return;
       const changeWindow = historicalEnd.current !== result.beforeSeq || scrollToLatest.current;
       historicalEnd.current = result.beforeSeq;
       setViewingHistory(result.beforeSeq !== undefined);
+      if (initialFocus && searchQuery) setFocusUnavailable(!result.targetAvailable);
       setSnapshot((current) => current && !changeWindow ? mergeChatSnapshots(current, result.snapshot) : result.snapshot);
       setError(null);
       setLoading(false);
@@ -259,11 +344,13 @@ export default function ChatScreen() {
     } finally {
       if (showSpinner) setRefreshing(false);
     }
-  }, [chatId, focusMessageId, userId]);
+  }, [chatId, focusMessageId, searchQuery, userId]);
 
   const jumpToLatest = useCallback(async () => {
     followFocus.current = false;
     scrollToLatest.current = true;
+    setSearchHighlightActive(false);
+    setFocusUnavailable(false);
     await refreshLatest();
   }, [refreshLatest]);
 
@@ -282,16 +369,59 @@ export default function ChatScreen() {
   }, [chatId, userId]);
 
   const sendReadState: ReadStateSender = useCallback(
-    (targetChatId, seq) => updateOwnMember(supabase, targetChatId, userId, { last_read_seq: seq }),
-    [userId],
+    (targetChatId, seq, membershipJoinedAt, signal) => persistChatRead(supabase, targetChatId, seq, membershipJoinedAt, signal),
+    [],
   );
 
-  const markRead = useCallback(async (nextSnapshot: ChatScreenSnapshot): Promise<void> => {
-    const seq = maxDeliveredSeq(nextSnapshot.messages);
-    if (!seq || !userId) return;
-    const db = await getLocalDatabase();
-    await markChatRead(db, chatId, userId, seq, net.isConnected, sendReadState, sendReadHint);
+  const markDisplayedRead = useCallback(async (seq: number): Promise<void> => {
+    if (!Number.isSafeInteger(seq) || seq <= 0 || !userId
+      || !canPublishIgnoredChatReadReceipt(ignoredRef.current)
+      || !focusedRef.current || !appActiveRef.current || !layoutReadyRef.current) return;
+    const generation = readScopeGenerationRef.current;
+    displayedTargetSeqRef.current = Math.max(displayedTargetSeqRef.current, seq);
+    if (displayedReadPromiseRef.current) return displayedReadPromiseRef.current;
+    const run = (async () => {
+      while (displayedTargetSeqRef.current > lastDisplayedSeqRef.current
+        && readScopeGenerationRef.current === generation
+        && canPublishIgnoredChatReadReceipt(ignoredRef.current)
+        && focusedRef.current && appActiveRef.current && layoutReadyRef.current) {
+        const target = displayedTargetSeqRef.current;
+        const db = await getLocalDatabase();
+        const cachedSeq = await markChatRead(
+          db,
+          chatId,
+          userId,
+          target,
+          net.isConnected,
+          sendReadState,
+          sendReadHint,
+          { onMembershipChanged: resyncChatNow },
+        );
+        if (readScopeGenerationRef.current !== generation || cachedSeq < target) return;
+        lastDisplayedSeqRef.current = target;
+      }
+    })();
+    displayedReadPromiseRef.current = run;
+    try {
+      await run;
+    } finally {
+      if (displayedReadPromiseRef.current === run) displayedReadPromiseRef.current = null;
+    }
   }, [chatId, net.isConnected, sendReadHint, sendReadState, userId]);
+  markDisplayedReadRef.current = markDisplayedRead;
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    const highest = viewableItems.reduce((max, token) => {
+      const message = token.item as ChatMessageItem | undefined;
+      return typeof message?.seq === 'number' && Number.isSafeInteger(message.seq) && message.seq > 0
+        ? Math.max(max, message.seq)
+        : max;
+    }, 0);
+    currentViewableSeqRef.current = highest;
+    if (highest > 0 && focusedRef.current && appActiveRef.current && layoutReadyRef.current) {
+      void markDisplayedReadRef.current(highest).catch(() => undefined);
+    }
+  }).current;
 
   const updateTyping = useCallback((typingUserId: string, active: boolean) => {
     if (typingUserId === userId) return;
@@ -337,40 +467,51 @@ export default function ChatScreen() {
   }, [refreshLatest]);
 
   useEffect(() => {
-    if (!snapshot || !userId) return;
-    const readTask = setTimeout(() => void markRead(snapshot).catch(() => undefined), 0);
-    return () => clearTimeout(readTask);
-  }, [markRead, snapshot, userId]);
+    const subscription = AppState.addEventListener('change', (state) => {
+      appActiveRef.current = state === 'active';
+      if (appActiveRef.current) {
+        readHintRefreshRef.current?.invalidate();
+        const visible = currentViewableSeqRef.current;
+        if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (!chatId || !userId) return;
+    let active = true;
+    focusedRef.current = true;
+    const readHintRefresh = createReadHintRefresh(async () => {
+      const db = await getLocalDatabase();
+      if (!active) return;
+      const result = await listChatMembers(supabase, chatId, userId);
+      if (!active || result.error || !result.data) return;
+      await cacheMembers(db, chatId, userId, result.data);
+      if (active) await refreshLatest();
+    });
+    readHintRefreshRef.current = readHintRefresh;
     const handle = startChatRealtime(chatId, {
       onTyping: (payload) => updateTyping(payload.user_id, payload.active),
-      onRead: (payload) => {
-        if (payload.user_id === userId) return;
-        void getLocalDatabase()
-          .then((db) => listChatMembers(supabase, chatId).then(async (result) => {
-            if (!result.error && result.data) {
-              await cacheMembers(db, result.data);
-              await refreshLatest();
-            }
-          }))
-          .catch(() => undefined);
-      },
+      onRead: () => readHintRefresh.invalidate(),
     });
     realtimeRef.current = handle;
+    readHintRefresh.invalidate();
+    const visible = currentViewableSeqRef.current;
+    if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
     return () => {
+      active = false;
+      focusedRef.current = false;
+      restoreDetailsFocusRef.current = false;
+      restoreDetailsMessageRef.current = null;
+      setDetailsOpen(false);
+      setDetailsMessage(null);
+      readHintRefresh.stop();
+      if (readHintRefreshRef.current === readHintRefresh) readHintRefreshRef.current = null;
       handle.stop();
       realtimeRef.current = null;
     };
-  }, [chatId, refreshLatest, updateTyping, userId]);
-
-  useEffect(() => {
-    if (!net.isConnected || !userId) return;
-    void getLocalDatabase()
-      .then((db) => flushPendingReadStates(db, sendReadState, sendReadHint))
-      .catch(() => undefined);
-  }, [net.isConnected, sendReadHint, sendReadState, userId]);
+  }, [chatId, refreshLatest, updateTyping, userId]));
 
   useEffect(() => () => {
     for (const timer of typingTimersRef.current.values()) clearTimeout(timer);
@@ -443,6 +584,18 @@ export default function ChatScreen() {
     }
   }, [toast]);
 
+  const persistUnarchive = useCallback(async () => {
+    const result = await updateOwnMember(supabase, chatId, userId, { archived: false });
+    if (result.error || !result.data) throw new Error('unarchive failed');
+    try {
+      const db = await getLocalDatabase();
+      await createSqliteCacheStore(db, userId).upsertMember(result.data);
+      notifyCacheChange();
+    } catch { /* A later sync will reconcile the confirmed member row. */ }
+    archivedRef.current = false;
+    setArchivedState({ chatId, value: false });
+  }, [chatId, userId]);
+
   const send = useCallback(async () => {
     const content = dgTrim(draft);
     if (sendLock.current || pickLock.current || !validateMessageText(draft, attachments.length).ok) return;
@@ -454,6 +607,28 @@ export default function ChatScreen() {
       if (!result.ok) {
         toast.showToast({ message: result.reason === 'queueFull' ? strings.queue.full : strings.media.queueFailed });
         return;
+      }
+      try {
+        // Do this for every successful send so a send that races the initial
+        // preference read still guarantees the conversation is unignored.
+        await setChatListPreference(userId, chatId, 'ignored', false);
+        if (ignoredRef.current !== false) {
+          ignoredRef.current = false;
+          setIgnoredState({ chatId, value: false });
+          const visible = currentViewableSeqRef.current;
+          if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
+        }
+      } catch {
+        if (ignoredRef.current === true) {
+          toast.showToast(actionToast('unignoreChat', 'error'));
+        }
+      }
+      if (archivedRef.current) {
+        try {
+          await persistUnarchive();
+        } catch {
+          toast.showToast(actionToast('unarchiveChat', 'error'));
+        }
       }
       setDraft('');
       setAttachments([]);
@@ -474,7 +649,7 @@ export default function ChatScreen() {
       await refreshLatest();
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
     }
-  }, [attachments, chatId, draft, jumpToLatest, refreshLatest, replyTarget, toast, userId]);
+  }, [attachments, chatId, draft, jumpToLatest, persistUnarchive, refreshLatest, replyTarget, toast, userId]);
 
   const saveEdit = useCallback(async () => {
     if (!editingMessage) return;
@@ -580,6 +755,9 @@ export default function ChatScreen() {
     const own = snapshot?.messages.filter((message) => message.senderId === userId && message.pending === null) ?? [];
     return own[own.length - 1]?.messageId ?? null;
   }, [snapshot?.messages, userId]);
+  const detailsVisible = Boolean(detailsOpen && detailsMessage
+    && detailsMessage.chatId === chatId
+    && snapshot?.messages.some((message) => message.messageId === detailsMessage.messageId && message.deletedAt === null));
 
   const pinnedMessages = useMemo(
     () => snapshot?.messages.filter((message) => pinnedMessageIds.has(message.messageId) && message.deletedAt === null) ?? [],
@@ -594,8 +772,13 @@ export default function ChatScreen() {
     if (!snapshot) return null;
     const previous = snapshot.messages[index - 1];
     const isUnread = item.seq !== null && item.seq > snapshot.myLastReadSeq && item.senderId !== userId && item.deletedAt === null;
-    const otherHasRead = snapshot.members.filter((member) => member.user_id !== userId).some((member) => item.seq !== null && member.last_read_seq >= item.seq);
-    const status: BubbleStatus = item.pending ? null : item.messageId === lastOwnMessageId ? (otherHasRead ? 'seen' : 'sent') : null;
+    const otherMaxReadSeq = snapshot.members.reduce(
+      (max, member) => member.user_id === userId ? max : Math.max(max, member.last_read_seq),
+      0,
+    );
+    const status: BubbleStatus = item.pending ? null : item.messageId === lastOwnMessageId
+      ? selectReadStatus({ senderId: item.senderId, currentUserId: userId, seq: item.seq, otherMaxReadSeq, savedMessages: snapshot.savedMessages })
+      : null;
     const row = (
       <>
         {shouldSeparate(previous, item) ? <DateSeparator label={dateLabel(item.createdAt)} /> : null}
@@ -606,6 +789,7 @@ export default function ChatScreen() {
           userId={userId}
           pinned={pinnedMessageIds.has(item.messageId)}
           accentColor={accentColor}
+          highlightQuery={searchHighlightActive && !focusUnavailable && item.messageId === focusMessageId ? searchQuery : undefined}
           status={status}
           onAttachmentPress={(attachment) => router.push({ pathname: '/chat/[chatId]/media/[mediaId]', params: { chatId, mediaId: attachment.mediaId } })}
           lowSignalActive={item.pending ? isLowSignalActive(net, item.pending.force_low_signal) : false}
@@ -629,7 +813,7 @@ export default function ChatScreen() {
         />
       </>
     );
-    return item.messageId === focusMessageId ? (
+    return item.messageId === focusMessageId && (!searchQuery || (searchHighlightActive && !focusUnavailable)) ? (
       <View
         onLayout={() => requestAnimationFrame(scrollToFocusedMessage)}
         style={{ backgroundColor: theme.colors.bg.pressed }}
@@ -637,16 +821,90 @@ export default function ChatScreen() {
         {row}
       </View>
     ) : row;
-  }, [accentColor, chatId, discard, focusMessageId, lastOwnMessageId, net, pinnedMessageIds, retry, router, scrollToFocusedMessage, showTimeId, snapshot, theme.colors.bg.pressed, toggleReaction, userId]);
+  }, [accentColor, chatId, discard, focusMessageId, focusUnavailable, lastOwnMessageId, net, pinnedMessageIds, retry, router, searchHighlightActive, searchQuery, scrollToFocusedMessage, showTimeId, snapshot, theme.colors.bg.pressed, toggleReaction, userId]);
 
   if (!chatId || !userId) {
     return <EmptyState iconName="action.info" title={strings.chatInfo.unavailable} message={strings.chatInfo.unavailableBody} />;
   }
 
+  const directProfile = snapshot?.directProfile;
+  const ignoredChatTitle = directProfile?.displayName ?? snapshot?.title ?? 'this chat';
+
+  const unignore = async () => {
+    if (ignoredActionBusy) return;
+    setIgnoredActionBusy(true);
+    try {
+      await setChatListPreference(userId, chatId, 'ignored', false);
+      ignoredRef.current = false;
+      setIgnoredState({ chatId, value: false });
+      toast.showToast(actionToast('unignoreChat', 'success'));
+      const visible = currentViewableSeqRef.current;
+      if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
+    } catch {
+      toast.showToast(actionToast('unignoreChat', 'error'));
+    } finally {
+      setIgnoredActionBusy(false);
+    }
+  };
+
+  const unarchive = async () => {
+    if (ignoredActionBusy) return;
+    setIgnoredActionBusy(true);
+    try {
+      await persistUnarchive();
+      toast.showToast(actionToast('unarchiveChat', 'success'));
+    } catch {
+      toast.showToast(actionToast('unarchiveChat', 'error'));
+    } finally {
+      setIgnoredActionBusy(false);
+    }
+  };
+
+  const blockIgnoredChat = async () => {
+    if (ignoredActionBusy) return;
+    setIgnoredActionBusy(true);
+    try {
+      const next = await updateChatPreferences(userId, chatId, { blocked: true });
+      setChatPreferences(next);
+      notifyCacheChange();
+      setBlockIgnoredVisible(false);
+      router.replace('/(main)/(tabs)');
+    } catch {
+      toast.showToast({ message: strings.chatInfo.blockFailed });
+    } finally {
+      setIgnoredActionBusy(false);
+    }
+  };
+
+  const deleteIgnoredChat = async () => {
+    if (ignoredActionBusy) return;
+    setIgnoredActionBusy(true);
+    try {
+      await deleteChatFromDevice(userId, chatId);
+      await clearChatPreferences(userId, chatId).catch(() => undefined);
+      toast.showToast(actionToast('deleteChat', 'success'));
+      setDeleteIgnoredVisible(false);
+      router.replace('/(main)/(tabs)');
+    } catch {
+      toast.showToast(actionToast('deleteChat', 'error'));
+    } finally {
+      setIgnoredActionBusy(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: theme.colors.bg.chat }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <TopBar
-        title={snapshot?.title ?? 'Chat'}
+        title={directProfile?.displayName ?? snapshot?.title ?? 'Chat'}
+        titleAlign={directProfile ? 'left' : 'center'}
+        titleLeading={directProfile ? (
+          <Avatar
+            id={directProfile.userId}
+            displayName={directProfile.displayName}
+            imageUrl={directProfile.avatarUrl}
+            size={40}
+          />
+        ) : undefined}
         subtitle={typingLabel}
         onBack={() => goBackOrReplace(router)}
           right={(
@@ -684,6 +942,12 @@ export default function ChatScreen() {
           )}
       />
       {call.view.error && !call.view.callId ? <Text style={[styles.callError, { color: theme.colors.error.text }]} accessibilityRole="alert">{call.view.error}</Text> : null}
+      {focusUnavailable && searchQuery ? (
+        <View style={[styles.searchUnavailable, { backgroundColor: theme.colors.bg.surface, borderBottomColor: theme.colors.separator }]}>
+          <Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.text.secondary }]}>{strings.search.targetUnavailable}</Text>
+          <Button label={strings.search.backToResults} variant="text" onPress={() => goBackOrReplace(router, { pathname: '/chat/[chatId]/search', params: { chatId, query: searchQuery } })} />
+        </View>
+      ) : null}
       {pinnedMessages.length > 0 ? (
         <Pressable
           style={({ pressed }) => [styles.pinnedBanner, { backgroundColor: theme.colors.bg.surface, borderBottomColor: theme.colors.separator, opacity: pressed ? 0.82 : 1 }]}
@@ -716,6 +980,13 @@ export default function ChatScreen() {
             data={snapshot?.messages ?? []}
             renderItem={renderMessage}
             keyExtractor={(item) => item.messageId}
+             viewabilityConfig={viewabilityConfig}
+             onViewableItemsChanged={onViewableItemsChanged}
+             onLayout={() => {
+               layoutReadyRef.current = true;
+               const visible = currentViewableSeqRef.current;
+               if (visible > 0) void markDisplayedReadRef.current(visible).catch(() => undefined);
+             }}
             initialNumToRender={focusMessageId ? config.list.pageSize : undefined}
             onScrollToIndexFailed={({ index, averageItemLength }) => {
               listRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: false });
@@ -741,6 +1012,24 @@ export default function ChatScreen() {
             <Button label="Jump to latest messages" variant="text" onPress={() => void jumpToLatest()} />
           ) : snapshot && !atBottom ? <View style={styles.jump}><JumpToBottom onPress={() => listRef.current?.scrollToEnd({ animated: true })} unreadCount={snapshot.unreadCount} /></View> : null}
           <DelayedActivityIndicator active={loadingOlder} style={styles.olderSpinner} color={theme.colors.brand.primary} />
+          {ignored === true ? (
+            <IgnoredChatActionBar
+              busy={ignoredActionBusy}
+              onUnignore={() => void unignore()}
+              onBlock={() => setBlockIgnoredVisible(true)}
+              onDelete={() => setDeleteIgnoredVisible(true)}
+            />
+          ) : ignored === false && archived ? (
+            <IgnoredChatActionBar
+              accessibilityLabel={strings.archivedChat.actionsLabel}
+              busy={ignoredActionBusy}
+              message={strings.archivedChat.message}
+              restoreLabel={strings.organization.unarchive}
+              onUnignore={() => void unarchive()}
+              onBlock={() => setBlockIgnoredVisible(true)}
+              onDelete={() => setDeleteIgnoredVisible(true)}
+            />
+          ) : null}
           <ChatComposer
             value={draft}
             sending={mediaBusy}
@@ -832,11 +1121,66 @@ export default function ChatScreen() {
           if (focusMessage?.pending) void discard(focusMessage.pending.temp_id);
           setFocusMessage(null);
         }}
+        onSeenBy={focusMessage
+          && snapshot
+          && !snapshot.savedMessages
+          && focusMessage.senderId === userId
+          && focusMessage.deletedAt === null
+          && focusMessage.pending === null
+          && Number.isSafeInteger(focusMessage.seq)
+          && (focusMessage.seq ?? 0) > 0
+          ? () => {
+            restoreDetailsFocusRef.current = true;
+            restoreDetailsMessageRef.current = focusMessage;
+            setDetailsMessage(focusMessage);
+            setDetailsOpen(true);
+            setFocusMessage(null);
+          }
+          : undefined}
         pinned={focusMessage ? pinnedMessageIds.has(focusMessage.messageId) : false}
         onPin={() => {
           if (focusMessage) void togglePin(focusMessage.messageId);
           setFocusMessage(null);
         }}
+      />
+      <SeenBySheet
+        visible={detailsVisible}
+        accountId={userId}
+        chatId={chatId}
+        messageId={detailsMessage?.messageId ?? ''}
+        direct={snapshot?.chat.type === 'direct'}
+        onClose={() => setDetailsOpen(false)}
+        onExited={() => {
+          const restoreMessage = restoreDetailsMessageRef.current;
+          const stillAvailable = restoreMessage?.chatId === chatId
+            && snapshot?.messages.some((message) => message.messageId === restoreMessage.messageId && message.deletedAt === null);
+          if (stillAvailable && restoreDetailsFocusRef.current && restoreMessage) {
+            setFocusMessage(restoreMessage);
+          }
+          restoreDetailsFocusRef.current = false;
+          restoreDetailsMessageRef.current = null;
+          setDetailsMessage(null);
+        }}
+      />
+      <Dialog
+        visible={blockIgnoredVisible}
+        title={strings.chatInfo.blockTitle(ignoredChatTitle)}
+        message={strings.chatInfo.blockBody}
+        confirmLabel={strings.chatInfo.blockConfirm}
+        onConfirm={() => void blockIgnoredChat()}
+        onDismiss={() => { if (!ignoredActionBusy) setBlockIgnoredVisible(false); }}
+        destructive
+        busy={ignoredActionBusy}
+      />
+      <Dialog
+        visible={deleteIgnoredVisible}
+        title={strings.chatInfo.deleteTitle}
+        message={strings.chatInfo.deleteBody}
+        confirmLabel={strings.chatInfo.deleteChat}
+        onConfirm={() => void deleteIgnoredChat()}
+        onDismiss={() => { if (!ignoredActionBusy) setDeleteIgnoredVisible(false); }}
+        destructive
+        busy={ignoredActionBusy}
       />
       <Dialog
         visible={deleteTarget !== null}
@@ -864,4 +1208,5 @@ const styles = StyleSheet.create({
   pinnedBannerCopy: { flex: 1, gap: 2 },
   pinnedBannerTitle: { fontSize: 14, fontWeight: '700' },
   pinnedBannerPreview: { fontSize: 14 },
+  searchUnavailable: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
 });

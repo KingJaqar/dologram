@@ -1,0 +1,24 @@
+.search {
+  min-height: 36px;
+  width: 100%;
+  padding: 0 var(--dg-space-3);
+  border: 1px solid var(--dg-color-border-strong);
+  border-radius: var(--dg-radius-full);
+  background: var(--dg-color-bg-surface);
+  color: var(--dg-color-text-primary);
+  font: var(--dg-type-body-md);
+}
+
+.search::placeholder {
+  color: var(--dg-color-text-secondary);
+}
+
+.search:focus {
+  outline: 2px solid var(--dg-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.search:disabled {
+  background: var(--dg-color-bg-disabled);
+  color: var(--dg-color-text-disabled);
+}

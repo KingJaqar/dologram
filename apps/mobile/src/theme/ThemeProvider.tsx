@@ -5,11 +5,15 @@
  */
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
+  useRef,
   useState,
 } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
+import { ThemeMotionProvider, ThemeSurface } from './ThemeSurface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   color,
@@ -58,24 +62,43 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = 'dg.theme';
 
+function createDuration(reduceMotion: boolean): ThemeContextValue['duration'] {
+  return (key, allowFade = false) => {
+    if (!reduceMotion) return motion.duration[key];
+    return allowFade ? motion.duration.reduceMotion : motion.duration.instant;
+  };
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useColorScheme();
+  const deviceScheme: ColorScheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const [setting, setSetting] = useState<ThemeSetting>('system');
+  const scheme: ColorScheme = setting === 'system' ? deviceScheme : setting;
   const [reduceMotion, setReduceMotion] = useState(false);
+  const settingLoaded = useRef(false);
+  const settingRef = useRef<ThemeSetting>('system');
 
   // Load persisted setting
   useEffect(() => {
+    let cancelled = false;
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
+      if (cancelled || settingLoaded.current) return;
       if (val === 'light' || val === 'dark' || val === 'system') {
+        settingRef.current = val;
         setSetting(val);
       }
     }).catch(() => {
       // Fallback to "system" already set
+    }).finally(() => {
+      if (!cancelled) settingLoaded.current = true;
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Persist setting changes
   useEffect(() => {
+    if (!settingLoaded.current) return;
     AsyncStorage.setItem(STORAGE_KEY, setting).catch(() => {
       // AsyncStorage failure: silent, setting is still in state
     });
@@ -84,36 +107,33 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Reduce motion
   useEffect(() => {
     let cancelled = false;
+    let preferenceChanged = false;
     AccessibilityInfo.isReduceMotionEnabled().then((val) => {
-      if (!cancelled) setReduceMotion(val);
+      if (!cancelled && !preferenceChanged) setReduceMotion(val);
     }).catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (value) => {
+      preferenceChanged = true;
+      setReduceMotion(value);
+    });
     return () => {
       cancelled = true;
       sub.remove();
     };
   }, []);
 
-  const scheme: ColorScheme =
-    setting === 'system'
-      ? systemScheme === 'dark'
-        ? 'dark'
-        : 'light'
-      : setting;
-
   const colors: ThemeColors = color[scheme];
 
-  function updateSetting(s: ThemeSetting) {
+  const updateSetting = useCallback((s: ThemeSetting) => {
+    if (s === settingRef.current) return;
+    settingLoaded.current = true;
+    settingRef.current = s;
     setSetting(s);
-  }
+  }, []);
 
   // Duration helper: collapses to instant (or fast for opacity fades) under reduceMotion
-  function duration(key: keyof typeof motion.duration, allowFade = false): number {
-    if (!reduceMotion) return motion.duration[key];
-    return allowFade ? motion.duration.reduceMotion : motion.duration.instant;
-  }
+  const duration = useMemo(() => createDuration(reduceMotion), [reduceMotion]);
 
-  const value: ThemeContextValue = {
+  const value: ThemeContextValue = useMemo(() => ({
     colors,
     typeTokens,
     avatarFills,
@@ -127,9 +147,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setSetting: updateSetting,
     reduceMotion,
     duration,
-  };
+  }), [colors, scheme, setting, reduceMotion, updateSetting, duration]);
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>
+      <ThemeMotionProvider value={reduceMotion}>
+        <ThemeSurface style={{ flex: 1, backgroundColor: colors.bg.app }}>
+          {children}
+        </ThemeSurface>
+      </ThemeMotionProvider>
+    </ThemeContext.Provider>
+  );
 }
 
 /** Hook to consume the theme context. Must be used inside ThemeProvider. */

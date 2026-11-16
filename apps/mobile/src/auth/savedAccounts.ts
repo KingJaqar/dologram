@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session } from '@supabase/supabase-js';
 import { strings } from '@dologram/shared';
 import type { AuthProfile } from './AuthProvider';
+import { removeMemoAccount } from '../memos/vault';
 
 const SAVED_ACCOUNTS_KEY = 'dg.savedAccounts';
 const SKIP_SWITCH_CONFIRMATION_KEY = 'dg.skipAccountSwitchConfirmation';
@@ -91,8 +92,9 @@ export async function removeSavedAccount(userId: string): Promise<void> {
   await removeSavedAccounts([userId]);
 }
 
-export async function removeSavedAccounts(userIds: string[]): Promise<void> {
+export async function removeSavedAccounts(userIds: string[], eraseMemos = false): Promise<void> {
   if (userIds.length === 0) return;
+  for (const userId of userIds) await removeMemoAccount(userId, eraseMemos);
   const ids = new Set(userIds);
   await updateSavedAccounts((accounts) => accounts.filter((item) => !ids.has(item.userId)));
 }

@@ -25,8 +25,18 @@ export {
   listMessagesAfter,
 } from './db/repositories/messages';
 export { addReaction, setReactionRemoved, listReactionsAfter } from './db/repositories/reactions';
-export { updateOwnMember, listChatMembers, insertMember, removeMember, setChatNickname } from './db/repositories/members';
+export { markChatRead, updateOwnMember, listChatMembers, insertMember, removeMember, setChatNickname } from './db/repositories/members';
 export type { InsertMemberInput, MemberRole } from './db/repositories/members';
+export {
+  getMessageReadParticipants,
+  getMyReadPrivacy,
+  setMyReadPrivacy,
+} from './db/repositories/readReceipts';
+export type {
+  ReadDetailsResult,
+  ReadParticipant,
+  ReadTimeVisibility,
+} from './db/repositories/readReceipts';
 export { listMyChats, getChat, createChat, updateChatTitle, updateChatAvatar } from './db/repositories/chats';
 export type { CreateChatInput } from './db/repositories/chats';
 export {
@@ -59,6 +69,8 @@ export {
 export type { CreateFolderInput, FolderChatRow, FolderRow } from './db/repositories/folders';
 /** Chat list (M2-08, F2, AND-03, AND-04, D-44, D-94). */
 export { buildChatList, formatChatListTime, messagePreview, stripMarkdown } from './chatList';
+export { selectReadStatus } from './chat/readStatus';
+export type { ReadStatus, ReadStatusInput } from './chat/readStatus';
 export type {
   BuildChatListOptions,
   ChatListItem,
@@ -153,10 +165,38 @@ export type {
 } from './queue';
 
 /** Theme modules */
-export { dologramColors, color, avatarFills, space, radius, elevation, motion, z, typeTokens, tokens } from './theme/tokens';
+export { dologramColors, dologramLogoColors, color, avatarFills, space, radius, elevation, motion, z, typeTokens, tokens } from './theme/tokens';
 export type { ColorToken, ColorScheme, TypeToken, TypeTokenKey, SpaceToken, RadiusToken, ElevationToken, MotionDurationToken, ZToken } from './theme/tokens';
 export { contrastRatio, passesContrast } from './theme/contrast';
 export { iconNames, iconMap, iconSizes } from './theme/icons';
 export type { IconSize } from './theme/icons';
 export { textStyle, maxFontSizeMultiplier, fontFamilies } from './theme/typography';
 export type { FontFamily } from './theme/typography';
+export * from './memos/types';
+export { MemoStore, memoSchemaVersion } from './memos/store';
+export type { MemoDatabase } from './memos/store';
+export { createMemoPinResetChallenge, validateMemoPinResetChallenge, MEMO_PIN_RESET_MAX_ATTEMPTS, MEMO_PIN_RESET_TTL_MS } from './memos/pinRecovery';
+export type { MemoPinResetChallenge } from './memos/pinRecovery';
+export {
+  acknowledgeMemoSyncOperation,
+  createMemoBootstrapOperation,
+  createMemoMutationOperation,
+  detectMemoSyncConflict,
+  freezeMemoSyncPayload,
+  nextMemoSyncOperation,
+  validateMemoRemoteState,
+} from './memos/sync';
+export type {
+  MemoBootstrapInput,
+  MemoSyncConflict,
+  MemoRemoteState,
+  MemoReplication,
+  MemoResidency,
+  MemoRemoteStatus,
+  MemoSyncAck,
+  MemoSyncChange,
+  MemoSyncEntity,
+  MemoSyncOperation,
+  MemoSyncOperationState,
+  MemoSyncSnapshot,
+} from './memos/sync';

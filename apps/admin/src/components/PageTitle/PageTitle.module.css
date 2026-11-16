@@ -1,0 +1,5 @@
+.title {
+  margin: 0 0 var(--dg-space-6);
+  font: var(--dg-type-title-lg);
+  letter-spacing: var(--dg-type-title-lg-letter-spacing);
+}

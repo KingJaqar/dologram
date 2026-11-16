@@ -1,4 +1,4 @@
-import { highlightRanges, searchPreview } from '../matching';
+import { highlightRanges, memoizedHighlightRanges, searchPreview } from '../matching';
 
 test.each([
   ['Hello hello', 'HELLO', [[0, 5], [6, 11]]],
@@ -22,4 +22,9 @@ test('snippets preserve original text and surround the original normalized match
   expect(preview.startsWith('…')).toBe(true);
   expect(preview.endsWith('…')).toBe(true);
   expect(preview).toContain('🙂ＣＡＦÉ');
+});
+
+test('reuses highlighted ranges for unchanged text and normalized query pairs', () => {
+  const first = memoizedHighlightRanges('Needle', 'needle');
+  expect(memoizedHighlightRanges('Needle', 'NEEDLE')).toBe(first);
 });

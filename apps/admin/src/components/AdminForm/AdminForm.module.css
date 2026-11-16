@@ -1,0 +1,58 @@
+.card {
+  display: grid;
+  gap: var(--dg-space-4);
+  width: 100%;
+  max-width: 560px;
+  padding: var(--dg-space-7);
+  border: 1px solid var(--dg-color-border-subtle);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-bg-app);
+  box-shadow: var(--dg-elevation-1);
+}
+
+.title {
+  margin: 0;
+  font: var(--dg-type-title-md);
+}
+
+.fields {
+  display: grid;
+  gap: var(--dg-space-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--dg-space-2);
+}
+
+.password-panel {
+  display: grid;
+  gap: var(--dg-space-4);
+  min-width: 0;
+  padding: var(--dg-space-4);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-warning-bg);
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  gap: var(--dg-space-2);
+  margin: 0;
+  color: var(--dg-color-warning-text);
+  font: var(--dg-type-body-sm);
+}
+
+.password {
+  width: 100%;
+  min-width: 0;
+  padding: var(--dg-space-2);
+  border: 0;
+  border-radius: var(--dg-radius-sm);
+  background: var(--dg-color-bg-app);
+  color: var(--dg-color-text-primary);
+  font: var(--dg-type-mono);
+  font-size: 16px;
+}

@@ -1,20 +1,17 @@
 /**
  * CMP-32: Custom bottom tab bar.
- * Three tabs: Chats, New (never active, opens the New sheet), Profile.
+ * Main navigation tabs for Chats and Profile.
  * Height 56 + navigation inset.
  * A tap on the active Chats tab scrolls the list to top (via callback).
  * 12.5, CMP-32, D-95, D-142
  */
-import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/build/react-navigation/bottom-tabs';
 import { useTheme } from '../theme/ThemeProvider';
-import { textStyle } from '../theme/typography';
 import { Icon } from './Icon';
 import { Avatar } from './Avatar';
-import { BottomSheet } from './BottomSheet';
 import { useAuth } from '../auth/AuthProvider';
 
 const TAB_BAR_HEIGHT = 56;
@@ -61,7 +58,6 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const c = theme.colors;
   const insets = useSafeAreaInsets();
   const { profile, session } = useAuth();
-  const [newSheetVisible, setNewSheetVisible] = useState(false);
 
   const handleChatsPress = useCallback(() => {
     const chatsRoute = state.routes.find((r: { name: string }) => r.name === 'index');
@@ -106,21 +102,6 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           onPress={handleChatsPress}
         />
 
-        {/* New tab — never active, opens the sheet */}
-        <Pressable
-          style={styles.tab}
-          onPress={() => setNewSheetVisible(true)}
-          accessibilityRole="tab"
-          accessibilityLabel="New"
-          accessibilityState={{ selected: false }}
-        >
-          <Icon
-            name="nav.new"
-            size="md"
-            color={c.tab.inactive}
-          />
-        </Pressable>
-
         {/* Profile / Settings tab */}
         <Pressable
           style={styles.tab}
@@ -145,69 +126,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         </Pressable>
       </View>
 
-      {/* New sheet */}
-      <BottomSheet
-        visible={newSheetVisible}
-        onClose={() => setNewSheetVisible(false)}
-      >
-        <NewSheetContent onClose={() => setNewSheetVisible(false)} />
-      </BottomSheet>
     </>
-  );
-}
-
-export function NewSheetContent({ onClose }: { onClose: () => void }) {
-  const theme = useTheme();
-  const c = theme.colors;
-  const router = useRouter();
-
-  const navigate = (path: string) => {
-    onClose();
-    setTimeout(() => router.push(path), 50);
-  };
-
-  return (
-    <View style={{ paddingHorizontal: theme.space[4], paddingBottom: theme.space[6], gap: 4 }}>
-      <Pressable
-        style={({ pressed }) => [
-          styles.sheetRow,
-          {
-            backgroundColor: pressed ? c.bg.pressed : 'transparent',
-            borderRadius: theme.radius.md,
-            paddingHorizontal: theme.space[4],
-            paddingVertical: theme.space[4],
-          },
-        ]}
-        onPress={() => navigate('/new-chat')}
-        accessibilityRole="button"
-        accessibilityLabel="New chat"
-      >
-        <Icon name="action.newChat" size="md" color={c.text.primary} />
-        <Text style={[textStyle(theme.typeTokens.bodyLg), { color: c.text.primary }]}>
-          New chat
-        </Text>
-      </Pressable>
-
-      <Pressable
-        style={({ pressed }) => [
-          styles.sheetRow,
-          {
-            backgroundColor: pressed ? c.bg.pressed : 'transparent',
-            borderRadius: theme.radius.md,
-            paddingHorizontal: theme.space[4],
-            paddingVertical: theme.space[4],
-          },
-        ]}
-        onPress={() => navigate('/new-group')}
-        accessibilityRole="button"
-        accessibilityLabel="New group"
-      >
-        <Icon name="action.newGroup" size="md" color={c.text.primary} />
-        <Text style={[textStyle(theme.typeTokens.bodyLg), { color: c.text.primary }]}>
-          New group
-        </Text>
-      </Pressable>
-    </View>
   );
 }
 
@@ -228,10 +147,5 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 2,
     padding: 1,
-  },
-  sheetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
   },
 });

@@ -109,7 +109,7 @@ export default function ForwardScreen() {
               renderItem={({ item }) => {
                 const busy = forwardingChatId === item.chatId;
                 return <Pressable onPress={() => void forwardTo(item)} disabled={forwardingChatId !== null} accessibilityRole="button" accessibilityLabel={`Forward to ${item.title}`} accessibilityState={{ disabled: forwardingChatId !== null }} style={({ pressed }) => [styles.target, { backgroundColor: pressed ? c.bg.pressed : 'transparent', opacity: busy ? 0.5 : 1 }]}>
-                  <Avatar id={item.avatarId} displayName={item.avatarName} size={48} isSavedMessages={item.savedMessages} />
+                  <Avatar id={item.avatarId} displayName={item.avatarName} imageUrl={item.avatarUrl} imageBucket={item.isGroup ? 'chat-avatars' : 'avatars'} size={48} isSavedMessages={item.savedMessages} />
                   <Text style={[textStyle(theme.typeTokens.bodyLg), styles.targetName, { color: c.text.primary }]} numberOfLines={1}>{item.title}</Text>
                   {busy ? <DelayedActivityIndicator color={c.brand.primary} accessibilityLabel="Loading" /> : null}
                 </Pressable>;

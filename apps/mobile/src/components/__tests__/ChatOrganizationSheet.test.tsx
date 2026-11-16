@@ -40,6 +40,8 @@ test('mute and folder callbacks remain connected', () => {
   expect(onMute).toHaveBeenCalledWith('oneHour');
   fireEvent.press(screen.getByLabelText('Back'));
   fireEvent.press(screen.getByLabelText('Add to folder'));
+  expect(screen.getByTestId('selected-folder-indicator')).toBeTruthy();
+  expect(screen.getByLabelText('Work').props.accessibilityState).toMatchObject({ selected: true });
   fireEvent.press(screen.getByLabelText('Work'));
   expect(onToggleFolder).toHaveBeenCalledWith('folder', true);
 });

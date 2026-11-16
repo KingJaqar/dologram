@@ -1,0 +1,174 @@
+[
+  {
+    "sha256": "71f006965b1c8299ee8f9cd23cf86f602f512411a19f329521b0845ff1ffc5d8",
+    "path": "supabase/migrations/001_create_profiles_table.sql"
+  },
+  {
+    "sha256": "d0af786a02a8ef4582a0bc73da0477594d6d931c8394e8eb391fd54b8cdb26c5",
+    "path": "supabase/migrations/002_create_chats_table.sql"
+  },
+  {
+    "sha256": "23f40844d120f169764a89a353974d964f6ee87bf7924149e954d035afd1efda",
+    "path": "supabase/migrations/003_create_chat_members_table.sql"
+  },
+  {
+    "sha256": "b726e2b434fd4df0436a2f250a419756ea358fa585a7f400623e2bb8789d9269",
+    "path": "supabase/migrations/004_create_messages_table.sql"
+  },
+  {
+    "sha256": "8efe9e3c0071e2290ff1d5fc8adbb7225402b54789a954d6a0f0a39e266f0f35",
+    "path": "supabase/migrations/005_enable_rls_profiles.sql"
+  },
+  {
+    "sha256": "9786b0efc4e580e5335d734bd39c188859972b25f435c7d65aa64d795201d321",
+    "path": "supabase/migrations/006_enable_rls_chats.sql"
+  },
+  {
+    "sha256": "60b825183fe5f10b3a860409d81da7f518975ebf42c862230c87737934d79a5d",
+    "path": "supabase/migrations/007_enable_rls_chat_members.sql"
+  },
+  {
+    "sha256": "b9fe8ba196a29bc39a850edd44d742e9c25e43526b4f89f2817fd5f9e1370dca",
+    "path": "supabase/migrations/008_enable_rls_messages.sql"
+  },
+  {
+    "sha256": "1560d149c88e71fcc98fa78352f7adc2a415cf53ac743ce348ad40d57db15f82",
+    "path": "supabase/migrations/009_seed_owner_profile.sql"
+  },
+  {
+    "sha256": "827d819972e691cad3835d205c25c1ac14b9eb59e9025cd5268862f56df3befa",
+    "path": "supabase/migrations/010_create_test_accounts.sql"
+  },
+  {
+    "sha256": "034712c98c379fe38a0bf4f7ab20624b8f7f3433e87d4d7d48b630493026ec65",
+    "path": "supabase/migrations/012_sync_auth_users_to_profiles.sql"
+  },
+  {
+    "sha256": "5a06063726e44c815b2665d84513ccee9578242558426f6af7791b19c0724c76",
+    "path": "supabase/migrations/013_backfill_missing_auth_profiles.sql"
+  },
+  {
+    "sha256": "e0a11a47af21355f0425bcf3954aad87659cd632524a97a7238cc06f2ec892fa",
+    "path": "supabase/migrations/014_create_find_user_rpc.sql"
+  },
+  {
+    "sha256": "a6824c19ef1cc71e2bce333b2a53f422f379e574a9b96594d6f140d7c405db7e",
+    "path": "supabase/migrations/015_restrict_find_user_rpc_grants.sql"
+  },
+  {
+    "sha256": "16b4819da0e85e1c456bc5e2595c5ecdba079259ab8e55b4a7dab3b0c969b9f6",
+    "path": "supabase/migrations/016_align_messenger_schema.sql"
+  },
+  {
+    "sha256": "2432dac6472f9367a945a582d2074d7aa80f651e2d7100e4718f467497eb84aa",
+    "path": "supabase/migrations/017_fix_chat_member_insert_policy_recursion.sql"
+  },
+  {
+    "sha256": "b01722c592404e36fed7e451bc3d8d1baf3d36de9939b76230152f6f5581955c",
+    "path": "supabase/migrations/018_enable_saved_messages_self_chat.sql"
+  },
+  {
+    "sha256": "4ba46f162284be227e72122310d9827a595bf95ce718bc01188646b60e1a76f0",
+    "path": "supabase/migrations/019_enable_profile_avatars.sql"
+  },
+  {
+    "sha256": "bec7caed5a0e9e23299736b216c5a6f056e557aaeef65f2fe93ababea1d318a9",
+    "path": "supabase/migrations/020_add_profile_avatar_url.sql"
+  },
+  {
+    "sha256": "cb74dac0957bcc00962474f4855f44151d56a7d11a872bd102f9d459194ebfa7",
+    "path": "supabase/migrations/021_enable_chat_attachment_storage.sql"
+  },
+  {
+    "sha256": "fe80e4927c87d840807cb21afc5940d195ff0625921bbdb25d4e3ee3f46522f7",
+    "path": "supabase/migrations/022_add_push_tokens.sql"
+  },
+  {
+    "sha256": "e23f3a998b84ef4527e13af736c04be557da28e3e621402f976b455d18e5549d",
+    "path": "supabase/migrations/023_notification_delivery_preferences.sql"
+  },
+  {
+    "sha256": "7ccbab6b05b90a303a27312593479ad1619fc22dbea77f22fdba23cf976fc505",
+    "path": "supabase/migrations/024_soft_delete_chat_attachments.sql"
+  },
+  {
+    "sha256": "eaa96af25cb1f6cf28e14cd8c95af3a19455cec21258fde4ee561b838dd47ec9",
+    "path": "supabase/migrations/025_add_group_chat_avatars.sql"
+  },
+  {
+    "sha256": "55c9e9dc582c1a6fc099a9b2b2ddd8572b7ba34345dfacc8991ff44c520a8cd9",
+    "path": "supabase/migrations/026_shared_chat_nicknames.sql"
+  },
+  {
+    "sha256": "4603bbe8abe3d67ecaf76b3bfc5dbc55f821fa8a8d59544678546e063186dbd3",
+    "path": "supabase/migrations/027_unique_folder_names.sql"
+  },
+  {
+    "sha256": "755c33cbdb3b806930ce0d3967d43a3eeb546ad9d2c65b7dfba18dbcc641e523",
+    "path": "supabase/migrations/028_enforce_message_character_limit.sql"
+  },
+  {
+    "sha256": "5c686021e923cb0725e6edffc9b650afa2c719dc52b775cefe31733e0c8087a8",
+    "path": "supabase/migrations/029_calling_state_and_authorization.sql"
+  },
+  {
+    "sha256": "c1e59b1cf6f8fc12b389c010c4c49719e56708244f3041a5f4ea44f00005846e",
+    "path": "supabase/migrations/030_calling_provider_webhooks.sql"
+  },
+  {
+    "sha256": "e4350daeb3be49915728dd17e71d582b5bddfa6940fc1607acdbfe93b886759e",
+    "path": "supabase/migrations/031_call_notification_outbox.sql"
+  },
+  {
+    "sha256": "9e728c35aeb9c6370d5718e69d16b889f44bacce33fafaef4ce7d04bc8c50f03",
+    "path": "supabase/migrations/032_expose_native_calling_capability.sql"
+  },
+  {
+    "sha256": "ae1dfc48bf37317f403d8bb4d7757e566caed3fd7636aa1f151b2a1f84e3bd32",
+    "path": "supabase/migrations/033_allow_chat_members_to_read_profile_avatars.sql"
+  },
+  {
+    "sha256": "d9cbbebf29af4bf253d886c2e9557837e95b3641240716bd7ebfac31f32ed22a",
+    "path": "supabase/migrations/034_create_direct_chat_atomically.sql"
+  },
+  {
+    "sha256": "12ad71e02341e2ba319e4d0f10a1245ad137f1beb8985e9a32e2e3d07e17be5f",
+    "path": "supabase/migrations/035_memo_private_sync.sql"
+  },
+  {
+    "sha256": "cd4643fe7cc1620b7902798c6d49c9a1442efaee4e1de67d7ea6d46da68911f5",
+    "path": "supabase/migrations/036_harden_memo_private_sync.sql"
+  },
+  {
+    "sha256": "43af7bf1dac0f3fd03aca8517133dc945becdd966861aa6e48342e9d4854d18b",
+    "path": "supabase/migrations/037_harden_chat_read_state.sql"
+  },
+  {
+    "sha256": "10f9f8a2a1e5a53a69090fe0de400fc9b83d6f7e8b15ed6b6d4ed3dafaf366c3",
+    "path": "supabase/migrations/038_message_read_receipts.sql"
+  },
+  {
+    "sha256": "23bb982e4f446ae5467dbdb55bf71b29cb39d2008369f11581bc6bae1dd7852c",
+    "path": "supabase/migrations/039_restore_authenticated_policy_helpers.sql"
+  },
+  {
+    "sha256": "b1f8b6c3526e824e43976992b8fef29e0b489fca757456c46bd7e855039ecf9a",
+    "path": "supabase/migrations/040_add_global_people_search.sql"
+  },
+  {
+    "sha256": "28cf2fc6650b39af8f196c5c400ef6b47be02333f36b96d3d833471cb5224b38",
+    "path": "supabase/migrations/041_add_profile_roles.sql"
+  },
+  {
+    "sha256": "929327e2e53269985be6678e20128ef705c637ad6c032a1540e3ee052973ae70",
+    "path": "supabase/migrations/042_admin.sql"
+  },
+  {
+    "sha256": "d202b2fed847fcfc8fb9b78dc094e089dfc197bcc1ac842a7b6cf35ef8d67369",
+    "path": "supabase/migrations/043_enforce_initial_password_access.sql"
+  },
+  {
+    "sha256": "bf7531ae407d08f10b2630d9cae77bad53f5f5919c9fd7609288a3073412d84e",
+    "path": "apps/admin/tests/harness/backend-schema.mjs"
+  }
+]

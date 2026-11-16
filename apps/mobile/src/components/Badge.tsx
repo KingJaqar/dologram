@@ -5,7 +5,7 @@
  * 12.3, D-95
  */
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ThemeSurface as View, ThemeText as Text } from '../theme/ThemeSurface';
 import { useTheme } from '../theme/ThemeProvider';
 import { textStyle } from '../theme/typography';
 

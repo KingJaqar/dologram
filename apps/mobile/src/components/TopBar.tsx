@@ -4,7 +4,8 @@
  * maxFontSizeMultiplier 1.5 (12.2, D-130).
  */
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { ThemeSurface, ThemeText as Text } from '../theme/ThemeSurface';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
 import { textStyle } from '../theme/typography';
@@ -25,9 +26,11 @@ export interface TopBarProps {
   horizontalPadding?: number;
   /** Aligns the title to the leading edge instead of centering it. */
   titleAlign?: 'center' | 'left';
+  /** Content displayed immediately before the title and subtitle. */
+  titleLeading?: React.ReactNode;
 }
 
-export function TopBar({ title, subtitle, wordmark = false, onBack, right, left, leftWide = false, horizontalPadding = 4, titleAlign = 'center' }: TopBarProps) {
+export function TopBar({ title, subtitle, wordmark = false, onBack, right, left, leftWide = false, horizontalPadding = 4, titleAlign = 'center', titleLeading }: TopBarProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const c = theme.colors;
@@ -37,7 +40,7 @@ export function TopBar({ title, subtitle, wordmark = false, onBack, right, left,
     : { ...textStyle(theme.typeTokens.titleMd), color: c.text.primary };
 
   return (
-    <View
+    <ThemeSurface
       style={[
         styles.container,
         {
@@ -64,24 +67,27 @@ export function TopBar({ title, subtitle, wordmark = false, onBack, right, left,
         {/* Title */}
         {title || subtitle ? (
           <View style={[styles.titleArea, titleAlign === 'left' && styles.titleAreaLeft]}>
-            {title ? (
-              <Text
-                style={titleStyle}
-                numberOfLines={1}
-                maxFontSizeMultiplier={1.5}
-              >
-                {title}
-              </Text>
-            ) : null}
-            {subtitle ? (
-              <Text
-                style={[textStyle(theme.typeTokens.bodySm), { color: c.text.secondary }]}
-                numberOfLines={1}
-                maxFontSizeMultiplier={1.3}
-              >
-                {subtitle}
-              </Text>
-            ) : null}
+            {titleLeading}
+            <View style={[styles.titleCopy, titleAlign === 'left' && styles.titleCopyLeft]}>
+              {title ? (
+                <Text
+                  style={titleStyle}
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={1.5}
+                >
+                  {title}
+                </Text>
+              ) : null}
+              {subtitle ? (
+                <Text
+                  style={[textStyle(theme.typeTokens.bodySm), { color: c.text.secondary }]}
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {subtitle}
+                </Text>
+              ) : null}
+            </View>
           </View>
         ) : null}
 
@@ -90,7 +96,7 @@ export function TopBar({ title, subtitle, wordmark = false, onBack, right, left,
           {right}
         </View>
       </View>
-    </View>
+    </ThemeSurface>
   );
 }
 
@@ -124,10 +130,20 @@ const styles = StyleSheet.create({
   },
   titleArea: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     paddingHorizontal: 4,
   },
   titleAreaLeft: {
+    justifyContent: 'flex-start',
+  },
+  titleCopy: {
+    flexShrink: 1,
+    alignItems: 'center',
+  },
+  titleCopyLeft: {
     alignItems: 'flex-start',
   },
 });

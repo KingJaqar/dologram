@@ -44,6 +44,17 @@ export default function ProfileScreen() {
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [loading, setLoading] = useState(!profile);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [formProfile, setFormProfile] = useState(profile);
+
+  if (profile && profile !== formProfile) {
+    setFormProfile(profile);
+    setDisplayName(profile.display_name);
+    setUsername(profile.username);
+    setLoading(false);
+    setLoadError(false);
+  }
 
   useEffect(() => {
     if (profile) return;
@@ -51,12 +62,16 @@ export default function ProfileScreen() {
     let active = true;
     void refreshProfile()
       .then((loadedProfile) => {
-        if (!active || !loadedProfile) return;
+        if (!active) return;
+        if (!loadedProfile) {
+          setLoadError(true);
+          return;
+        }
         setDisplayName(loadedProfile.display_name);
         setUsername(loadedProfile.username);
       })
       .catch(() => {
-        if (active) setFormError(strings.common.couldNotLoad);
+        if (active) setLoadError(true);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -64,10 +79,10 @@ export default function ProfileScreen() {
     return () => {
       active = false;
     };
-  }, [profile, refreshProfile]);
+  }, [profile, refreshProfile, loadAttempt]);
 
   async function handleSave() {
-    if (saving || !net.isConnected || loading) return;
+    if (saving || !net.isConnected || loading || !profile) return;
 
     const nextDisplayName = dgTrim(displayName);
     const nextUsername = username.trim().toLowerCase();
@@ -103,7 +118,7 @@ export default function ProfileScreen() {
 
   async function handleAvatarPick(source: AvatarSource) {
     const userId = session?.user.id;
-    if (!userId || avatarUploading || saving || loading || !net.isConnected) return;
+    if (!userId || !profile || avatarUploading || saving || loading || !net.isConnected) return;
 
     setAvatarSheetVisible(false);
     setAvatarUploading(true);
@@ -205,7 +220,7 @@ export default function ProfileScreen() {
       >
         <Pressable
           onPress={() => setAvatarSheetVisible(true)}
-          disabled={avatarUploading || loading || saving || !net.isConnected}
+          disabled={avatarUploading || loading || saving || !profile || !net.isConnected}
           accessibilityRole="button"
           accessibilityLabel={strings.profile.changePicture}
           style={styles.avatarButton}
@@ -239,7 +254,7 @@ export default function ProfileScreen() {
             autoComplete="name"
             autoCapitalize="words"
             autoCorrect={false}
-            editable={!loading && !saving}
+            editable={!!profile && !loading && !saving}
             maxLength={64}
             charCount={displayName.length}
           />
@@ -257,7 +272,7 @@ export default function ProfileScreen() {
             autoComplete="username"
             autoCapitalize="none"
             autoCorrect={false}
-            editable={!loading && !saving}
+            editable={!!profile && !loading && !saving}
             maxLength={32}
             leading={
               <Text style={[textStyle(theme.typeTokens.bodyLg), { color: theme.colors.text.secondary }]}>@</Text>
@@ -272,6 +287,24 @@ export default function ProfileScreen() {
             autoCapitalize="none"
           />
         </View>
+
+        {loadError ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={strings.common.couldNotLoad}
+            disabled={loading || !net.isConnected}
+            onPress={() => {
+              setLoading(true);
+              setLoadError(false);
+              setLoadAttempt((attempt) => attempt + 1);
+            }}
+            style={styles.formError}
+          >
+            <Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.error.text, textAlign: 'center' }]}>
+              {strings.common.couldNotLoad}
+            </Text>
+          </Pressable>
+        ) : null}
 
         {formError ? (
           <Text style={[textStyle(theme.typeTokens.bodySm), styles.formError, { color: theme.colors.error.text }]} accessibilityRole="alert">
@@ -290,7 +323,7 @@ export default function ProfileScreen() {
             label={strings.profile.save}
             fullWidth
             loading={saving || loading}
-            disabled={!net.isConnected || loading}
+            disabled={!net.isConnected || loading || !profile}
             onPress={() => void handleSave()}
           />
         </View>

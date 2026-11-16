@@ -1,35 +1,24 @@
-/**
- * Main-header navigation tab.
- *
- * The tab keeps its icon and label mounted and animates one progress value on
- * the UI thread. Width, opacity, surface and indicator all derive from that
- * value, so a route change can interrupt the transition without leaving a
- * stale label or mismatched active treatment behind.
- */
-import React, { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+/** Main-header navigation tab. */
+import React, { useLayoutEffect, useRef } from 'react';
+import { I18nManager, Pressable, StyleSheet } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { useTheme } from '../theme/ThemeProvider';
+import { themeColorTransition, ThemeSurface, ThemeText as Text } from '../theme/ThemeSurface';
 import { textStyle } from '../theme/typography';
 
 export interface HeaderTabProps {
   label: string;
+  section: HeaderSection;
+  selection: SharedValue<number[]>;
   active: boolean;
   onPress?: () => void;
   icon: React.ReactNode;
   /** Width of the icon-only state. */
   closedWidth?: number;
-  /** Width of the label at the current header type scale. */
-  labelWidth?: number;
-  showLabel?: boolean;
+  compact?: boolean;
   /** Width reserved for the icon, used to keep both states centered. */
   iconWidth?: number;
+  compactIconScale?: number;
   accessibilityRole?: 'tab' | 'button';
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -38,17 +27,44 @@ export interface HeaderTabProps {
   delayLongPress?: number;
 }
 
-const LABEL_GAP = 6;
+const SECTIONS = ['chats', 'folders', 'archive', 'ignored', 'settings'] as const;
+export type HeaderSection = typeof SECTIONS[number];
+const SELECTION_DURATION = 250;
+export const HEADER_CONTROL_WIDTH = 44;
+export const COMPACT_ACTIVE_TAB_WIDTH = 56;
+export const WIDE_ACTIVE_TAB_WIDTH = 94;
+
+export function useHeaderSelection(activeSection: HeaderSection, reduceMotion: boolean) {
+  const target = SECTIONS.map((section) => Number(section === activeSection));
+  const selection = useSharedValue(target);
+  const lastSection = useRef(activeSection);
+
+  useLayoutEffect(() => {
+    if (!reduceMotion && lastSection.current === activeSection) return;
+    lastSection.current = activeSection;
+    const next = SECTIONS.map((section) => Number(section === activeSection));
+    // All tabs transfer the same extra width on the same UI-thread timeline.
+    // Retarget from the current widths if another route becomes active mid-transition.
+    selection.set(reduceMotion ? next : withTiming(next, {
+      duration: SELECTION_DURATION,
+      easing: Easing.out(Easing.cubic),
+    }));
+  }, [activeSection, reduceMotion, selection]);
+
+  return selection;
+}
 
 export function HeaderTab({
   label,
+  section,
+  selection,
   active,
   onPress,
   icon,
-  closedWidth = 44,
-  labelWidth = 48,
-  showLabel = true,
+  closedWidth = HEADER_CONTROL_WIDTH,
+  compact = false,
   iconWidth = 20,
+  compactIconScale = 1,
   accessibilityRole = 'tab',
   accessibilityLabel,
   accessibilityHint,
@@ -58,42 +74,41 @@ export function HeaderTab({
 }: HeaderTabProps) {
   const theme = useTheme();
   const c = theme.colors;
-  const progress = useSharedValue(active ? 1 : 0);
-  const duration = theme.duration('normal');
-  const labelSpace = showLabel ? labelWidth + LABEL_GAP : 0;
-
-  useEffect(() => {
-    progress.value = withTiming(active ? 1 : 0, {
-      duration,
-      easing: Easing.out(Easing.cubic),
-    });
-    return () => cancelAnimation(progress);
-  }, [active, duration, progress]);
-
-  const outerStyle = useAnimatedStyle(() => ({
-    width: closedWidth + labelSpace * progress.value,
+  const activeWidth = compact ? COMPACT_ACTIVE_TAB_WIDTH : WIDE_ACTIVE_TAB_WIDTH;
+  const sectionIndex = SECTIONS.indexOf(section);
+  const iconInset = 5;
+  const labelStart = iconWidth + iconInset + 5;
+  const direction = I18nManager.isRTL ? -1 : 1;
+  const frameStyle = useAnimatedStyle(() => ({
+    width: closedWidth + (activeWidth - closedWidth) * selection.value[sectionIndex],
   }));
-  const surfaceStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
-  const labelStyle = useAnimatedStyle(() => ({
-    width: labelSpace * progress.value,
-    opacity: progress.value,
-  }));
-  const indicatorStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scaleX: progress.value }],
+  const iconStyle = useAnimatedStyle(() => {
+    const progress = selection.value[sectionIndex];
+    return {
+      transform: [
+        { translateX: compact ? 0 : (iconInset + (iconWidth - activeWidth) / 2) * direction * progress },
+        { translateY: compact ? -11 * progress : 0 },
+        { scale: compact ? 1 + (compactIconScale - 1) * progress : 1 },
+      ],
+    };
+  });
+  const surfaceStyle = useAnimatedStyle(() => ({ opacity: selection.value[sectionIndex] }));
+  const decorationStyle = useAnimatedStyle(() => ({
+    // Reveal the label once the expanding tab has room to draw it.
+    opacity: Math.max(0, (selection.value[sectionIndex] - 0.65) / 0.35),
   }));
 
   return (
-    <Animated.View style={[styles.outer, outerStyle]}>
+    <Animated.View
+      testID={`header-tab-frame-${section}`}
+      style={[styles.frame, compact && styles.compactFrame, frameStyle]}
+    >
       <Animated.View
         pointerEvents="none"
-        style={[styles.activeSurface, { backgroundColor: c.bg.surface }, surfaceStyle]}
+        style={[StyleSheet.absoluteFill, styles.surface, { backgroundColor: c.bg.surface }, surfaceStyle, themeColorTransition(theme.reduceMotion)]}
       />
       <Pressable
-        style={({ pressed }) => [
-          styles.tab,
-          pressed ? { backgroundColor: c.bg.pressed } : null,
-        ]}
+        style={({ pressed }) => [StyleSheet.absoluteFill, styles.tab, pressed && { backgroundColor: c.bg.pressed }]}
         onPress={onPress}
         onLongPress={onLongPress}
         delayLongPress={delayLongPress}
@@ -102,63 +117,66 @@ export function HeaderTab({
         accessibilityHint={accessibilityHint}
         accessibilityState={accessibilityState ?? { selected: active }}
       >
-        <View style={[styles.icon, { width: iconWidth }]} pointerEvents="none">
+        <Animated.View style={[styles.icon, iconStyle]} pointerEvents="none">
           {icon}
-        </View>
-        <Animated.View pointerEvents="none" style={[styles.labelArea, labelStyle]}>
+        </Animated.View>
+        {/* Keep the label and indicator mounted so an interrupted route change can fade
+            between states without a JS-thread unmount/remount flicker. */}
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.decoration, decorationStyle]}>
           <Text
             accessible={false}
             numberOfLines={1}
-            style={[textStyle(theme.typeTokens.labelMd), styles.label, { color: c.text.primary, width: labelWidth }]}
+            adjustsFontSizeToFit
+            style={[
+              textStyle(theme.typeTokens.labelMd),
+              styles.label,
+              compact
+                ? [styles.compactLabel, { width: activeWidth - 8 }]
+                : { start: labelStart, width: activeWidth - labelStart - 4 },
+              { color: c.text.primary },
+            ]}
           >
             {label}
           </Text>
+          <ThemeSurface style={[styles.activeIndicator, { backgroundColor: c.brand.primary }]} />
         </Animated.View>
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.activeIndicator, { backgroundColor: c.brand.primary }, indicatorStyle]}
-        />
       </Pressable>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  outer: {
+  frame: {
     height: 48,
     flexShrink: 0,
-    borderRadius: 24,
-    overflow: 'hidden',
   },
-  activeSurface: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+  compactFrame: {
+    height: 52,
+  },
+  surface: {
     borderRadius: 24,
   },
   tab: {
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 24,
-    overflow: 'hidden',
   },
   icon: {
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
   },
-  labelArea: {
-    height: 24,
+  decoration: {
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
-    flexShrink: 0,
   },
   label: {
-    marginLeft: LABEL_GAP,
+    position: 'absolute',
     includeFontPadding: false,
+  },
+  compactLabel: {
+    bottom: 6,
+    textAlign: 'center',
   },
   activeIndicator: {
     position: 'absolute',

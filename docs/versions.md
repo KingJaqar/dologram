@@ -95,3 +95,40 @@ Current `expo install --check` using the offline SDK map reports an existing
 react-native-gesture-handler mismatch (installed 3.5.0, expected ~2.32.0). The
 historical doctor pass above is not current evidence for that changed dependency.
 No downgrade, broad dependency fix or native build was performed in calling Phase 0.
+
+## User web Phase 0 — installed 2026-11-14
+
+Exact versions selected for Node 24.13.1/npm 11.8.0 and root React/DOM 19.2.3 overrides. Next 16.4.6 peers accept React 19 and Node >=20.9. Stylelint 18/jsdom 31 require a newer Node; compatible releases below preserve the repository runtime. No mobile framework/API was edited.
+
+| Package | Version | Purpose |
+| --- | --- | --- |
+| @dologram/shared | * | Web runtime/workspace linkage |
+| next | 16.4.6 | Web runtime/workspace linkage |
+| react | 19.2.3 | Web runtime/workspace linkage |
+| react-dom | 19.2.3 | Web runtime/workspace linkage |
+| @playwright/test | 1.65.1 | Required Phase 0 typing, lint, unit or browser tooling |
+| @testing-library/dom | 10.4.2 | Required Phase 0 typing, lint, unit or browser tooling |
+| @testing-library/jest-dom | 7.0.1 | Required Phase 0 typing, lint, unit or browser tooling |
+| @testing-library/react | 16.3.3 | Required Phase 0 typing, lint, unit or browser tooling |
+| @types/node | 26.6.6 | Required Phase 0 typing, lint, unit or browser tooling |
+| @types/react | 19.2.18 | Required Phase 0 typing, lint, unit or browser tooling |
+| @types/react-dom | 19.2.7 | Required Phase 0 typing, lint, unit or browser tooling |
+| eslint | 9.39.5 | Required Phase 0 typing, lint, unit or browser tooling |
+| eslint-config-next | 16.4.6 | Required Phase 0 typing, lint, unit or browser tooling |
+| eslint-plugin-jsx-a11y | 6.10.2 | Required Phase 0 typing, lint, unit or browser tooling |
+| fake-indexeddb | 6.2.8 | Required Phase 0 typing, lint, unit or browser tooling |
+| jsdom | 27.4.0 | Required Phase 0 typing, lint, unit or browser tooling |
+| stylelint | 17.16.0 | Required Phase 0 typing, lint, unit or browser tooling |
+| typescript | 6.0.3 | Required Phase 0 typing, lint, unit or browser tooling |
+| vite | 8.3.6 | Required Phase 0 typing, lint, unit or browser tooling |
+| vitest | 5.1.0 | Required Phase 0 typing, lint, unit or browser tooling |
+
+Compatibility evidence: `docs/test-results/web/phase-00.md` and its dependency graph. Official matching Next docs are also shipped under `node_modules/next/dist/docs/`. Development uses documented Webpack mode because concurrent monorepo writes prevented Turbopack from settling; the production artifact uses Turbopack.
+
+## User web Phase 2 — installed 2026-11-15
+
+- Root tsx 4.23.15 (Node >=18): executes the required TypeScript token generator.
+- User web lucide-react 1.73.0: typed browser SVG adapter; React peer includes 19.
+- No React/Next/mobile framework upgrade. Lock metadata reconciled with npm's package-lock-only workflow after the first install populated files but failed to open the lockfile.
+- Fonts use the authorized next/font/local fallback after Google download failure: Inter normal/italic 400/500/600/700 from installed @expo-google-fonts/inter 0.4.2; JetBrains Mono normal 400 from @expo-google-fonts/jetbrains-mono 0.4.1. Copied static TTF assets and their SIL OFL licenses; no font package added as a web dependency and no Expo imports.
+- next/font options verified against installed Next 16.4.6 docs/declarations. React 19.2.3 useSyncExternalStore verified against installed implementation; official React reference: https://react.dev/reference/react/useSyncExternalStore. Lucide React: https://lucide.dev/guide/react. tsx: https://tsx.hirok.io/getting-started. Playwright assertion APIs: https://playwright.dev/docs/test-assertions, checked against installed 1.65.1 types.

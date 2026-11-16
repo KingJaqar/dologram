@@ -5,8 +5,9 @@
  * the " · " separator and the time. Unread rows use the bold name and primary-coloured preview
  * with the unread badge at the right (12.4, D-92, D-94).
  */
-import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { ThemePressable as Pressable, ThemeSurface, ThemeText as Text } from '../theme/ThemeSurface';
 import type { ChatListItem } from '@dologram/shared';
 import { strings } from '@dologram/shared';
 import { useTheme } from '../theme/ThemeProvider';
@@ -14,6 +15,8 @@ import { textStyle } from '../theme/typography';
 import { Avatar } from './Avatar';
 import { Badge } from './Badge';
 import { Icon } from './Icon';
+import Reanimated from 'react-native-reanimated';
+import { usePressHighlight } from '../hooks/usePressHighlight';
 
 export interface ChatRowProps {
   item: ChatListItem;
@@ -21,12 +24,16 @@ export interface ChatRowProps {
   onLongPress?: (item: ChatListItem) => void;
   /** Reserve more width for the timestamp on compact folder lists. */
   compactPreview?: boolean;
+  /** Selection mode is entered by swiping a row to the right. */
+  selectionMode?: boolean;
+  selected?: boolean;
 }
 
-const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compactPreview = false }: ChatRowProps) {
+const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compactPreview = false, selectionMode = false, selected = false }: ChatRowProps) {
   const theme = useTheme();
   const c = theme.colors;
   const unread = item.unreadCount > 0;
+  const { style: highlightStyle, onPressIn, onPressOut } = usePressHighlight(theme.reduceMotion);
 
   const nameStyle = textStyle(
     unread ? { ...theme.typeTokens.titleSm, weight: 700 } : theme.typeTokens.titleSm,
@@ -38,19 +45,25 @@ const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compac
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: pressed ? c.bg.pressed : c.bg.app },
-      ]}
+      style={[styles.row, { backgroundColor: c.bg.app }]}
       onPress={() => onPress(item.chatId)}
       onLongPress={onLongPress ? () => onLongPress(item) : undefined}
-      accessibilityRole="button"
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      accessibilityRole={selectionMode ? 'checkbox' : 'button'}
       accessibilityLabel={item.accessibilityLabel}
       accessibilityHint={onLongPress ? 'Long press for chat actions' : undefined}
+      accessibilityState={selectionMode ? { checked: selected } : undefined}
     >
+      <Reanimated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: c.bg.pressed }, highlightStyle]}
+      />
       <Avatar
         id={item.avatarId}
         displayName={item.avatarName}
+        imageUrl={item.avatarUrl}
+        imageBucket={item.isGroup ? 'chat-avatars' : 'avatars'}
         size={56}
         isSavedMessages={item.savedMessages}
       />
@@ -65,7 +78,7 @@ const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compac
               <Icon name="action.mute" size="sm" color={c.text.secondary} />
             ) : null}
           </View>
-          {item.pinned ? <Icon name="action.star" size="sm" color={c.text.secondary} /> : null}
+          <StarredIcon starred={item.pinned} />
         </View>
 
         <View style={styles.previewLine}>
@@ -98,6 +111,8 @@ const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compac
   previous.onPress === next.onPress
   && previous.onLongPress === next.onLongPress
   && previous.compactPreview === next.compactPreview
+  && previous.selectionMode === next.selectionMode
+  && previous.selected === next.selected
   // Cache reads rebuild plain row objects, even when nothing visible changed.
   // Keep unchanged avatars, text and icons out of navigation-time commits.
   && (previous.item === next.item || (
@@ -108,6 +123,32 @@ const ChatRow = React.memo(function ChatRow({ item, onPress, onLongPress, compac
 ));
 
 export { ChatRow };
+
+/** Keep the same native view so rapid toggles reverse the fade without flashing. */
+function StarredIcon({ starred }: { starred: boolean }) {
+  const theme = useTheme();
+  const [opacity] = useState(() => new Animated.Value(starred ? 1 : 0));
+  useLayoutEffect(() => {
+    if (theme.reduceMotion) {
+      opacity.setValue(starred ? 1 : 0);
+      return;
+    }
+    const animation = Animated.timing(opacity, {
+      toValue: starred ? 1 : 0,
+      duration: theme.motion.duration.fast,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+      isInteraction: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [opacity, starred, theme.motion.duration.fast, theme.reduceMotion]);
+  return (
+    <Animated.View testID="chat-starred-icon" pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ opacity }}>
+      <Icon name="action.star" size="sm" color={theme.colors.text.secondary} />
+    </Animated.View>
+  );
+}
 
 // ─── Archived (n) row (AND-03, CMP-09) ────────────────────────────────────────
 
@@ -120,20 +161,24 @@ export function ArchivedRow({ count, onPress }: ArchivedRowProps) {
   const theme = useTheme();
   const c = theme.colors;
   const label = strings.chatList.archivedRow(count);
+  const { style: highlightStyle, onPressIn, onPressOut } = usePressHighlight(theme.reduceMotion);
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: pressed ? c.bg.pressed : c.bg.app },
-      ]}
+      style={[styles.row, { backgroundColor: c.bg.app }]}
       onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <View style={[styles.archiveCircle, { backgroundColor: c.bg.surface }]}>
+      <Reanimated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: c.bg.pressed }, highlightStyle]}
+      />
+      <ThemeSurface style={[styles.archiveCircle, { backgroundColor: c.bg.surface }]}>
         <Icon name="action.archive" size="lg" color={c.text.primary} />
-      </View>
+      </ThemeSurface>
       <View style={styles.body}>
         <Text
           style={[textStyle(theme.typeTokens.titleSm), { color: c.text.primary }]}
@@ -209,6 +254,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 12,
+    overflow: 'hidden',
   },
   body: {
     flex: 1,

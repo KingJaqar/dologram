@@ -1,0 +1,8 @@
+.menu { position: fixed; left: var(--dg-menu-left, 0px); top: var(--dg-menu-top, 0px); min-width: min(200px, 100vw); max-width: 100vw; max-height: 90dvh; overflow: auto; box-sizing: border-box; z-index: var(--dg-z-dialog); padding: var(--dg-space-1); border-radius: var(--dg-radius-md); background: var(--dg-color-bg-elevated); color: var(--dg-color-text-primary); box-shadow: var(--dg-elevation-2); }
+.item { display: block; width: 100%; min-height: 44px; text-align: start; border: 0; padding: var(--dg-space-3); border-radius: var(--dg-radius-sm); font: var(--dg-type-body-md); background: transparent; color: inherit; cursor: pointer; }
+.item:hover, .item:active, .item:focus-visible { background: var(--dg-color-bg-pressed); }
+.item[data-danger="true"] { color: var(--dg-color-danger); }
+.item[aria-disabled="true"] { color: var(--dg-color-text-disabled); cursor: default; }
+.reason { display: block; font: var(--dg-type-body-sm); color: var(--dg-color-text-secondary); }
+.spinner { margin-inline-start: var(--dg-space-2); vertical-align: middle; animation: turn var(--dg-motion-spinner-period) linear infinite; }
+@keyframes turn { to { transform: rotate(360deg); } }

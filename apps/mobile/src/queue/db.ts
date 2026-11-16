@@ -10,7 +10,7 @@
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
 const DATABASE_NAME = 'dologram.db';
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 10;
 
 const SCHEMA_V1 = `
 CREATE TABLE IF NOT EXISTS queue_items (
@@ -130,6 +130,27 @@ const SCHEMA_V7_ADDITIONS = `
 ALTER TABLE cache_chat_members ADD COLUMN nickname TEXT;
 `;
 
+// Old pending receipts have no account identity and cannot safely be sent by either user.
+const SCHEMA_V8 = `
+DROP TABLE IF EXISTS pending_read_states;
+CREATE TABLE pending_read_states (
+  user_id TEXT NOT NULL,
+  chat_id TEXT NOT NULL,
+  last_read_seq INTEGER NOT NULL,
+  PRIMARY KEY (user_id, chat_id)
+);
+CREATE INDEX IF NOT EXISTS cache_chat_members_user ON cache_chat_members(user_id, chat_id);
+`;
+
+/** Phase 2 keeps the v8 pending rows and separates server confirmation from local intent. */
+const SCHEMA_V9 = `
+ALTER TABLE pending_read_states ADD COLUMN membership_joined_at TEXT;
+ALTER TABLE cache_chat_members ADD COLUMN confirmed_last_read_seq INTEGER;
+ALTER TABLE cache_chat_members ADD COLUMN confirmed_joined_at TEXT;
+CREATE INDEX IF NOT EXISTS pending_read_states_membership
+  ON pending_read_states(user_id, membership_joined_at, chat_id);
+`;
+
 let databasePromise: Promise<SQLiteDatabase> | null = null;
 
 function asRecord(payload: string): Record<string, unknown> | null {
@@ -200,7 +221,8 @@ async function backfillMemberNicknames(db: SQLiteDatabase): Promise<void> {
 async function migrate(db: SQLiteDatabase): Promise<void> {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   const currentVersion = row?.user_version ?? 0;
-  if (currentVersion >= SCHEMA_VERSION) return;
+  if (currentVersion > SCHEMA_VERSION) throw new Error('Update DoloGram to open this newer local database. Your data was retained.');
+  if (currentVersion === SCHEMA_VERSION) return;
 
   if (currentVersion === 0) {
     await db.execAsync(SCHEMA_V1);
@@ -233,7 +255,15 @@ async function migrate(db: SQLiteDatabase): Promise<void> {
     await backfillMemberNicknames(db);
   }
 
-  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  await db.withTransactionAsync(async () => {
+    if (currentVersion < 8) await db.execAsync(SCHEMA_V8);
+    if (currentVersion < 9) await db.execAsync(SCHEMA_V9);
+    if (currentVersion < 10) await db.execAsync(`
+      CREATE TABLE sync_checkpoint_upgrade (version INTEGER PRIMARY KEY NOT NULL);
+      CREATE TABLE sync_checkpoint_backup AS SELECT * FROM sync_state;
+    `);
+    await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  });
 }
 
 /** Opens the single device database and applies the schema once per app start. */

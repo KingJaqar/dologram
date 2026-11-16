@@ -51,7 +51,7 @@ export async function enqueueAttachmentMessage(input: {
 
   const core = await getQueueCore();
   const forceLowSignal = await getForceLowSignalMode();
-  if (await core.countUnsent() >= config.queue.maxUnsent) return { ok: false, reason: 'queueFull' };
+  if (await core.countUnsent(input.senderId) >= config.queue.maxUnsent) return { ok: false, reason: 'queueFull' };
 
   const messageId = ids.messageId();
   markSendStarted(messageId);

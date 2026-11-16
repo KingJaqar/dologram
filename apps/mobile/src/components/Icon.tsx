@@ -30,6 +30,7 @@ import {
   Plus,
   Settings,
   Search,
+  Link,
   X,
   EllipsisVertical,
   CornerDownLeft,
@@ -83,7 +84,13 @@ import {
   Info,
 } from 'lucide-react-native';
 
-const starredIcon = require('../../assets/icons/starred.png');
+const starredAddIcon = require('../../assets/icons/starred-add.png');
+const starredRemoveIcon = require('../../assets/icons/starred-remove.png');
+const ignoredIcon = require('../../assets/icons/ignored.png');
+const archiveIcon = require('../../assets/icons/archive.png');
+const unarchiveIcon = require('../../assets/icons/unarchive.png');
+const folderIcon = require('../../assets/icons/folder.png');
+const folderRemoveIcon = require('../../assets/icons/folder-remove.png');
 
 // lucide-react-native components are typed as ComponentType<any> in the dist
 const lucideRegistry: Record<string, React.ComponentType<any>> = {
@@ -102,6 +109,7 @@ const lucideRegistry: Record<string, React.ComponentType<any>> = {
   plus: Plus,
   settings: Settings,
   search: Search,
+  link: Link,
   x: X,
   'ellipsis-vertical': EllipsisVertical,
   'corner-down-left': CornerDownLeft,
@@ -193,11 +201,20 @@ export function Icon({
 
   const { size: px, stroke } = iconSizes[size];
 
-  if (lucideName === 'star') {
+  const customIcon = name === 'action.star' ? starredAddIcon
+    : name === 'action.starOff' ? starredRemoveIcon
+      : name === 'action.ignore' || name === 'action.unignore' ? ignoredIcon
+        : name === 'nav.archive' || name === 'action.archive' ? archiveIcon
+          : name === 'action.unarchive' ? unarchiveIcon
+            : name === 'nav.folder' || name === 'action.folder' || name === 'action.addToFolder' ? folderIcon
+              : name === 'action.removeFromFolder' ? folderRemoveIcon
+                : null;
+  if (customIcon) {
     return (
       <RNImage
-        source={starredIcon}
+        source={customIcon}
         style={{ width: px, height: px }}
+        resizeMode="contain"
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="image"
         accessibilityElementsHidden={!accessibilityLabel}

@@ -45,7 +45,7 @@ export function useChatInfo(chatId: string | undefined): ChatInfoData {
     const generation = ++request.current;
     try {
       const db = await getLocalDatabase();
-      const source = await loadChatInfoSource(db, chatId);
+      const source = await loadChatInfoSource(db, chatId, userId);
       if (generation !== request.current || currentScope.current !== scope) return;
       setLoaded({
         chatId,

@@ -16,6 +16,7 @@ export type ChatInfoMember = {
   userId: string;
   displayName: string;
   profileDisplayName?: string;
+  avatarUrl?: string | null;
   nickname?: string;
   /** The profile's username, or null when the cached profile is missing. */
   username: string | null;
@@ -102,6 +103,7 @@ export function buildChatInfo({
       profileDisplayName: profile?.display_name || strings.chatList.unknownMember,
       nickname: member.nickname ?? '',
       username: profile?.username ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
       role: member.role,
       roleLabel: roleLabelFor(member.role),
       isSelf: member.user_id === userId,

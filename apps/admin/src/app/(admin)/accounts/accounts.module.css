@@ -1,0 +1,32 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--dg-space-3);
+  margin-bottom: var(--dg-space-6);
+}
+
+.header h1 {
+  margin-bottom: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dg-space-2);
+}
+
+.view {
+  display: grid;
+  gap: var(--dg-space-4);
+  min-width: 0;
+}
+
+.identity {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dg-space-2);
+}

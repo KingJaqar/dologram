@@ -1,9 +1,316 @@
 # DoloGram search planning context index
 
+## Current verification policy and roadmap — 2026-11-13, Asia/Manila
+
+The user made all device checks optional. The plan applies that policy to V11 and V16, the phase gates and the progress denominator. Required source and automated checks still apply. Recorded device passes, failures and gaps retain their original results.
+
+Phases 0–12 are complete under the revised policy. Their required implementation, integrated verification, rollback, handoff and fixture/process cleanup are recorded. The original search implementation is 12/12 required items (100%), and the full plan has 13 of 13 phases complete. The previous counts included optional device follow-up; that work remains a separately recorded checklist and does not gate completion. Historical statuses below describe their dated checkpoints.
+
+The plan's opening roadmap links to each phase's detailed work items and exit gate. Phases 5–12 are complete, and there is no later phase in this search plan. [Current plan and roadmap](../DoloGram_Search_Implementation_Plan.md)
+
+## Phase 12 execution record — 2026-11-13, Asia/Manila
+
+Phase 12 — integrated verification, deterministic performance gate and handoff — is **Complete, 7/7 required items (100%)**. The current execution added only two focused regression assertions: a controlled 150 ms debounce/≤300 ms completion test and a typed-search-shell stability test during message counting. Existing source and tests already cover cancellation, late native settlement, serialized scans, pending/deleted filtering, account boundaries, history, username failures/retry, accessibility, Markdown/highlight behavior, navigation and the synthetic 10,000-message fixture. The caller audit found no current non-search `/new-chat` caller; `NewConversationMenu` enters the global Username filter, and the deleted `apps/mobile/app/new-chat.tsx` remains pre-existing user work and was not restored.
+
+The focused Repomix packet is [`focused-context.xml`](../../supabase/repomix/phase-12-20261113/focused-context.xml), 72 entries, security-clean, SHA-256 `79B1A21C0F6FD4EA1A9D314297CCCFB072DEF46D8B546258CF01E4C0C6ED8B83`; the broad packet is retained as [`context.xml`](../../supabase/repomix/phase-12-20261113/context.xml), SHA-256 `8CB03CC2A14C9436FA25B4395E66469E27EA448C23FB8D7CDE79DAEB33F9BEE0`. Workspace/mobile and shared typechecks passed, owned ESLint passed, focused search/accessibility verification passed 15 suites/123 of 124 tests with one pre-existing `VoiceNotePlayer.tsx:69` failure, and full mobile regression passed 467 of 471 tests with four unchanged unrelated baseline failure categories. Full mobile lint retains 20 unrelated baseline problems (16 errors/4 warnings); default Jest cache remains sandbox-blocked by transform-cache `EPERM`, so repository-local caches were used. Optional MuMu/ADB device timing and visual checks were not run. Exact diagnostics, acceptance mapping, rollback scope and readiness are in the [Phase 12 report](../../docs/test-results/search/phase-12/report.md). No dependency, migration, backend, route-removal, build, deployment, commit, push or later-phase work was performed. The historical planning records below retain their original dated status and are superseded by this current execution record.
+
+## Phase 7 execution record — 2026-11-13, Asia/Manila
+
+Phase 7 — Progressive loading and query lifecycle — is **Complete, 7/7 required items (100%)**. The global and scoped search routes now use compact inline progress/skeleton states, preserve People/Groups and the result structure while message scans run, and keep the toolbar/filter shell stable during the initial chat-list read. `useMessageSearch` keeps immediate query state separate from its 150 ms expensive-work debounce, coalesces synchronous invalidations, and serializes underlying per-scope loader promises so a late native/database settlement cannot overlap the next scan. Generation, account, focus, cache, queue, preference, timeout, retry and late-result guards remain intact.
+
+The Phase 7 scoped Repomix 1.18.1 packet is [`context.xml`](../../supabase/repomix/phase-07-20261113/context.xml), with 25 current entries and no security findings; its generation log is beside it. Workspace/mobile typecheck passed after the edit; owned ESLint passed; the initial focused run exposed two diagnosed test-fixture assertions, then the final split reruns passed 21 global-screen tests and 9 lifecycle/scoped tests. Shared Vitest passed 21 files/154 tests after the shared wording addition; no shared implementation behavior changed. Full mobile lint remains a pre-existing baseline failure of 21 problems/17 errors/4 warnings in unrelated files. The first focused Jest attempt hit the known sandbox transform-cache EPERM; repository-local cache reruns passed. Optional device evidence was not run. No later phase was started.
+
+## Phase 8 execution record — 2026-11-13, Asia/Manila
+
+Phase 8 — Inline username search integration — is **Complete, 6/6 required items (100%)**. The global route now exposes `Username` as a normal filter beside All, People, Groups and Messages. Selecting it automatically looks up the normalized current field value without a separate full-width `Search username` action or separate find-by-username screen. The lookup trims whitespace, removes one leading `@`, rejects empty candidates locally, and uses the existing authenticated exact-username RPC with the existing bounded search-read contract. Query/account/focus/clear changes invalidate publication of late results. Loading, no-match, offline, rate-limit, generic failure and retry are rendered in place, and message scanning is disabled while Username is selected. Successful remote users use the existing guarded `openDirectChat` and search-history path; cached People rows retain their eligibility preflight. Search never routes to `/new-chat`.
+
+The scoped Phase 8 Repomix 1.18.1 packet is [`context.xml`](../../supabase/repomix/phase-08-20261113/context.xml), with 17 actual entries and no security findings; its generation log is beside it. The packet included current source, tests, contracts, migrations and plan/context inputs, and the required implementation entries were read in bounded chunks before original-source verification. The post-edit freshness packet is [`final-context.xml`](../../supabase/repomix/phase-08-20261113/final-context.xml), also with 17 entries and no security findings. Version-matched Expo SDK 57/Router 57 and React Native 0.86 references were checked before editing. Workspace typecheck, owned ESLint, and `git diff --check` passed. The focused search/People Jest run passed 2 suites/27 tests after the known sandbox transform-cache EPERM was bypassed with the approved escalated execution. Full mobile lint remains the same 21-problem/17-error/4-warning unrelated baseline. Optional device evidence was not run. The current caller inventory found no non-search `/new-chat` references; `apps/mobile/app/new-chat.tsx` was already deleted by pre-existing user work and was not restored. No dependency, migration, backend, build, deployment, commit, push or Phase 9+ work was started. Phase 9 is ready.
+
+### Phase 8 username-filter revision — 2026-11-13, Asia/Manila
+
+The requested UI revision supersedes the earlier explicit-CTA wording above: the full-width `Search username` button was removed, the old standalone find-by-username entry point is not used by global search, and the search field now supports username lookup through the normal `Username` filter. The exact lookup remains normalized, bounded, cancellable and guarded against stale results; successful results retain the existing direct-chat/history behavior. The revised `SearchScreen` coverage verifies automatic lookup, no-match, offline, rate-limit, retry, stale-result invalidation and absence of the old button. No Phase 9+ work was started.
+
+The final revision packet is [`final-context.xml`](../../supabase/repomix/phase-08-username-filter-20261113/final-context.xml), with 17 entries and no security findings; its SHA-256 is recorded in the accompanying generation log. Current revised source identities are `app/search.tsx` `3A9AA81FDBD4CF59929C48370804BDC86D87E06E5E7DD94D53DC775D3F78DA2E`, `UsernameResults.tsx` `DB73F2A3370C9B94A3D11954E2DE171346B163B0B142BC8AB0105FED5CEBB26E`, `SearchScreen.test.tsx` `B675A4C4772E6B461034CF360350DC494E2C97F2418D5E01285364838F486DB8`, and shared strings `4CCD022F1CE2C9B5588983A67D7BEF07F3EDE902956D448A17D247B0415E8D7B`.
+
+## Phase 6 execution record — 2026-11-13, Asia/Manila
+
+Phase 6 — Stable search geometry and state shell — is **Complete, 6/6 required items (100%)**. The implementation is limited to the existing global search route, search suggestions, shared search wording, and focused screen coverage. The route keeps a fixed toolbar/filter/results stack, accounts for horizontal and bottom safe-area insets, caps filter text enlargement consistently with existing button behavior, and uses a compact token-based no-results state below the filters. `SearchSuggestions` now renders an accessible skeleton rail while history is loading, so the empty-history copy is shown only after a settled zero-entry result. No new dependency, schema, native, backend, navigation, emulator, build, commit, push, or Phase 7+ work was performed.
+
+The Phase 6 scoped Repomix 1.18.1 packet is [`context.xml`](../../supabase/repomix/phase-06-20261113/context.xml), with 16 current entries and no security findings; its generation log records the sandbox-only token-cache `EPERM` after successful output creation. A focused post-edit packet is retained beside it after the plan/report update. Version-matched Expo SDK 57 and Expo Router references were checked before editing; no version-sensitive navigation API was changed. Source-level verification and exact check results are in the [Phase 6 report](../../docs/test-results/search/phase-06/report.md). The focused screen suite passed 19/20 tests, including the new loading-placeholder test; its one 5-second first-test timeout matches the Phase 5 baseline limitation. Optional device evidence was not run.
+
+## Phase 5 execution record — 2026-11-13, Asia/Manila
+
+Phase 5 — Hardening baseline, ownership, and measurement preparation — is **Complete, 6/6 required items (100%)**. No application or native code was edited. The current working copy remains the baseline: HEAD `d906bff38ea932c1cab6410b13c6d102e9069067`, with 194 status lines at capture (121 tracked modified/deleted and 73 untracked). A search-only tracked recovery patch, 34 secret-free source snapshots, and SHA-256 identities are recorded under [`docs/test-results/search/phase-05/`](../../docs/test-results/search/phase-05/). The deleted `apps/mobile/app/new-chat.tsx` was preserved as-is and not restored.
+
+The required source/context workflow was completed: Git baseline → scoped ripgrep → instruction and source validation → Repomix 1.18.1 from the repository root → XML entry inventory/analysis → original-source verification. The pre-edit packet is [`context.xml`](../../supabase/repomix/phase-05-20261113/context.xml), with 37 actual entries and no security findings. The stable current source handoff is [`final-source-context.xml`](../../supabase/repomix/phase-05-20261113/final-source-context.xml), with 35 actual source, test, instruction, manifest and fixture entries, no security findings, and manifest/log/hash companions in the same directory. The 39-entry `final-context.xml` is retained as a documentation-inclusive supplemental packet. These packets include the current untracked `UsernameResults.tsx` seam and exclude the absent deleted `/new-chat.tsx` body.
+
+H5.1–H5.6 are satisfied in the [Phase 5 report](../../docs/test-results/search/phase-05/report.md). Workspace typecheck passed; corrected shared tests passed 21 files/154 tests; mobile lint failed with 21 unrelated baseline problems; focused mobile Jest was blocked by sandbox transform-cache EPERM and the explicit-cache diagnostic reached a pre-existing screen-test timeout. The [fixture matrix](../../docs/test-results/search/phase-05/fixtures.md) defines the repeatable history-loading, People/Groups-first, username, no-result, slow-scan, rapid-query and 10,000-message/scroll fixtures plus timing, overlap and cleanup rules. Optional device/runtime observations were not run. No later phase was started; Phase 6 is ready.
+
+Build-policy update — 2026-11-13, Asia/Manila: authorized testing may use the existing local Gradle workflow when an APK is required: `scripts/build-android-local.ps1 -Variant Debug` for the development-client APK or `-Variant Release` for the signed release APK, with credentials and keystores excluded from evidence. Local Gradle is the quota-free default; EAS cloud build is a separately authorized fallback only after a documented local-build limitation. This changes planning authorization only; no build was run in this update.
+
+Revision workflow: inspected Git status and preserved the extensive pre-existing working-copy changes; used scoped ripgrep discovery and original-source review; checked the current policy, Phase 4 evidence/status, future phase requirements and local link targets. The final scoped Repomix review uses version 1.18.1, root configuration and the two planning documents plus root `AGENTS.md`/`repomix.config.json`. Packet, generation log, source identities, read scope and document snapshots are recorded under `supabase/repomix/search-plan-policy-20261113/`. Older analysis below remains historical; changed policy and status findings above supersede it. Phase 5's current evidence is recorded in the execution section above; seven later phases contain 43 required work items. Local link/anchor/count checks and diff whitespace passed; Phase 5's affected application checks are recorded in its report.
+
+## Planning-refinement audit — 2026-11-12, Asia/Manila
+
+### Boundary and working-copy classification
+
+- This audit refined the search plan and context index only. No application code, data, migration, build, service, emulator state, or remote configuration was changed or operated.
+- The working copy already contains the earlier search implementation and extensive concurrent changes. Those changes are user-owned inputs and were not reset, staged, or overwritten.
+- The historical Phase 0–4 reports remain evidence with their original dates, environments, and failures. They are not fresh acceptance for the new UI-hardening requirements. Phase 4's native V11 gate is still incomplete in its report.
+- The new hardening requirements are planned as Phases 5–12. They are not started, and no UI-hardening requirement is marked passed by this audit.
+
+### Current verified implementation surface
+
+| Area | Current source finding | Planning consequence |
+|---|---|---|
+| Global search | `apps/mobile/app/search.tsx` currently renders SearchToolbar, blank suggestions, category filters, grouped results, full-screen chat-list loading, and a username action that pushes `/new-chat`. | Phase 6/7 stabilizes layout/loading; Phase 8 moves username lookup in place. Existing global-search tests asserting `/new-chat` must be replaced with inline-flow assertions. |
+| Blank/history state | `src/search/SearchSuggestions.tsx` renders `No history` for an empty history array without a dedicated loading placeholder and places capped suggestions in `ListEmptyComponent`. | Add a stable history-loading state and keep the capped suggestion behavior unless measurements show a need for a list-structure change. |
+| Transition/focus | `src/search/SearchToolbar.tsx` provides a custom animated field morph; `src/search/transition.ts` and root `app/_layout.tsx` provide a search crossfade; `app/search.tsx` focuses on `transitionEnd`. | Phase 9 must choose one transition source and one focus point, preserving reduced motion and keyboard behavior. |
+| Rows/lists | `src/search/SearchResultRow.tsx` is not memoized and uses 72 px minimum rows; global lists use inline render callbacks and have no hardening-specific virtualization tuning. | Phase 10 applies compact rows and measured rendering optimization without changing result semantics. |
+| Query lifecycle | `src/search/useMessageSearch.ts` already debounces scans, aborts publication, applies generation/lifetime guards, and invalidates on cache/queue/preference changes. A late SQLite/native loader promise may still settle after logical abort. | Phase 7 preserves these protections, serializes underlying loader promises when physical cancellation is unavailable, and verifies no stale/overlapping UI updates while changing the loading presentation. |
+| Username contract | `packages/shared/src/db/repositories/profiles.ts::findUser` calls the authenticated exact case-insensitive `find_user` RPC. `supabase/migrations/016_align_messenger_schema.sql` grants that function only to `authenticated`. The RPC returns only `{ user_id, display_name }`. | Inline username search triggers only on explicit action/submit, trims/removes at most one leading `@`, rejects an empty candidate locally, wraps the existing call in a bounded lifecycle, and adapts only the one returned row. Cached People results keep local allowlist preflight; uncached exact-username results use the existing New Chat `openDirectChat` path, not `loadSearchPeople`. No migration or new API is planned. Test rate-limit/network behavior through existing error classification and the authorized runtime fixture. |
+| Existing New Chat route | `apps/mobile/app/new-chat.tsx` remains a complete non-search exact-username screen with username prefill and search-origin Back behavior. | Preserve it for non-search callers. Search must stop depending on it; removal is out of scope until a caller audit proves it is unused. |
+| Runtime/dependencies | `apps/mobile/package.json` specifies Expo `~57.0.32`, Router `~57.0.30`, React Native `0.86.3`, Reanimated `4.5.1`, and no new dependency is required by the hardening plan. The repository also contains `scripts/build-android-local.ps1`, `apps/mobile/android`, `expo-dev-client`, and a release signing init script. | If an APK is needed for authorized testing, prefer the quota-free local Gradle `Debug` development-client or signed `Release` build, recording variant, architectures, fingerprint, path and SHA-256 while excluding credentials/keystores. EAS is only a separately authorized fallback after a confirmed local-build limitation; no speculative rebuild is implied. |
+
+### Current hardening-scope source identities
+
+SHA-256 identities below were captured from the working copy during this audit. They supersede older manifest entries for execution-start freshness checks. They identify complete files; they do not claim every byte was read in the same pass.
+
+| Path | SHA-256 |
+|---|---|
+| `apps/mobile/app/search.tsx` | `EE2513358A96D3692D9552BB13A48E931C5FA4C2CC1A70A32C8B136F7B57994C` |
+| `apps/mobile/app/chat/[chatId]/search.tsx` | `73B9DDE676ED796379C758B1016D8DD0B99CB08E1D0854C8E399F378F8537566` |
+| `apps/mobile/app/new-chat.tsx` | `6970AC3D908F0216FAB2D2C44052FFCFB930C8808768482A3022FD5C7AB6459B` |
+| `apps/mobile/app/_layout.tsx` | `562B15DD0D7F905067D5E1B4D2085524A5E064A396E687D1DF5E77325B8643F9` |
+| `apps/mobile/src/components/SearchField.tsx` | `11C8A8014D6ADBCED9A71E8DFDB84ED19D550E3E7C97D8267311CF9B056B9EC0` |
+| `apps/mobile/src/search/SearchSuggestions.tsx` | `F7006D39B70F36F415531D78722275CEE63AFD2801E0A8263D17DC50B282B4FB` |
+| `apps/mobile/src/search/SearchToolbar.tsx` | `009C7230C55D1488999BB1569B5FB1774120FF96FA4009DC2906E5356C0B156F` |
+| `apps/mobile/src/search/SearchResultRow.tsx` | `6B2A6457F4252D648F7FEAC23FD6C387ED8A5730923581CE3493FDEFF27474F8` |
+| `apps/mobile/src/search/transition.ts` | `C2941CDCC499350410C8B6E3BFDFAA6ADE97321EF3F3D44F72DDD2B4522F77CF` |
+| `apps/mobile/src/search/useMessageSearch.ts` | `A26C104AD7DEE6E913A0594B0EF98D90B4AE463278C346C014F8A3C6AFEA1EFA` |
+| `apps/mobile/src/search/HighlightedText.tsx` | `186C8DCC5F887B934862D66C14A2A90B5812AF34902DDEEFEBFA1593EC962C0F` |
+| `apps/mobile/src/search/history.ts` | `49CF392EEF6646560E6433AE8342429ACD40F8500C53BFFEADC9B1DF0CAC803B` |
+| `apps/mobile/src/search/people.ts` | `E880FE0B2DD761745A8D0ED870006706BFF3FF1CA53D55D1CFC1B3BB50189781` |
+| `apps/mobile/src/search/__tests__/SearchScreen.test.tsx` | `BF10D97734FE34FF8934082C000F5431E91FAEC366AC4B275C490FF22CDFD39D` |
+| `apps/mobile/src/search/__tests__/ChatSearchScreen.test.tsx` | `0B772E22F6342304CF7966D03EDDB8DB669FA19F66A0E28D3C73E9F09EEB661E` |
+| `apps/mobile/src/search/__tests__/history.test.ts` | `09C4A1BFADAB8A9B257EF4CD6FF523C90023F99184D6F25E2C4EC108E5C70A6E` |
+| `apps/mobile/src/search/__tests__/people.test.ts` | `467B5D5CA7154C51A62FE64696293293A4E0D8C6A37F894BA5C75709B5B77F50` |
+| `packages/shared/src/strings/index.ts` | `3F586DEABAA79BCFCCC21CC0B19223AABE3363D9AF07D71F6C39DF26791FE7C7` |
+| `packages/shared/src/db/repositories/profiles.ts` | `2430FE537AB37DF8E6940BBB3653172E36CEA2DAAD05215B9E76182540FBC95A` |
+| `supabase/migrations/016_align_messenger_schema.sql` | `16B4819DA0E85E1C456BC5E2595C5ECDBA079259AB8E55B4A7DAB3B0C969B9F6` |
+| `apps/mobile/package.json` | `C2C8911C8AC01FE2D5685077ADBA4264A9583C66E8F88053335B5D2F9311A3B9` |
+| `package-lock.json` | `C70C289EFEC5C05FDABEB99157FAD9EAF23BFD7B0428D17934B5B8725FC00703` |
+| `Plans/DoloGram_Search_Implementation_Plan.md` | `C2F1A6D22140C92FD3BD0EC9A3E63AF9F9509F215FF421EF808937C2A637C23F` |
+
+### Context packet and verification freshness
+
+- `docs/test-results/search/phase-04/context.xml` is a historical Repomix packet with a recorded 55-file scope and SHA-256 in the Phase 4 report. It includes the earlier search files, but its source bodies and hashes predate the current working-copy identities above; it is supplemental historical context, not the current execution baseline.
+- No new packet was generated during this planning audit because no application source was changed. Phase 5 must either refresh a narrowly scoped packet or record a complete targeted-read manifest using the current identities before implementation.
+- No tests, lint, typecheck, build, migration, service, ADB, or runtime command was run during this audit. Existing reports are referenced with their original pass/fail/blocked classifications only.
+
+### Planning audit open questions
+
+| ID | Question/evidence | Consequence and resolution |
+|---|---|---|
+| PA-01 | The screenshots show a large gap above filters, while the current `GlobalResults` style source uses only small filter padding. The cause must be confirmed on the assigned runtime rather than inferred from screenshots. | Phase 5 records the current coordinates; Phase 6 fixes only the measured layout cause. UI-01 remains unverified until runtime evidence exists. |
+| PA-02 | Current global search username tests assert a push to `/new-chat`; the new agreed behavior requires in-place lookup. | Phase 8 updates those tests and adds mocked `findUser`/direct-chat seam coverage without changing the RPC or non-search route. |
+| PA-03 | The assigned MuMu runtime previously exposed incomplete keyboard/theme/Back/scroll/stress observations and a later non-fatal ReactHost soft exception. | Phase 5 revalidates target/artifact stability; Phase 12 classifies unavailable observations as blocked and does not claim hardening acceptance. |
+| PA-04 | Logical AbortController cancellation does not prove an underlying SQLite/native read has stopped. The hardening target requires zero overlapping underlying scans. | Phase 7 must serialize/coalesce loader promises and instrument overlap; if the runtime/library cannot provide the target without violating correctness, record the exact limitation and keep UI-03/UI-11 incomplete rather than weakening the assertion. |
+
+## Second-pass quality audit — 2026-11-12, Asia/Manila
+
+- Reused the current identities and historical Phase 0–4 evidence; no packet was regenerated and no operational command was run.
+- Re-read only material uncertainty sources: the current scoped search route, request/deadline lifecycle, direct-chat opening, global username handoff, exact-username repository/RPC grant, and focused search tests.
+- Confirmed and repaired stale scoped-route findings, the remote-username/local-allowlist integration conflict, missing username lifecycle/normalization/deadline rules, logical-vs-underlying scan overlap ambiguity, and latency/render-count acceptance ambiguity.
+- Phase 5–11 source/unit work can start without the incomplete native V11 observations; Phase 12 remains the runtime/performance closure gate.
+- The exact-username path intentionally exposes only one authenticated RPC result and uses the existing New Chat `openDirectChat` contract for uncached users. No new RPC, migration, schema, dependency, or broader directory capability is planned.
+- Audit status: **Ready for execution**, with B02/B03/B04/B05 as execution/verification prerequisites and B06 as an in-phase implementation seam. UI-01–UI-12 remain unimplemented and unverified.
+
+## Phase 4 completion-audit context — 2026-11-12, Asia/Manila
+
+This entry supersedes stale Phase 4 identities/status claims below; earlier records remain historical. Phase 4 is **partially complete, 50% (P4.1 complete; P4.2 incomplete)**. Original Phase 0–4 search-feature progress is 11/12 (92%); broader-project and expanded-hardening aggregate progress are not defined. Phase 5 is independently ready at its source/unit prerequisite gate but was not started.
+
+Evidence root: `docs/test-results/search/phase-04/revalidation-20261112/`.
+
+### Current scope/checklist
+
+- [x] Read plan context, complete Phase 4/acceptance/dependency/safeguard sections and applicable mobile/Supabase instructions; confirmed Phases 1–3 in code/tests. No new phase entered.
+- [x] Git status/diffs/HEAD and ignored-input inventory captured before edits; 72 exact working-copy snapshots hashed and verified, 59 unchanged from the Phase 0 refresh. Secrets/env/APKs/runtime private payloads excluded. Restore-to-scratch rehearsal passed.
+- [x] Narrow `rg` → prior identity validation → scoped Repomix 1.18.1 → all XML continuations → original-source/diff verification. Repowise not needed. No compression or security disablement.
+- [x] Baseline existing checks recorded before product edits. Implemented only existing SR-02/03/07 acceptance corrections; no later loading/layout/inline-username/animation work. Current `owned.diff` isolates these changes from pre-existing user work.
+- [x] Final typecheck and owned ESLint passed. Affected Jest: 15 suites/140 tests passed. Full mobile: baseline 409/413, final 415/419 tests passed; same four failing suites, no new failures. Full lint: unchanged 17 errors/4 warnings outside owned paths. Shared baseline: 21 files/154 tests passed; unchanged shared sources justify reuse. Diff whitespace clean.
+- [ ] P4.2 native gate/old fixture cleanup: authoritatively identified MuMu instance 3 `dologram`, `127.0.0.1:16480`, remains offline in ADB. Device operations attempted via ADB only; no new emulator data/settings changes. Task-owned hung alternate-port clients/shell stopped; existing services preserved.
+
+### Packet/source/read index
+
+| Identity | Verified finding and boundary |
+| --- | --- |
+| `sources.json`, `baseline/source/`, `baseline/{status,head,tracked.diff,staged.diff,ignored}.txt` | 72 pre-edit file identities, ownership/recovery baseline. Ignored env/artifact paths only, no secret contents. |
+| `context.xml`, `context-manifest.json`, `repomix.log` | 11 actual files; SHA-256 `aedac8458f6e1ea5c62e76f56edf876b70eb3ab5a6ef31b75f6972450d87359f`. Complete reads `context-read-1..12.txt`; max 11,499 chars/155 lines. Source equality checked at extraction. |
+| `supplement.xml`, `supplement-manifest.json` | 5 files; SHA-256 `87c0360297482e489882ef42f50ff172ef6b457bf5d2877c8c9d8de85e7baca6`. Complete reads `supplement-read-1..6.txt`. Resolves the initial literal-bracket scoped-route selector omission using `app/chat/*/search.tsx`; includes retained-page, lifecycle, Markdown and local-data tests. |
+| `acceptance-fixes.xml`, `acceptance-fixes-manifest.json` | 4 preference/test entries; SHA-256 `383f044f9d4ee0e8d53e0f2186fc6dcbd1d628fbd672a9ef009f88db77af702e`. Complete reads `acceptance-fixes-read-1..7.txt`. No compression gaps. Truncated tool presentation around MessageText test lines 97–100 was explicitly resolved from original source. |
+| `validation.json`, `owned.diff` | Final hashes/current owned source deltas supersede changed baseline packet entries. Only five application/test files changed: global search, ChatScreen's highlight prop, search query and two search tests. Other snapshotted live application inputs remained unchanged. Snapshot/recovery validation reused without overwriting baseline captures. |
+| Original-source verification | Search query/ranking/preflight/history; full scoped route; preference serialization/listeners; useChatList membership/organization; MessageText rendered-leaf behavior; ChatScreen focus/load/jump/render/Back/scroll contracts; forward/pinned/info/New Chat callers; sign-out history cleanup. Inspected ranges appear in packet manifests or the owned diff, with remaining native uncertainties in the report. |
+| Version anchors | Installed Expo 57.0.32, Router 57.0.30, SQLite 57.0.4, RN 0.86.3, React 19.2.3, Jest 29.7 and AsyncStorage 2.2.0 confirmed. Matching Expo 57/RN 0.86/Jest 29.7 docs read; exact installed storage JSDoc/types verified after public/tag URLs returned 404. Existing helpers reused; no new library API invented. |
+
+### Requirement findings and unresolved gates
+
+Earlier completion labels missed Groups' activity-only ranking, cached-person preflight bypass, scoped blocked/deleted read eligibility and all-bubble highlighting. These are fixed using existing contracts, with six new passing test cases for ranking/opening/read denial. Selected-only ChatScreen wiring is source-reviewed/typechecked/linted; native observation remains pending. No obsolete feature code was safe to remove; snapshot/row/compatibility APIs still have callers/contracts.
+
+Full check failures remain explicit: unlabeled VoiceNotePlayer Pressable; actionScreens missing CallProvider; ChatRow/PeopleRows setup requiring Supabase URL through existing Avatar. Full lint diagnostics match the current baseline. Node SQLite/punycode toolchain warnings already existed. None was suppressed or repaired outside scope.
+
+The mobile instruction's `src/app` statement conflicts with existing `apps/mobile/app` discovery; no route moved. Current explicit execution supersedes historical planning-only prohibitions. The old Phase 4 statement that no next phase exists is stale; Section 12/AQ-06 supplies Phase 5–12 and independent source/unit readiness. Exact Messenger parity is still unverified and no new fidelity claim is made.
+
+Every complete SR-01–12 and SR-14 criterion remains pending required native evidence; SR-13's affected automated gate is met, with unrelated full-command failures separately retained. Required native steps and safe historical fixture/settings restoration are in the [audit report](../../docs/test-results/search/phase-04/revalidation-20261112/report.md) and existing runtime observations. No physical-device/iOS gate is added. Do not claim the historical hierarchy-capture latency measures <=100ms JS batches. No commit/push/build/deployment/migration/service configuration change occurred.
+
+### Authorized Phase 4 native recovery follow-up
+
+After explicit user approval for one lifecycle CLI restart, MuMu instance 3 restarted and ADB transiently recovered. `runtime-resume/inventory.json` records the recovered baseline. Historical cache/queue fixture cleanup now passes a separate direct-ADB SQL read: stress 0, pending 0, integrity ok (`runtime-resume/cleanup-verification.txt` and `verify-cleanup.sql`). Display/font restoration was independently read as physical 1080x1920 with no override and font 1.0. These supersede earlier pending fixture/display/font statements.
+
+No fresh search hierarchy/Back/scroll/offline/theme/performance pass was captured. Current source bundled (21,433ms/4,673 modules; bundle time is not search latency). Subsequent native shells stalled again. An unrelated Kamelyon installation on the same serial remained active after one bounded 45-second wait; its separate app ID and process were preserved. Shared ADB daemon creation predates this task, so it was preserved too. Task-owned Metro and stalled/alternate ADB processes were stopped. Network/dark-theme restoration, task reverse mapping and device-side benign SQL/hierarchy-file cleanup still need responsive ADB. The only private hierarchy was the launcher and was excluded from evidence packets.
+
+The unused Node ADB launcher was removed after direct ADB replaced it; no product/test code, dependency, migration, build or later-phase work changed. Existing automated results were reused without redundant test reruns; 72 snapshot/recovery entries verified again with zero changed unowned inputs. [Recovery report and remaining steps](../../docs/test-results/search/phase-04/revalidation-20261112/runtime-resume/resume-report.md). Current Phase 4 remains partially complete/blocked at P4.2, 50%; original search feature 92%; Phase 5 independently source-ready and untouched.
+
+### Shared ADB recovery — 2026-11-13, Asia/Manila
+
+The user authorized stopping the conflicting Kamelyon install and restarting shared ADB. The install had ended before current inspection. Shared ADB restarted; the task-owned isolated server responded over explicit IPv4. MuMu shell access recovered transiently after assigned-instance recovery, then closed during network restoration. No fresh V11 pass or network-fenced fixture run was credited. SDK ADB 37.0.0 and LDPlayer ADB 34.0.4 both report protocol 1.0.41; causation/incompatibility remains unproven. Task-owned isolated ADB/Metro processes were stopped; the restarted shared daemon was retained. See [dated results](../../docs/test-results/search/phase-04/revalidation-20261112/runtime-resume/shared-adb-recovery-20261113.md).
+
+No application/test source changed, no later phase began, and 72 snapshot/recovery entries reverified with zero changed unowned inputs. Existing automated results remain valid without redundant reruns. Current Phase 4 remains partially complete/blocked at P4.2, 50%; original search feature 92%; broader project denominator undefined. Final network/theme/reverse/device-file cleanup and all outstanding native observations remain pending stable assigned-emulator control.
+
+### Native verification continuation — 2026-11-13, Asia/Manila
+
+Current DoloGram SDK 57 loaded through its dedicated Metro endpoint on MuMu instance 3. Native fixture evidence now covers 35 old matches, 30+5 pagination, blocked/deleted/foreign exclusions, archived/ignored inclusion, failed pending opening, scoped Back and scroll restoration, and a visible 10,000-result count with scoped scrolling. The 51-read scan measured 2,445.46 ms, 69.07 ms for a 30-result first page and a maximum 21.96 ms JS interval. Cancellation issued no second read. Temporary fixtures, storage keys, device settings, firewall/reverse rules and processes were cleaned up. Read [the criterion matrix](../../docs/test-results/search/phase-04/revalidation-20261112/runtime-resume/native-verification-20261113.md) before reusing these findings. Full V11 remains incomplete. Product source and test identities did not change in this continuation.
+
+## Historical Phase 4 execution context — 2026-11-12
+
+Phase 4 was executed without changing product source. P4.1 is complete and P4.2
+is partial because the required native V11 matrix is not fully observed.
+
+### Phase checklist
+
+- [x] Rechecked Git ownership/status and preserved the recoverable pre-edit patch
+  at `.tmp/phase4-preexisting.patch`; concurrent calling, header, info, local
+  update, notification, and plan changes were preserved.
+- [x] Read the complete applicable `AGENTS.md` files and the version-matched
+  Expo SDK 57, Expo Router/SQLite SDK 57, and React Native 0.86 Pressable,
+  TextInput, FlatList, and BackHandler references before runtime verification.
+  The mobile instruction's `src/app` wording remains stale; actual routes are
+  under `apps/mobile/app`.
+- [x] Used Git baseline → ripgrep discovery → prior context-index validation →
+  scoped Repomix → bounded XML packet analysis → original-source verification.
+  The final packet was generated with Repomix 1.18.1, security checks enabled,
+  no compression, and 55 files; relevant entries were read completely or
+  reused only where their packet/source identities remained unchanged.
+- [x] Ran baseline/finally applicable typecheck, full/owned lint, affected and
+  full Jest, shared tests, diff check, ADB identity/package checks, app launch,
+  sanitized UI hierarchy observations, and recent runtime-error scan.
+- [ ] Complete all required V11 platform/performance observations. The assigned
+  MuMu target is available, but stable non-private observations for all themes,
+  accessibility settings, nested Back/scroll, offline/pending/deleted targets,
+  and native 10,000-message stress were not established in this session.
+
+### Phase 4 context identities and results
+
+| Input | Verified identity/coverage and finding |
+|---|---|
+| Working-copy baseline | `.tmp/phase4-preexisting.patch`; existing user changes were not reverted. The final report and runtime notes are under `docs/test-results/search/phase-04/`. |
+| Repomix packet | `docs/test-results/search/phase-04/context.xml`; Repomix 1.18.1; 55 files; final metrics, SHA-256, and security identity are recorded in the Phase 4 report; security scan passed; no compression. |
+| Packet scope | Plan/context, mobile instructions/manifests, search routes/helpers/tests, shared query/navigation/cleanup contracts, MessageBubble/MessageText/SearchField, chat/queue/people callers, and relevant shared strings/theme types. `node_modules`, secrets, credentials, generated native output, unrelated calling implementation, and private runtime payloads were excluded. |
+| Packet analysis | Header, directory structure, all 55 entry identities/line counts, and the complete core search query/lifecycle/matching/request entries were read from XML. Original sources were then checked for current route/caller bodies. Five document/concurrent entries were re-read directly before final packet regeneration; no unexplained source omission remained. |
+| Baseline | Workspace typecheck passed; shared tests passed 20 files/149 tests; full mobile lint failed with the known 13 errors/3 warnings outside the search-owned scope; affected Jest had 12/13 suites and 65/66 tests pass with the default-timeout SearchScreen failure; full mobile Jest had 58/59 suites and 324/325 tests pass with the unrelated DoloGramHeader failure. |
+| Final affected checks | Search-owned Expo lint passed; search regression Jest passed 5 suites/25 tests; full suite's SearchScreen passed; isolated SearchScreen with an extended timeout passed 3/3; `git diff --check` passed. No product source changed after baseline, so these results remain applicable. |
+| Runtime | MuMu `dologram` confirmed as `127.0.0.1:16480`; package `com.dologram.app`, Android 12, version 1.0.0, target SDK 36. Dark-theme global search entry/blank/query/filter/count/highlight states and 44-pixel hierarchy bounds were observed. The original dark theme was confirmed after the reversible theme check. The first log scan had no fatal signature; a later bounded relaunch emitted a non-fatal ReactHost `ReactNoCrashSoftException` before the hierarchy stabilized. |
+| Sensitive capture handling | Raw hierarchy/screenshots containing live profile/message content were moved recoverably to `.tmp/phase4-unsanitized-captures`; they are not part of the evidence packet. Sanitized observations are in `runtime-observations.md`. |
+| Cleanup/scope | No obsolete search code was safe to remove; compatibility and active callers were preserved. No dependency, migration, backend/configuration, commit, push, deployment, or later phase was started. |
+
+### Phase 4 open gate
+
+The feature's source/unit acceptance is substantially verified, but the plan's
+Phase 4 gate requires every required assertion to pass. V11 remains incomplete
+for light theme, enlarged text, compact width, visible keyboard, reliable nested
+Back/scroll restoration, offline/pending/deleted targets, and native stress/
+performance measurement. Current Phase 4 progress is 1/2 work items (50%); the
+search-plan total is 11/12 predefined items (92%). No broader project denominator
+is defined and no next phase exists in this plan.
+
+## Phase 3 execution context — 2026-11-12
+
+This supplement records the Phase 3 implementation and supersedes planning-only
+statements below where they concern scoped results and original-message context.
+Phase 4 remains unstarted.
+
+Phase checklist:
+
+- [x] Revalidated Phase 1/2 query, route, pending, history, and navigation
+  contracts in current source; preserved concurrent calling/info work.
+- [x] Rechecked git ownership and created the recoverable pre-edit patch at
+  `.tmp/phase-03-pre-edit-working-copy.patch` without overwriting user changes.
+- [x] Read `apps/mobile/AGENTS.md`, confirmed Expo ~57.0.32 / Router ~57.0.30 /
+  React Native 0.86.3, and read the matching Expo Router SDK 57 reference plus
+  navigation/URL-parameter/FlatList behavior before editing.
+- [x] Generated and analyzed the scoped Repomix 1.18.1 XML packet at
+  `docs/test-results/search/phase-03/context.xml` with security checks enabled;
+  intended and actual scope was 23 files. Relevant packet entries were read in
+  bounded chunks and then matched against the original sources, including the
+  scoped route, chat query, ChatScreen, MessageBubble, MessageText, search
+  query/lifecycle helpers, tests, instructions, package manifest, strings, and
+  plan.
+- [x] Implemented P3.1/P3.2 only: shared scoped pagination consumption, pending
+  result presentation, push/back query retention, target availability feedback,
+  Jump-to-latest search reset, and Markdown-visible highlighting.
+- [x] Final owned typecheck/lint/Jest/shared checks and diff review completed;
+  full mobile lint's 13 errors/3 warnings remain pre-existing outside Phase 3.
+
+Phase 3 context identities and limits:
+
+| Input | Verified identity/coverage and finding |
+|---|---|
+| Source packet | `docs/test-results/search/phase-03/context.xml`; Repomix 1.18.1; 23 files; 71,871 tokens / 290,988 chars reported by Repomix; SHA-256 `60DDDBEDE1357D5620886F6B1935A7F96FABDBCECE24529C46170F2AFC9417FA`; security scan passed. |
+| Owned implementation | `apps/mobile/app/chat/[chatId]/search.tsx`, `apps/mobile/app/chat/[chatId]/index.tsx`, `apps/mobile/src/chat/query.ts`, `apps/mobile/src/components/MessageBubble.tsx`, `apps/mobile/src/components/MessageText.tsx`, shared search strings, and focused tests. Current source was re-read after packet analysis; no new runtime dependency or migration. |
+| Baseline | Root typecheck initially failed in pre-existing `src/notifications/pushNotifications.ts`; full mobile lint initially and finally reports the same 13 errors/3 warnings outside Phase 3; first Jest attempt hit sandbox-cache `EPERM`, then the workspace-local cache reproduced five passes plus the unchanged Phase 2 SearchScreen timeout. |
+| Final verification | Mobile/root typecheck passed; owned ESLint passed; six Phase 3 suites passed with 43 tests; shared Vitest passed 20 files/149 tests; `git diff --check` passed. The extra V09 regression batch passed `actionScreens.test.tsx` and was stopped after three unchanged suites produced no output for over one minute. |
+| Runtime | No Phase 3 native UI claim was made. MuMu/ADB visual, native Back, large-text/theme, retained-scroll and performance observations remain Phase 4/V11 work. |
+| Scope boundary | Phase 4 integrated cleanup/runtime handoff was not started. Existing calling, local-update, folders, info, notification, and other user changes were preserved. |
+
+## Phase 2 execution context — 2026-11-12
+
+This supplement is current for Phase 2 and supersedes the Phase 1-only status
+sentences below where they concern Phase 2. The [Phase 2 report](../../docs/test-results/search/phase-02/report.md)
+records the complete execution evidence; Phase 3 was not started.
+
+Phase checklist:
+
+- [x] Scope P2.1–P2.2 only; confirm Phase 1 contracts in source before editing,
+  preserve the existing scoped route, and keep concurrent calling work untouched.
+- [x] Git status/working-copy ownership, applicable instructions, Expo/RN v57
+  documentation, and direct-chat/sign-out callers revalidated before editing.
+- [x] Scoped Repomix 1.18.1 XML packet generated at
+  `docs/test-results/search/phase-02/context.xml` with security checks enabled;
+  34 selected files were included and the packet was read/analyzed before
+  original-source verification. SHA-256 is recorded in the Phase 2 report.
+- [x] Baseline and final typecheck/lint/Jest/Vitest checks recorded; owned lint,
+  typecheck, Phase 2 tests, regressions and shared tests pass. Full mobile lint
+  retains only the pre-existing unrelated 13 errors/3 warnings.
+- [x] History durability/account isolation, global screen states, person opening,
+  username handoff, cleanup fencing and scoped-route parameter handoff verified.
+- [x] Owned diff and `git diff --check` reviewed. No dependency, migration,
+  backend/configuration change, commit, push or deployment performed.
+
+Phase 2 context identities and open limits:
+
+| Input | Verified identity/coverage and finding |
+|---|---|
+| Source packet | `docs/test-results/search/phase-02/context.xml`; 34 files, 4,622 lines, SHA-256 `A3753825D0848EB5F1C17E43E42149A92C08277A68D20A0969B80019F1507A9F`. Plan/instructions, Phase 1 contracts, routes, UI primitives, storage, direct-chat, chat-list, auth and tests were included and read. |
+| Owned implementation | `apps/mobile/src/search/history.ts`, `SearchSuggestions.tsx`, `app/search.tsx`, `app/new-chat.tsx`, `src/storage/localData.ts`, shared search strings and two Phase 2 test files. Final hashes and check outputs are in the Phase 2 report. |
+| Runtime | Current `adb devices -l` showed only `emulator-5556` and `emulator-5560`; the assigned MuMu `dologram` endpoint was not exposed. No UI screenshot/device-flow pass is claimed; V11 remains pending manual verification. |
+| Scope boundary | Actual scoped-query rendering/original-message context remains Phase 3. Concurrent calling/info/notification work was not reverted, reformatted or overwritten. |
+
 ## Phase 1 execution context — 2026-11-11
 
-This supplement is current for Phase 1 and supersedes planning-only statements
-below where they concern the completed foundation. Phase 2–4 work was not started.
+This supplement records the Phase 1 closeout and supersedes planning-only
+statements below where they concern the completed foundation. At that closeout,
+Phase 2–4 work had not started; the Phase 2 supplement above is now authoritative
+for Phase 2.
 The [Phase 1 report](../../docs/test-results/search/phase-01/report.md) maps each
 owned assertion to checks, actual limitations and recovery instructions.
 
@@ -79,10 +386,11 @@ Framework contracts read this session:
   Installed RNTL13.3.3 signatures/implementation were also read to resolve its
   NoInfer prop typing and test-root behavior. No test dependency was changed.
 
-No unresolved Phase 1 requirement or blocker remains. Search-plan progress is
-6/12 items (50%); Phase 1 is 3/3 (100%). Broader project progress is undefined.
-Phase 2 is ready but not started. Remaining integrated runtime/connected-data/
-Markdown/navigation/performance gates stay assigned to Phases 2–4. Historical
+No unresolved Phase 1 requirement or blocker remains. At Phase 1 closeout,
+search-plan progress was 6/12 items (50%) and Phase 1 was 3/3 (100%); the Phase 2
+supplement above updates the current total to 8/12 (67%). Broader project
+progress is undefined. Remaining integrated runtime/connected-data/Markdown/
+navigation/performance gates stay assigned to Phases 3–4. Historical
 packets remain baseline evidence; do not reuse their old query/field bodies as
 current implementation without checking final-identities.json and fresh hashes.
 
@@ -321,3 +629,20 @@ are needed for Phase 1 source/unit work. Exact current-Messenger build geometry
 and the initial/final lint outcome difference remain unverified. No unrelated
 calling/lint repair, commit, push, upload, migration or deployment was performed.
 
+
+### Phase 0 refresh revalidation — 2026-11-12, Asia/Manila (append-only)
+
+Phase 0 (P0.1–P0.3) was re-executed against the current post-Phase-4 working copy;
+no later phase was begun or altered and no application source was edited.
+
+| Evidence | Identity/coverage and finding |
+| --- | --- |
+| `refresh-20261112/sources.json`, `refresh-20261112/source/` | Current-working-copy generation: 69 search/shared/config/instruction/plan files, 1,335,842 bytes, per-file SHA-256 plus byte counts. All copies re-hashed with zero mismatches; restore-to-scratch rehearsal passed; zero live drift between capture and validation. |
+| `refresh-20261112/git-status.txt`, `head.txt`, `diffstat.txt`, `tracked-search.diff` | HEAD `d906bff3`; working-copy status and a 200,901-byte diff for tracked search-relevant paths. No reset, clean, commit or push was performed. |
+| `baseline/sources.json`, `baseline/source/` | Unchanged 2026-11-11 pre-implementation generation, all 72 copies still matching their recorded hashes. 32 live files still match; 40 changed through Phases 1–4. |
+| `refresh-20261112/checks/` | Fresh V00/V10: typecheck passed (33 s); lint failed 21 problems/9 non-search files; shared passed 21 files/154 tests; targeted six-file mobile run failed 1/37 (`a11yPressableSource` → `VoiceNotePlayer.tsx:69`). Exact logs, per-check JSON and `diagnostics.json` retained. |
+| `refresh-20261112/runtime/assigned-runtime.json` | Assigned target `127.0.0.1:16480` (SM-S908B, Android 12, x86_64), `com.dologram.app` 1.0.0, reinstalled APK SHA-256 `13d4ccee…7468` (was `fb5aef22…0331`). `emulator-5556` untouched. |
+| `refresh-20261112/runtime/native-timing.json` | Unchanged offline fixture importing current `searchCachedMessages`: 35/35 old matches, 51.47 ms first page / 57.10 ms total, 200/60/5-row batches, 0 reads after abort, 0 console errors/warnings; in-memory DB and network fence verified; task process/activity/reverse removed. |
+| `refresh-20261112/validation.json`, `report.md`, `scripts/` | Scope/validation facts, dated report, and the reproducible capture/verify/integrity scripts used for this generation. |
+
+Baseline deltas vs 2026-11-11: lint 13/3 → 21 problems (concurrent `Avatar.tsx`, `FloatingActionButton.tsx`, `info.tsx`, `nicknames.tsx`), shared 149 → 154 tests, and a new failing `a11yPressableSource` assertion in concurrent voice-note work. No search-owned file has a lint or test failure. Connected fixtures, themes/large text/keyboard/native Back/retained scroll, 10,000-message stress and exact Messenger geometry remain later-phase (V11/V16, B01) work.

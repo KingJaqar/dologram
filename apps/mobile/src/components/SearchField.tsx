@@ -8,6 +8,7 @@ import {
   View,
   Pressable,
   StyleSheet,
+  type ColorValue,
   type TextInputProps,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
@@ -22,6 +23,7 @@ export interface SearchFieldProps extends Omit<TextInputProps, 'onChangeText'> {
   onChangeText?: (query: string) => void;
   debounceMs?: number;
   inputRef?: React.Ref<TextInput>;
+  surfaceColor?: ColorValue;
 }
 
 export function SearchField({
@@ -30,6 +32,7 @@ export function SearchField({
   debounceMs = 150,
   placeholder = strings.search.placeholder,
   inputRef,
+  surfaceColor,
   value: controlledValue,
   defaultValue = '',
   onSubmitEditing,
@@ -86,7 +89,7 @@ export function SearchField({
       ]}
     >
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, {
-        top: 2, bottom: 2, borderRadius: theme.radius.full, backgroundColor: c.bg.surface,
+        top: 2, bottom: 2, borderRadius: theme.radius.full, backgroundColor: surfaceColor ?? c.bg.surface,
       }]} />
       <Icon name="action.search" size="sm" color={c.text.muted} />
 

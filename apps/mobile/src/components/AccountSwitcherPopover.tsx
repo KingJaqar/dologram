@@ -6,13 +6,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { strings } from '@dologram/shared';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
+import { ThemeSurface, ThemeText as Text, THEME_TRANSITION_DURATION } from '../theme/ThemeSurface';
 import { textStyle } from '../theme/typography';
 import { useAuth } from '../auth/AuthProvider';
 import {
@@ -25,10 +25,12 @@ import {
 import { useAccountSwitch } from '../auth/useAccountSwitch';
 import { withPushRegistrationPaused } from '../notifications/pushNotifications';
 import { stopCurrentCallForSessionChange } from '../calls/lifecycle';
+import { withMemoSessionChange } from '../memos/lifecycle';
 import { supabase } from '../lib/supabase';
 import { useToast } from './Toast';
 import { Avatar } from './Avatar';
 import { Icon } from './Icon';
+import { SwitchRow } from './SwitchRow';
 import { AccountSwitchDialog } from './AccountSwitchDialog';
 
 interface AccountSwitcherPopoverProps {
@@ -49,6 +51,8 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
   const progress = useRef(new Animated.Value(0)).current;
   const mountedRef = useRef(visible);
   const c = theme.colors;
+  const openDuration = theme.duration('normal');
+  const closeDuration = theme.duration('fast');
 
   const currentAccount = useMemo(() => {
     if (!session) return null;
@@ -64,7 +68,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
     progress.stopAnimation();
     Animated.timing(progress, {
       toValue: 0,
-      duration: theme.duration('fast'),
+      duration: closeDuration,
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) {
@@ -72,7 +76,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
         setMounted(false);
       }
     });
-  }, [progress, theme]);
+  }, [closeDuration, progress]);
 
   useEffect(() => {
     if (visible) {
@@ -83,7 +87,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
         setMounted(true);
         Animated.timing(progress, {
           toValue: 1,
-          duration: theme.duration('normal'),
+          duration: openDuration,
           useNativeDriver: true,
         }).start();
       });
@@ -92,7 +96,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
 
     if (mountedRef.current) animateClose();
     return undefined;
-  }, [animateClose, progress, theme, visible]);
+  }, [animateClose, openDuration, progress, visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -127,8 +131,10 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
       await saveSessionAccount(session, profile);
       await withPushRegistrationPaused(session.user.id, async () => {
         await stopCurrentCallForSessionChange(session.user.id);
-        const { error } = await supabase.auth.signOut({ scope: 'local' });
-        if (error) throw error;
+        await withMemoSessionChange(async () => {
+          const { error } = await supabase.auth.signOut({ scope: 'local' });
+          if (error) throw error;
+        });
       });
       handleClose();
     } catch {
@@ -160,7 +166,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
             {
               top: insets.top + 54,
               right: 8,
-              backgroundColor: c.bg.elevated,
+              zIndex: 1,
               borderColor: c.separator,
               shadowColor: c.shadow,
               elevation: theme.elevation[3].android,
@@ -169,6 +175,7 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
             },
           ]}
         >
+          <ThemeSurface style={{ backgroundColor: c.bg.elevated }}>
           <View style={styles.cardHeader}>
             <Text style={[textStyle(theme.typeTokens.labelMd), { color: c.text.primary }]}>{strings.manageAccounts.title}</Text>
             {busy ? <ActivityIndicator size="small" color={c.brand.primary} /> : null}
@@ -217,12 +224,21 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
                   <Icon name="nav.forward" size="sm" color={c.text.secondary} accessibilityLabel="Switch account" />
                 </Pressable>
               );
-            }) : (
-              <Text style={[textStyle(theme.typeTokens.bodySm), styles.emptyText, { color: c.text.secondary }]}>{strings.manageAccounts.otherAccounts}: —</Text>
-            )}
+            }) : null}
           </ScrollView>
 
-          <View style={[styles.actionBar, { borderTopColor: c.separator }]}>
+          <ThemeSurface style={[styles.themeRow, { borderTopColor: c.separator }]}>
+            <SwitchRow
+              label={strings.settings.theme}
+              description={theme.scheme === 'dark' ? strings.settings.themeDark : strings.settings.themeLight}
+              value={(theme.setting === 'system' ? theme.scheme : theme.setting) === 'dark'}
+              onValueChange={(value) => theme.setSetting(value ? 'dark' : 'light')}
+              disabled={busy}
+              animationDuration={THEME_TRANSITION_DURATION}
+            />
+          </ThemeSurface>
+
+          <ThemeSurface style={[styles.actionBar, { borderTopColor: c.separator }]}>
             <Pressable
               onPress={() => {
                 handleClose();
@@ -246,7 +262,8 @@ export function AccountSwitcherPopover({ visible, onClose }: AccountSwitcherPopo
               <Icon name="action.signOut" size="md" color={c.error.text} accessibilityLabel={strings.settings.signOut} />
               <Text style={[textStyle(theme.typeTokens.labelMd), { color: c.error.text }]}>{strings.settings.signOut}</Text>
             </Pressable>
-          </View>
+          </ThemeSurface>
+          </ThemeSurface>
         </Animated.View>
         {pendingAccount ? (
           <AccountSwitchDialog account={pendingAccount} onConfirm={confirmSwitch} onDismiss={cancelSwitch} />
@@ -275,7 +292,7 @@ const styles = StyleSheet.create({
   accountRow: { minHeight: 64, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 12 },
   accountText: { flex: 1, gap: 2 },
   emptyState: { minHeight: 64, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { paddingHorizontal: 16, paddingVertical: 16 },
+  themeRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 12 },
   actionBar: { borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', padding: 8, gap: 6 },
   action: { flex: 1, minHeight: 56, borderRadius: 10, alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 4 },
 });

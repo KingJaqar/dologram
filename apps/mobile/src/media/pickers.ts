@@ -37,7 +37,7 @@ export async function draftFromMediaLibraryAsset(asset: MediaLibraryAsset): Prom
   }
 }
 
-export async function pickAttachments(kind: PickerKind, remaining: number): Promise<PickedAttachments> {
+export async function pickAttachments(kind: PickerKind, remaining: number, options: { allowArbitraryFile?: boolean } = {}): Promise<PickedAttachments> {
   if (remaining <= 0) return { attachments: [], errors: [strings.media.tooMany] };
   const result: PickedAttachments = { attachments: [], errors: [] };
   try {
@@ -65,7 +65,7 @@ export async function pickAttachments(kind: PickerKind, remaining: number): Prom
           id: ids.mediaId(), uri: asset.uri, name,
           mediaType, mime: asset.mimeType ?? file.type, sizeBytes: file.size,
         };
-        const refusal = attachmentRefusal(source, name);
+        const refusal = kind === 'file' && options.allowArbitraryFile ? null : attachmentRefusal(source, name);
         if (refusal) result.errors.push(refusal);
         else result.attachments.push(source);
       } catch { result.errors.push(strings.media.unreadable(name)); }

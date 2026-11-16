@@ -32,7 +32,15 @@ function parseSnapshot(value: unknown): CallSnapshot {
     throw new CallApiError('CALL_PROVIDER_UNAVAILABLE', true);
   }
 
-  return value as unknown as CallSnapshot;
+  return {
+    ...value,
+    availability: {
+      ...value.availability,
+      // Older deployed call functions do not expose the Phase 7 flag. Keep the
+      // native background path disabled until the matching migration is live.
+      nativeBackgroundEnabled: value.availability.nativeBackgroundEnabled === true,
+    },
+  } as unknown as CallSnapshot;
 }
 
 function errorCode(error: unknown): string {

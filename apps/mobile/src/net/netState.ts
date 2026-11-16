@@ -14,6 +14,10 @@ export interface NetState {
   isConnected: boolean;
   type: NetType;
   cellularGeneration: CellularGeneration;
+  /** Undefined in legacy consumers; null while the OS is checking reachability. */
+  isInternetReachable?: boolean | null;
+  /** Wi-Fi signal strength from 0 to 100, when available. */
+  wifiStrength?: number | null;
 }
 
 export type NetStateProvider = (listener: (state: NetInfoState) => void) => () => void;
@@ -36,6 +40,8 @@ export function toNetState(state: NetInfoState): NetState {
     isConnected: state.type !== 'none' && state.isConnected !== false,
     type: toNetType(state.type),
     cellularGeneration: state.type === 'cellular' ? state.details.cellularGeneration : null,
+    isInternetReachable: state.isInternetReachable,
+    wifiStrength: state.type === 'wifi' ? state.details.strength : null,
   };
 }
 
@@ -50,6 +56,8 @@ const INITIAL_NET_STATE: NetState = {
   isConnected: true,
   type: 'other',
   cellularGeneration: null,
+  isInternetReachable: null,
+  wifiStrength: null,
 };
 
 export function useNetState(): NetState {

@@ -72,7 +72,7 @@ export type CallSnapshot = {
   call: CallState | null;
   participants: CallParticipant[];
   capabilities: CallCapabilities;
-  availability: { callingEnabled: boolean };
+  availability: { callingEnabled: boolean; nativeBackgroundEnabled: boolean };
   serverTime: string;
   cleanupState: CallCleanupState;
 };

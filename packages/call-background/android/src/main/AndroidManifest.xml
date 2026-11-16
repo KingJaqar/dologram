@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+  <application>
+    <service
+      android:name=".DoloGramCallService"
+      android:exported="false"
+      android:foregroundServiceType="microphone" />
+    <receiver
+      android:name=".DoloGramCallActionReceiver"
+      android:exported="false" />
+  </application>
+</manifest>

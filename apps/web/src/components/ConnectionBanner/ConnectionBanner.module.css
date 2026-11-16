@@ -1,0 +1,2 @@
+.banner { display: flex; align-items: center; box-sizing: border-box; height: 40px; gap: var(--dg-space-2); padding-inline: var(--dg-space-4); background: var(--dg-color-info-bg); color: var(--dg-color-info-text); font: var(--dg-type-body-sm); z-index: var(--dg-z-banner); }
+.banner svg { flex-shrink: 0; }

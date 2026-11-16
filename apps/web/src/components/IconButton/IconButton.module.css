@@ -1,0 +1,4 @@
+.target { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 44px; height: 44px; padding: var(--dg-space-0); border: 0; border-radius: var(--dg-radius-full); color: var(--dg-color-text-primary); background: transparent; cursor: pointer; }
+.circle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--dg-radius-full); }
+.target:active .circle, .target:hover:not(:disabled) .circle { background: var(--dg-color-bg-pressed); }
+.target:disabled { color: var(--dg-color-text-disabled); cursor: default; }

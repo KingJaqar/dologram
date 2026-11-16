@@ -26,7 +26,7 @@ export function MemberRow({ member, canRemove, disabled = false, onRemove }: Mem
 
   return (
     <View style={styles.row}>
-      <Avatar id={member.userId} displayName={member.displayName} size={48} />
+      <Avatar id={member.userId} displayName={member.displayName} imageUrl={member.avatarUrl} size={48} />
 
       <View style={styles.text}>
         <Text

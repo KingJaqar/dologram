@@ -6,7 +6,7 @@ import {
   loadNotificationPreferences,
   updateNotificationPreferences,
 } from '../preferences';
-import { getPushRegistration, startPushNotifications, syncPushRegistration } from '../pushNotifications';
+import { callAndroidChannelId, getPushRegistration, isCallInviteNotificationContent, isCallNotificationContent, startPushNotifications, syncPushRegistration } from '../pushNotifications';
 
 jest.mock('expo', () => ({
   isRunningInExpoGo: () => false,
@@ -36,10 +36,19 @@ jest.mock('../../lib/supabase', () => {
   return { supabase: { from: jest.fn(() => table) } };
 });
 jest.mock('../../net/netState', () => ({ subscribeNetState: jest.fn(() => () => {}) }));
-jest.mock('../../queue/db', () => ({ getLocalDatabase: async () => ({ getFirstAsync: async () => ({ count: 4 }) }) }));
+jest.mock('../../queue/db', () => ({ getLocalDatabase: async () => ({ getFirstAsync: async () => ({ count: 4 }), getAllAsync: async () => [] }) }));
 
 const USER = 'notification-user';
 const STORAGE_KEY = `dg.notificationPreferences:${USER}`;
+
+test('discriminates call invitations and terminal updates without affecting message payloads', () => {
+  expect(isCallNotificationContent({ data: { notification_type: 'call_invite', call_id: 'call' } })).toBe(true);
+  expect(isCallNotificationContent({ data: { notification_type: 'call_ended', call_id: 'call' } })).toBe(true);
+  expect(isCallInviteNotificationContent({ data: { notification_type: 'call_invite', call_id: 'call' } })).toBe(true);
+  expect(isCallInviteNotificationContent({ data: { notification_type: 'call_ended', call_id: 'call' } })).toBe(false);
+  expect(isCallNotificationContent({ data: { call_id: 'call' } })).toBe(false);
+  expect(isCallNotificationContent({ data: { notification_type: 'message', chat_id: 'chat' } })).toBe(false);
+});
 
 beforeEach(async () => {
   await AsyncStorage.clear();
@@ -59,7 +68,10 @@ test('registers the exact native channel and clears the badge and token when swi
   try {
     await updateNotificationPreferences(USER, { messagePreviews: true, sounds: false, vibration: true, badges: false });
     await syncPushRegistration(USER);
-    expect(Notifications.setNotificationChannelAsync).toHaveBeenLastCalledWith('messages-v2-010', expect.objectContaining({
+    expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith('messages-v2-010', expect.objectContaining({
+      sound: null, enableVibrate: true, vibrationPattern: [0, 250], showBadge: false,
+    }));
+    expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(callAndroidChannelId({ enabled: true, messagePreviews: true, sounds: false, vibration: true, badges: false }), expect.objectContaining({
       sound: null, enableVibrate: true, vibrationPattern: [0, 250], showBadge: false,
     }));
     const tokens = jest.mocked(supabase.from).mock.results[0]?.value;
@@ -72,8 +84,11 @@ test('registers the exact native channel and clears the badge and token when swi
 
     await updateNotificationPreferences(USER, { sounds: true, vibration: false, badges: true });
     await syncPushRegistration(USER);
-    expect(Notifications.setNotificationChannelAsync).toHaveBeenLastCalledWith('messages-v2-101', expect.objectContaining({
+    expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith('messages-v2-101', expect.objectContaining({
       enableVibrate: false, showBadge: true,
+    }));
+    expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith('calls-v1-10', expect.objectContaining({
+      enableVibrate: false, showBadge: false,
     }));
     await jest.advanceTimersByTimeAsync(150);
     expect(Notifications.setBadgeCountAsync).toHaveBeenLastCalledWith(4);

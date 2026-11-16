@@ -1,0 +1,30 @@
+.view {
+  display: grid;
+  gap: var(--dg-space-4);
+  min-width: 0;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--dg-space-2);
+  font: var(--dg-type-body-sm);
+}
+
+.summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.full {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--dg-space-2);
+  border-radius: var(--dg-radius-sm);
+  background: var(--dg-color-bg-surface);
+  font: var(--dg-type-mono-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

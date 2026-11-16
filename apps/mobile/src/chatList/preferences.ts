@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { notifyCacheChange } from '../sync/cacheEvents';
+import { beginStarChange } from './starredState';
 
 /** Per-account, per-device organization; server read receipts remain monotonic. */
 export type ChatListPreferences = {
@@ -41,6 +42,7 @@ export function updateChatListPreferences(
   chatId: string,
   patch: Partial<Record<ChatListPreference, boolean>>,
 ): Promise<ChatListPreferences> {
+  const finishStar = patch.pinned === undefined ? undefined : beginStarChange(userId, chatId, patch.pinned);
   const operation = writes.then(async () => {
     const all = await readAll();
     const current = normalize(all[userId]);
@@ -61,7 +63,13 @@ export function updateChatListPreferences(
     return current;
   });
   writes = operation.catch(() => {});
-  return operation;
+  return operation.then((preferences) => {
+    finishStar?.(true);
+    return preferences;
+  }, (error: unknown) => {
+    finishStar?.(false);
+    throw error;
+  });
 }
 
 export function setChatListPreference(userId: string, chatId: string, preference: ChatListPreference, enabled: boolean) {

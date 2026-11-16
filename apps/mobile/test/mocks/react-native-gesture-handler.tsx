@@ -7,7 +7,9 @@ type PanHandlers = ReturnType<typeof NativeGesture.Pan>['handlers'];
 type GestureBuilder = {
   handlers: Partial<PanHandlers>;
   minDistance: () => GestureBuilder;
+  activeOffsetX: () => GestureBuilder;
   activeOffsetY: () => GestureBuilder;
+  failOffsetY: () => GestureBuilder;
   failOffsetX: () => GestureBuilder;
   onBegin: (callback: NonNullable<PanHandlers['onBegin']>) => GestureBuilder;
   onUpdate: (callback: NonNullable<PanHandlers['onUpdate']>) => GestureBuilder;
@@ -18,7 +20,9 @@ const createGesture = (): GestureBuilder => {
   const gesture = {} as GestureBuilder;
   gesture.handlers = {};
   gesture.minDistance = () => gesture;
+  gesture.activeOffsetX = () => gesture;
   gesture.activeOffsetY = () => gesture;
+  gesture.failOffsetY = () => gesture;
   gesture.failOffsetX = () => gesture;
   gesture.onBegin = (callback) => { gesture.handlers.onBegin = callback; return gesture; };
   gesture.onUpdate = (callback) => { gesture.handlers.onUpdate = callback; return gesture; };

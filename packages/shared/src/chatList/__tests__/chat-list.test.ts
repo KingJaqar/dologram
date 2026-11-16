@@ -333,3 +333,19 @@ describe('preview helpers', () => {
     expect(messagePreview(message('c', 'm4', 1, { content: '' }), null)).toBe('');
   });
 });
+
+ describe('profile photos', () => {
+  it('uses the direct partner photo, group photo, and Saved Messages icon independently', () => {
+    const rows = [
+      row({ chat: chat('direct'), otherMemberAvatarUrl: 'other/photo.jpg' }),
+      row({ chat: chat('group', { type: 'group', avatar_url: 'group/avatar' }), otherMemberAvatarUrl: 'other/photo.jpg' }),
+      row({ chat: chat('saved'), otherMemberId: null, otherMemberAvatarUrl: 'me/photo.jpg' }),
+      row({ chat: chat('missing') }),
+    ];
+    const items = buildChatList(rows, OPTS);
+    expect(items.find((item) => item.chatId === 'direct')).toMatchObject({ avatarId: OTHER, avatarUrl: 'other/photo.jpg' });
+    expect(items.find((item) => item.chatId === 'group')).toMatchObject({ avatarId: 'group', avatarUrl: 'group/avatar' });
+    expect(items.find((item) => item.chatId === 'saved')).toMatchObject({ savedMessages: true, avatarUrl: null });
+    expect(items.find((item) => item.chatId === 'missing')?.avatarUrl).toBeNull();
+  });
+});

@@ -1,6 +1,7 @@
 import { createAdminClient, parseWorkerJobs, rpc, type WorkerJob } from '../_shared/calling.ts';
 import { CallHttpError, errorResponse, jsonResponse, methodResponse, safeDiagnostic } from '../_shared/http.ts';
 import { cleanupRoom, liveKitConfig, observeRoom, roomService } from '../_shared/livekit.ts';
+import { dispatchPendingCallNotifications } from '../_shared/callNotifications.ts';
 
 function authorized(request: Request): boolean {
   const configured = Deno.env.get('CALL_SCHEDULER_SECRET');
@@ -51,6 +52,12 @@ Deno.serve(async (request) => {
     const config = liveKitConfig();
     const admin = createAdminClient();
     const service = roomService(config);
+    let notifications = { processed: 0, sent: 0, skipped: 0, retryable: 0 };
+    try {
+      notifications = await dispatchPendingCallNotifications(admin);
+    } catch {
+      safeDiagnostic('call_notification_drain_failed', { callId: null, reason: 'database_request_failed' });
+    }
     const jobs = parseWorkerJobs(await rpc(admin, 'call_worker_tick', { p_limit: 50 }));
     const results: Array<{ jobId: string; kind: string; result: string }> = [];
     for (const job of jobs) {
@@ -71,7 +78,7 @@ Deno.serve(async (request) => {
         results.push({ jobId: job.job_id, kind: job.kind, result: 'retryable' });
       }
     }
-    return jsonResponse({ processed: results.length, results });
+    return jsonResponse({ processed: results.length, results, notifications });
   } catch (error) {
     safeDiagnostic('worker_tick_failed', { callId: null, reason: 'provider_or_database_error' });
     return errorResponse(error);

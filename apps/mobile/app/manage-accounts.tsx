@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { strings } from '@dologram/shared';
@@ -20,6 +20,7 @@ import { ADD_ACCOUNT_PARAMS } from '../src/auth/accountSession';
 import { useAccountSwitch } from '../src/auth/useAccountSwitch';
 import { withPushRegistrationPaused } from '../src/notifications/pushNotifications';
 import { stopCurrentCallForSessionChange } from '../src/calls/lifecycle';
+import { withMemoSessionChange } from '../src/memos/lifecycle';
 
 interface AccountRowProps {
   account: SavedAccount;
@@ -204,18 +205,20 @@ export default function ManageAccountsScreen() {
     setPendingRemoval({ ids, all });
   }, []);
 
-  async function confirmRemoval() {
+  async function confirmRemoval(eraseMemos = false) {
     if (!pendingRemoval || removing) return;
     setRemoving(true);
     try {
       if (pendingRemoval.ids.includes(userId)) {
         await withPushRegistrationPaused(userId, async () => {
           await stopCurrentCallForSessionChange(userId);
-          const { error } = await supabase.auth.signOut({ scope: 'local' });
-          if (error) throw error;
+          await withMemoSessionChange(async () => {
+            const { error } = await supabase.auth.signOut({ scope: 'local' });
+            if (error) throw error;
+          });
         });
       }
-      await removeSavedAccounts(pendingRemoval.ids);
+      await removeSavedAccounts(pendingRemoval.ids, eraseMemos);
       await loadAccounts();
       setPendingRemoval(null);
       exitSelectionMode();
@@ -233,8 +236,10 @@ export default function ManageAccountsScreen() {
       if (session) await saveSessionAccount(session, profile);
       await withPushRegistrationPaused(userId, async () => {
         await stopCurrentCallForSessionChange(userId);
-        const { error } = await supabase.auth.signOut({ scope: 'local' });
-        if (error) throw error;
+        await withMemoSessionChange(async () => {
+          const { error } = await supabase.auth.signOut({ scope: 'local' });
+          if (error) throw error;
+        });
       });
       if (navigateTo) router.replace(navigateTo);
     } catch {
@@ -350,7 +355,11 @@ export default function ManageAccountsScreen() {
         title={pendingRemoval?.all ? strings.manageAccounts.removeAccountsTitle : strings.manageAccounts.removeAccountTitle}
         message={strings.manageAccounts.removeAccountBody(pendingRemoval?.ids.length ?? 0, includesCurrent)}
         confirmLabel={strings.manageAccounts.removeConfirm}
-        onConfirm={() => void confirmRemoval()}
+        onConfirm={() => Alert.alert(strings.manageAccounts.removeAccountTitle, strings.memos.retention, [
+          { text: 'Cancel', style: 'cancel' },
+          { text: strings.memos.retain, onPress: () => void confirmRemoval(false) },
+          { text: strings.memos.erase, style: 'destructive', onPress: () => void confirmRemoval(true) },
+        ])}
         onDismiss={() => { if (!removing) setPendingRemoval(null); }}
         destructive
       />

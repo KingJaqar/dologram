@@ -16,7 +16,8 @@
       "distribution": "internal",
       "environment": "preview",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "autoIncrement": true
       }
     }
   }

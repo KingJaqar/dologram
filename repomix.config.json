@@ -1,0 +1,8 @@
+{
+  "output": {
+    "filePath": "supabase/repomix/repomix-output.xml"
+  },
+  "ignore": {
+    "customPatterns": ["supabase/repomix/**"]
+  }
+}

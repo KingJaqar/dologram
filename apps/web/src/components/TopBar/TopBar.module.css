@@ -1,0 +1,4 @@
+.bar { display: flex; align-items: center; box-sizing: border-box; height: 56px; gap: var(--dg-space-2); padding-inline: var(--dg-space-4); background: var(--dg-color-bg-app); color: var(--dg-color-text-primary); border-bottom: 1px solid var(--dg-color-border-subtle); z-index: var(--dg-z-sticky); }
+.bar h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; font: var(--dg-type-title-md); }
+.bar[data-variant="chatList"] h2 { font: var(--dg-type-title-lg); }
+.actions { display: flex; margin-inline-start: auto; }

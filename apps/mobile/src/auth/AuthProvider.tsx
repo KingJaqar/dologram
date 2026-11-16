@@ -11,6 +11,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { saveSessionAccount } from './savedAccounts';
+import { setMemoScope } from '../memos/lifecycle';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'mustChangePassword' | 'signedIn';
 
@@ -144,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
       }
       setSession(next);
+      setMemoScope(next && !requiresPasswordChange(next) ? next.user.id : null);
 
       if (!next) {
         profileUserIdRef.current = null;

@@ -18,8 +18,10 @@ export type InsertMessageInput = {
 export async function insertMessage(
   client: DgClient,
   input: InsertMessageInput,
+  signal?: AbortSignal,
+  retry?: boolean,
 ): Promise<DgResult<MessageRow>> {
-  const { data, error, status } = await client
+  const query = client
     .from('messages')
     .insert({
       message_id: input.message_id,
@@ -29,8 +31,10 @@ export async function insertMessage(
       reply_to: input.reply_to,
       attachment_count: input.attachment_count,
     })
-    .select()
-    .single();
+    .select();
+  if (signal) query.abortSignal(signal);
+  if (retry !== undefined) query.retry(retry);
+  const { data, error, status } = await query.single();
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }
@@ -43,14 +47,17 @@ export async function listMessagesAfter(
   chatId: string,
   afterSyncSeq: number,
   limit: number,
+  signal?: Parameters<ReturnType<DgClient['rpc']>['abortSignal']>[0],
 ): Promise<DgResult<MessageRow[]>> {
-  const { data, error, status } = await client
+  const query = client
     .from('messages')
     .select('*')
     .eq('chat_id', chatId)
     .gt('sync_seq', afterSyncSeq)
     .order('sync_seq', { ascending: true })
     .limit(limit);
+  if (signal) { query.abortSignal(signal); query.retry(false); }
+  const { data, error, status } = await query;
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }
@@ -79,13 +86,17 @@ export async function editMessage(
 export async function softDeleteMessage(
   client: DgClient,
   messageId: string,
+  signal?: AbortSignal,
+  retry?: boolean,
 ): Promise<DgResult<MessageRow>> {
-  const { data, error, status } = await client
+  const query = client
     .from('messages')
     .update({ deleted_at: new Date().toISOString() })
     .eq('message_id', messageId)
-    .select()
-    .single();
+    .select();
+  if (signal) query.abortSignal(signal);
+  if (retry !== undefined) query.retry(retry);
+  const { data, error, status } = await query.single();
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }

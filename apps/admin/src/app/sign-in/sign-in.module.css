@@ -1,0 +1,44 @@
+.screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: var(--dg-space-6);
+}
+
+.card {
+  width: min(400px, 100%);
+  padding: var(--dg-space-6);
+  border: 1px solid var(--dg-color-border-strong);
+  border-radius: var(--dg-radius-lg);
+  background: var(--dg-color-bg-surface);
+}
+
+.logo {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 0 var(--dg-space-4);
+  border-radius: var(--dg-radius-md);
+}
+
+.title {
+  margin: 0 0 var(--dg-space-6);
+  font: var(--dg-type-title-lg);
+  letter-spacing: var(--dg-type-title-lg-letter-spacing);
+}
+
+.form {
+  display: grid;
+  gap: var(--dg-space-4);
+}
+
+.message {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--dg-color-text-secondary);
+  font: var(--dg-type-body-sm);
+}
+
+.message:empty {
+  display: none;
+}

@@ -10,7 +10,11 @@ jest.mock('../../theme/ThemeProvider', () => ({ useTheme: () => { const { color,
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 24, bottom: 34, left: 0, right: 0 }) }));
 jest.mock('../Icon', () => ({ Icon: () => null }));
 let api: ReturnType<typeof useToast>;
-function Probe() { api = useToast(); return null; }
+function Probe() {
+  const value = useToast();
+  React.useEffect(() => { api = value; }, [value]);
+  return null;
+}
 function setup() { return render(<ToastProvider><Probe /></ToastProvider>); }
 async function show(options: ToastOptions) { await act(async () => { api.showToast(options); }); }
 async function advance(ms: number) { await act(async () => { jest.advanceTimersByTime(ms); }); }
@@ -35,23 +39,25 @@ test('independent lanes, safe areas and navigation clearance', async () => {
   expect(screen.getAllByRole('button', { name: 'Dismiss notification' })).toHaveLength(2);
 });
 
-test('duplicates, including default placement after rerenders, do not queue', async () => {
+test('repeated messages refresh their lifetime without queuing', async () => {
   const screen = setup();
   await show({ message: 'Archived.', variant: 'success' });
   await advance(2100);
   await show({ message: 'Archived.', variant: 'success' });
   expect(screen.getAllByText('Archived.')).toHaveLength(1);
+  await advance(1900);
+  expect(screen.getByText('Archived.')).toBeTruthy();
   fireEvent.press(screen.getByRole('button', { name: 'Dismiss notification' }));
   expect(screen.queryByText('Archived.')).toBeNull();
 });
 
-test('success lasts 4 seconds; queued errors get their full 9 seconds', async () => {
+test('errors immediately replace successes and get their full 9 seconds', async () => {
   const screen = setup();
   await show({ message: 'Saved.', variant: 'success' });
-  await show({ message: 'Try again.', variant: 'error' });
   await advance(3999);
   expect(screen.getByText('Saved.')).toBeTruthy();
-  await advance(1);
+  await show({ message: 'Try again.', variant: 'error' });
+  expect(screen.queryByText('Saved.')).toBeNull();
   expect(screen.getByText('Try again.')).toBeTruthy();
   await advance(8999);
   expect(screen.getByText('Try again.')).toBeTruthy();
@@ -62,23 +68,60 @@ test('success lasts 4 seconds; queued errors get their full 9 seconds', async ()
 test('dismissing an old card cannot dismiss its replacement', async () => {
   const screen = setup();
   await show({ message: 'Old.', variant: 'success' });
+  const oldDismiss = screen.UNSAFE_getByType(Animated.View).props.onAccessibilityEscape;
   await advance(3500);
-  fireEvent.press(screen.getByRole('button', { name: 'Dismiss notification' }));
   await show({ message: 'New.', variant: 'success' });
+  act(() => oldDismiss());
   await advance(500);
   expect(screen.getByText('New.')).toBeTruthy();
+  await advance(3499);
+  expect(screen.getByText('New.')).toBeTruthy();
+  await advance(1);
+  expect(screen.queryByText('New.')).toBeNull();
 });
 
-test('overflow is bounded and keeps the active card and waiting errors', async () => {
+test('rapid alternating actions always show the latest result and never replay older results', async () => {
   const screen = setup();
-  await show({ message: 'Active.', durationMs: 0 });
-  await show({ message: 'Error.', variant: 'error' });
-  for (let index = 0; index < 12; index++) await show({ message: `Result ${index}.` });
+  for (let index = 0; index < 100; index++) {
+    const message = index % 2 === 0 ? 'Added to starred' : 'Removed from starred';
+    await show({ message, variant: 'success' });
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.queryByText(index % 2 === 0 ? 'Removed from starred' : 'Added to starred')).toBeNull();
+    await advance(10);
+  }
+  await advance(3989);
+  expect(screen.getByText('Removed from starred')).toBeTruthy();
+  await advance(1);
+  expect(screen.queryByTestId('toast-bottom')).toBeNull();
+  await advance(60000);
+  expect(screen.queryByTestId('toast-bottom')).toBeNull();
+});
+
+test('a burst before rendering retains only the last result per placement', async () => {
+  const screen = setup();
+  await show({ message: 'Top result.', placement: 'top', durationMs: 0 });
+  await act(async () => {
+    for (let index = 0; index < 1000; index++) api.showToast({ message: `Result ${index}.` });
+  });
+  expect(screen.getByText('Top result.')).toBeTruthy();
+  expect(screen.getByText('Result 999.')).toBeTruthy();
+  fireEvent.press(screen.getAllByRole('button', { name: 'Dismiss notification' })[1]);
+  expect(screen.queryByTestId('toast-bottom')).toBeNull();
+  expect(screen.getByText('Top result.')).toBeTruthy();
+});
+
+test('new results replace persistent errors and actions without replaying them', async () => {
+  const screen = setup();
+  const onAction = jest.fn();
+  await show({ message: 'Error.', variant: 'error', actionLabel: 'Retry', onAction });
+  await show({ message: 'Saving.', loading: true, durationMs: 0 });
+  await show({ message: 'Saved.', variant: 'success' });
+  expect(screen.queryByText('Error.')).toBeNull();
+  expect(screen.queryByText('Saving.')).toBeNull();
+  expect(screen.getByText('Saved.')).toBeTruthy();
   fireEvent.press(screen.getByRole('button', { name: 'Dismiss notification' }));
-  expect(screen.getByText('Error.')).toBeTruthy();
-  let count = 1;
-  while (screen.queryByRole('button', { name: 'Dismiss notification' })) { fireEvent.press(screen.getByRole('button', { name: 'Dismiss notification' })); count++; }
-  expect(count).toBe(6);
+  expect(screen.queryByTestId('toast-bottom')).toBeNull();
+  expect(onAction).not.toHaveBeenCalled();
 });
 
 test('screen reader users retain notifications until explicitly dismissed', async () => {

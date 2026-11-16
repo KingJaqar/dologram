@@ -1,0 +1,16 @@
+.page {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: var(--dg-space-6);
+}
+
+.column { width: 100%; max-width: 400px; }
+.wordmark { display: flex; align-items: center; gap: var(--dg-space-2); font: var(--dg-type-display); margin: 0 0 var(--dg-space-6); }
+.logo { width: 40px; height: 40px; border-radius: var(--dg-radius-md); }
+.title { font: var(--dg-type-heading1); margin: 0 0 var(--dg-space-6); }
+.form { display: flex; flex-direction: column; gap: var(--dg-space-4); }
+.links { display: flex; flex-direction: column; align-items: center; gap: var(--dg-space-4); margin-top: var(--dg-space-6); }
+.page a { color: var(--dg-color-text-primary); text-underline-offset: var(--dg-space-1); }
+.error { color: var(--dg-color-danger-text); }

@@ -32,6 +32,7 @@ export type MessageFocusOverlayProps = {
   onDelete: () => void;
   onRetry: () => void;
   onDiscard: () => void;
+  onSeenBy?: () => void;
   pinned?: boolean;
   onPin?: () => void;
 };
@@ -106,6 +107,7 @@ export function MessageFocusOverlay({
   onDelete,
   onRetry,
   onDiscard,
+  onSeenBy,
   pinned = false,
   onPin,
 }: MessageFocusOverlayProps) {
@@ -220,6 +222,7 @@ export function MessageFocusOverlay({
               <MoreAction label={pinned ? strings.chat.unpin : strings.chat.pin} iconName={pinned ? 'action.unpin' : 'action.pin'} onPress={() => { closeMore(); onPin?.(); }} disabled={!canPin} />
               <MoreAction label={strings.chat.edit} iconName="action.edit" onPress={() => { closeMore(); onEdit(); }} disabled={!canEditOrDelete} />
               <MoreAction label={strings.chat.forward} iconName="action.forward" onPress={() => { closeMore(); onForward(); }} disabled={!hasText} />
+              {onSeenBy ? <MoreAction label={strings.seenBy.action} iconName="status.seen" onPress={() => { closeMore(); onSeenBy(); }} /> : null}
               {failed ? <MoreAction label={strings.chat.retry} iconName="action.retry" onPress={() => { closeMore(); onRetry(); }} /> : null}
               {failed ? <MoreAction label={strings.chat.discard} iconName="action.discard" onPress={() => { closeMore(); onDiscard(); }} disabled={discardDisabled} destructive /> : null}
             </Animated.View>

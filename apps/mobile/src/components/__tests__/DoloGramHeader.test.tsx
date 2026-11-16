@@ -3,17 +3,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { ThemeProvider } from '../../theme/ThemeProvider';
 import { DoloGramHeader } from '../DoloGramHeader';
 
-const mockHeaderNavActions = jest.fn((_props: { showChats?: boolean }) => null);
-
 jest.mock('../TopBar', () => ({
   TopBar: ({ left }: { left: React.ReactNode }) => left,
 }));
-jest.mock('../HeaderNavActions', () => ({
-  HeaderNavActions: (props: { showChats?: boolean }) => {
-    mockHeaderNavActions(props);
-    return null;
-  },
-}));
+jest.mock('../HeaderNavActions', () => ({ HeaderNavActions: () => null }));
 jest.mock('../Icon', () => ({ Icon: () => null }));
 
 describe('DoloGramHeader', () => {
@@ -30,9 +23,7 @@ describe('DoloGramHeader', () => {
 
     expect(onChatsPress).toHaveBeenCalledTimes(1);
     expect(chatsControl.props.accessibilityState.selected).toBe(true);
-    expect(mockHeaderNavActions).toHaveBeenCalledWith(
-      expect.objectContaining({ showChats: false }),
-    );
+    expect(screen.getAllByRole('tab', { name: 'Chats' })).toHaveLength(1);
   });
 
   test('exposes the folder screen beside the DoloGram logo', () => {
@@ -47,5 +38,16 @@ describe('DoloGramHeader', () => {
     fireEvent.press(foldersControl);
 
     expect(onFoldersPress).toHaveBeenCalledTimes(1);
+  });
+
+  test('exposes the unread count on the Chats navigation control', () => {
+    const screen = render(
+      <ThemeProvider>
+        <DoloGramHeader onChatsPress={() => {}} chatsCount={2} onProfilePress={() => {}} />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Chats, 2 unread' })).toBeTruthy();
+    expect(screen.getByText('2')).toBeTruthy();
   });
 });

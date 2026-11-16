@@ -1,0 +1,46 @@
+html {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--dg-color-bg-app);
+  color: var(--dg-color-text-primary);
+  font: var(--dg-type-body-md);
+  font-family: var(--dg-font-sans), sans-serif;
+}
+
+button, input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--dg-color-focus-ring);
+  outline-offset: 2px;
+}
+
+h1 {
+  font: var(--dg-type-heading1);
+  letter-spacing: var(--dg-type-heading1-letter-spacing);
+}
+
+h2 {
+  font: var(--dg-type-heading2);
+  letter-spacing: var(--dg-type-heading2-letter-spacing);
+}
+
+code {
+  font: var(--dg-type-mono);
+}

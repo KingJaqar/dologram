@@ -1,0 +1,35 @@
+.toast {
+  position: fixed;
+  z-index: var(--dg-z-toast);
+  right: var(--dg-space-4);
+  bottom: var(--dg-space-4);
+  left: var(--dg-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dg-space-4);
+  width: fit-content;
+  max-width: calc(100vw - var(--dg-space-8));
+  margin: 0 auto;
+  padding: var(--dg-space-3) var(--dg-space-4);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-toast-bg);
+  color: var(--dg-color-toast-text);
+  font: var(--dg-type-body-md);
+  overflow-wrap: anywhere;
+}
+
+.action {
+  min-width: 32px;
+  min-height: 32px;
+  border: 0;
+  border-radius: var(--dg-radius-sm);
+  background: transparent;
+  color: var(--dg-color-toast-action);
+  font: var(--dg-type-label-lg);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--dg-color-toast-action);
+  outline-offset: 2px;
+}

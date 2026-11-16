@@ -81,15 +81,17 @@ export interface LocalQueueStore {
   /** Creates or upgrades the schema. Idempotent. */
   init(): Promise<void>;
   insert(item: QueueItem): Promise<void>;
+  /** Optional transactional admission for adapters shared by concurrent clients. */
+  tryInsert?(item: QueueItem, maxUnsent: number): Promise<boolean>;
   update(item: QueueItem): Promise<void>;
   get(tempId: string): Promise<QueueItem | null>;
   /** Every item that is not yet sent, oldest first (LS-7 counts queued, sending and failed). */
   listUnsent(): Promise<QueueItem[]>;
-  countUnsent(): Promise<number>;
+  countUnsent(senderId?: string): Promise<number>;
   /** LS-9: items left in `sending` at startup return to `queued`. */
   resetSending(): Promise<void>;
   /** D-77: a returning connection makes every queued item due at once without resetting counts. */
-  makeAllDue(now: number): Promise<void>;
+  makeAllDue(now: number, senderId?: string): Promise<void>;
   delete(tempId: string): Promise<void>;
   /** Removes sent items; the chat shows delivered rows from the server from then on. */
   deleteSent(): Promise<void>;

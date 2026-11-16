@@ -2,11 +2,15 @@ import { DatabaseSync } from 'node:sqlite';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { normalizeSearch, searchCachedMessages, countMessageMatches, searchScopedMessages } from '../query';
 import type { QueueItem } from '@dologram/shared';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateChatPreferences } from '../../chats/preferences';
+import { setChatListPreference } from '../../chatList/preferences';
 
 let sqlite: DatabaseSync;
 let db: SQLiteDatabase;
 
-beforeEach(() => {
+beforeEach(async () => {
+  await AsyncStorage.clear();
   sqlite = new DatabaseSync(':memory:');
   sqlite.exec(`
     CREATE TABLE cache_messages (
@@ -128,6 +132,22 @@ test('scoped authorization rejects missing membership and disallowed routes befo
   const getUnsent = jest.fn(async () => []);
   await expect(searchScopedMessages(db, { ...scope, allowedChatIds: [] }, 'needle', null, signal(), getUnsent)).rejects.toMatchObject({ kind: 'unavailable' });
   await expect(searchScopedMessages(db, { ...scope, userId: 'foreign' }, 'needle', null, signal(), getUnsent)).rejects.toMatchObject({ kind: 'unavailable' });
+  expect(getUnsent).not.toHaveBeenCalled();
+});
+
+test.each(['blocked', 'deleted'] as const)('a stale allowlist cannot search a %s chat globally or through a scoped link', async (preference) => {
+  addMessage('private', 'needle');
+  if (preference === 'blocked') await updateChatPreferences('me', 'chat', { blocked: true });
+  else await setChatListPreference('me', 'chat', 'deleted', true);
+  expect(await countMessageMatches(db, { userId: 'me', allowedChatIds: ['chat'] }, 'needle', signal())).toEqual([]);
+});
+
+test.each(['blocked', 'deleted'] as const)('scoped %s search reports unavailable and never reads pending items', async (preference) => {
+  addMessage('private', 'needle');
+  if (preference === 'blocked') await updateChatPreferences('me', 'chat', { blocked: true });
+  else await setChatListPreference('me', 'chat', 'deleted', true);
+  const getUnsent = jest.fn(async () => [queued('pending')]);
+  await expect(searchScopedMessages(db, scope, 'needle', null, signal(), getUnsent)).rejects.toMatchObject({ kind: 'unavailable' });
   expect(getUnsent).not.toHaveBeenCalled();
 });
 

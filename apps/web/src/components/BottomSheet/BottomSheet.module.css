@@ -1,0 +1,9 @@
+.backdrop { position: fixed; inset: 0; z-index: var(--dg-z-sheet); }
+.scrim { position: absolute; inset: 0; border: 0; padding: var(--dg-space-0); background: var(--dg-color-scrim); }
+.sheet { position: absolute; box-sizing: border-box; bottom: 0; width: 100%; max-height: 90dvh; overflow: auto; border-radius: var(--dg-radius-xl) var(--dg-radius-xl) 0 0; padding: var(--dg-space-2) var(--dg-space-4) calc(var(--dg-space-4) + env(safe-area-inset-bottom)); background: var(--dg-color-bg-elevated); color: var(--dg-color-text-primary); box-shadow: var(--dg-elevation-3); animation: enter var(--dg-motion-duration-modal) var(--dg-motion-easing-ease-out); }
+.handle { width: 32px; height: 4px; margin: 0 auto; border-radius: var(--dg-radius-full); background: var(--dg-color-border-strong); }
+.header { display: flex; align-items: center; justify-content: space-between; }
+.header h2 { font: var(--dg-type-title-md); }
+@keyframes enter { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+@media (min-width: 768px) { .backdrop { display: none; } }

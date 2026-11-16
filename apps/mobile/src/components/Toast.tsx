@@ -1,6 +1,6 @@
-/** App-wide notification queue. One readable card per placement; no navigation-owned timers. */
+/** App-wide notifications. The latest card wins per placement; no navigation-owned timers. */
 import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, AppState, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, AppState, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { strings } from '@dologram/shared';
 import { useTheme } from '../theme/ThemeProvider';
@@ -17,10 +17,12 @@ export interface ToastOptions {
   actionLabel?: string;
   onAction?: () => void;
   durationMs?: number;
+  /** Shows a native spinner instead of a result icon while work is in progress. */
+  loading?: boolean;
   /** Only account transitions may finish across a session change. */
   surviveAccountChange?: boolean;
 }
-type Entry = ToastOptions & { key: number; createdAt: number };
+type Entry = ToastOptions & { key: number };
 interface ToastContextValue {
   showToast: (options: ToastOptions) => void;
   hideToast: (id?: string) => void;
@@ -34,7 +36,6 @@ export function useToast() { return useContext(ToastContext); }
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const entriesRef = useRef<Entry[]>([]);
-  const recent = useRef(new Map<string, number>());
   const sequence = useRef(0);
   const scope = useRef<string | null>(null);
   const generationRef = useRef(0);
@@ -52,27 +53,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const showToast = useCallback((options: ToastOptions) => {
     if (generation !== generationRef.current && !options.surviveAccountChange) return;
     if (!alive.current || !options.message.trim()) return;
-    if (options.id && resultIds.current.has(options.id)) return;
-    const now = Date.now();
-    const identity = options.id ?? `${options.placement ?? 'bottom'}:${options.variant ?? 'info'}:${options.message}`;
-    for (const [id, time] of recent.current) if (now - time > 2000) recent.current.delete(id);
-    if (recent.current.has(identity) || entriesRef.current.some((entry) => options.id ? entry.id === options.id : entry.message === options.message && (entry.variant ?? 'info') === (options.variant ?? 'info') && (entry.placement ?? 'bottom') === (options.placement ?? 'bottom'))) return;
-    recent.current.set(identity, now);
+    if (options.id && (resultIds.current.has(options.id) || entriesRef.current.some((entry) => entry.id === options.id))) return;
     if (options.id) {
       resultIds.current.add(options.id);
       if (resultIds.current.size > 256) resultIds.current.delete(resultIds.current.values().next().value!);
     }
     const placement = options.placement ?? 'bottom';
-    const activeKeys = new Set((['top', 'bottom'] as const).map((lane) => entriesRef.current.find((entry) => (entry.placement ?? 'bottom') === lane)?.key));
-    let next = entriesRef.current.filter((entry) => activeKeys.has(entry.key) || entry.variant === 'error' || entry.actionLabel || entry.durationMs === 0 || now - entry.createdAt < 30000);
-    const lane = next.filter((entry) => (entry.placement ?? 'bottom') === placement);
-    // Bound overflow to one active and five waiting cards per lane. Keep the active card,
-    // prefer discarding an older waiting success, then the oldest waiting result.
-    if (lane.length >= 6) {
-      const victim = lane.slice(1).find((entry) => entry.variant !== 'error') ?? lane[1];
-      next = next.filter((entry) => entry.key !== victim.key);
-    }
-    publish([...next, { ...options, placement, key: ++sequence.current, createdAt: now }]);
+    // Replace synchronously, including multiple calls before React renders. Never replay
+    // superseded results. A fresh key resets the card's timer and isolates late dismissals.
+    const next = entriesRef.current.filter((entry) => (entry.placement ?? 'bottom') !== placement);
+    publish([...next, { ...options, placement, key: ++sequence.current }]);
   }, [publish, generation]);
   const hideToast = useCallback((id?: string) => publish(id ? entriesRef.current.filter((entry) => entry.id !== id) : []), [publish]);
   const setScope = useCallback((accountId: string | null) => {
@@ -152,10 +142,10 @@ function ToastCard({ entry, onDismiss, maxHeight }: { entry: Entry; onDismiss: (
     return () => { active = false; sub.remove(); app.remove(); };
   }, []);
   useEffect(() => {
-    const animation = Animated.timing(opacity, { toValue: 1, duration: theme.reduceMotion ? 0 : theme.motion.duration.fast, useNativeDriver: true });
+    const animation = Animated.timing(opacity, { toValue: 1, duration: theme.reduceMotion ? 0 : entry.loading ? theme.motion.duration.normal : theme.motion.duration.fast, useNativeDriver: true });
     animation.start();
     return () => animation.stop();
-  }, [opacity, theme.reduceMotion, theme.motion.duration.fast]);
+  }, [entry.loading, opacity, theme.reduceMotion, theme.motion.duration.fast, theme.motion.duration.normal]);
   useEffect(() => {
     announce(entry);
   }, [announce, entry]);
@@ -171,7 +161,7 @@ function ToastCard({ entry, onDismiss, maxHeight }: { entry: Entry; onDismiss: (
   const error = entry.variant === 'error';
   const foregroundColor = error ? c.error.text : c.text.primary;
   return <Animated.View onAccessibilityEscape={onDismiss} style={[styles.toast, { maxHeight, opacity, borderRadius: theme.radius.lg, backgroundColor: error ? c.error.bg : c.bg.elevated, borderColor: error ? c.error.text : c.separator, shadowColor: c.shadow }]}>
-    <View style={styles.icon}><Icon name={error ? 'status.failed' : entry.variant === 'success' ? 'status.sent' : 'action.unmute'} size="md" color={foregroundColor} accessibilityLabel="" /></View>
+    <View style={styles.icon}>{entry.loading ? <ActivityIndicator size="small" color={foregroundColor} accessibilityLabel={entry.message} /> : <Icon name={error ? 'status.failed' : entry.variant === 'success' ? 'status.sent' : 'action.unmute'} size="md" color={foregroundColor} accessibilityLabel="" />}</View>
     <ScrollView style={styles.body} contentContainerStyle={styles.copy} onTouchStart={() => setPaused(true)} onTouchEnd={() => setPaused(false)}>
       <Text accessibilityLiveRegion="polite" style={[textStyle(theme.typeTokens.bodyMd), { color: foregroundColor }]}>{entry.message}</Text>
       {entry.actionLabel ? <Pressable accessibilityRole="button" accessibilityLabel={entry.actionLabel} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)} onPress={() => { onDismiss(); entry.onAction?.(); }} style={styles.action}><Text style={[textStyle(theme.typeTokens.labelLg), { color: foregroundColor, textDecorationLine: 'underline' }]}>{entry.actionLabel}</Text></Pressable> : null}

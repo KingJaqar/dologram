@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@config-plugins/react-native-webrtc": "15.0.2",
+    "@dologram/call-background": "*",
     "@dologram/shared": "*",
     "@expo-google-fonts/inter": "0.4.2",
     "@expo-google-fonts/jetbrains-mono": "0.4.1",
@@ -29,6 +30,7 @@
     "expo-media-library": "~57.0.6",
     "expo-notifications": "~57.0.25",
     "expo-router": "~57.0.30",
+    "expo-secure-store": "~57.0.4",
     "expo-sharing": "~57.0.25",
     "expo-splash-screen": "~57.0.11",
     "expo-sqlite": "~57.0.4",

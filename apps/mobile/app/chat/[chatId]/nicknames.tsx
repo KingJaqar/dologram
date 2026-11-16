@@ -15,7 +15,7 @@ import { useChatInfo } from '../../../src/chats/useChatInfo';
 import { useNetState } from '../../../src/net/netState';
 import { supabase } from '../../../src/lib/supabase';
 import { getLocalDatabase } from '../../../src/queue/db';
-import { cacheMembers } from '../../../src/chat/readState';
+import { cacheMember } from '../../../src/chat/readState';
 import { notifyCacheChange } from '../../../src/sync/cacheEvents';
 import { loadChatPreferences, updateChatPreferences } from '../../../src/chats/preferences';
 
@@ -65,7 +65,7 @@ export default function ChatNicknamesScreen() {
         const result = await setChatNickname(supabase, chatId, selectedMemberId, nextNickname || null);
         if (result.error || !result.data) throw new Error('nickname_update_failed');
         const db = await getLocalDatabase();
-        await cacheMembers(db, [result.data]);
+        await cacheMember(db, result.data);
         notifyCacheChange();
       }
       showToast(actionToast(feedback, 'success'));

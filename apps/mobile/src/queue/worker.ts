@@ -29,7 +29,7 @@ import { uploadMobileAttachment } from './mediaUploader';
 import type { NetState } from '../net/netState';
 import { attachmentDeliveryPolicy } from '../net/lowSignal';
 
-export type QueueWorkerHandle = { stop: () => void };
+export type QueueWorkerHandle = { stop: () => void; pause: () => Promise<() => void> };
 
 let activeWorker: QueueWorkerHandle | null = null;
 
@@ -160,10 +160,11 @@ async function deliverAttachments(item: QueueItem, netState: NetState): Promise<
   return { error: null, rowStored: true, item: workingItem };
 }
 
-export function startQueueWorker(): QueueWorkerHandle {
+export function startQueueWorker(userId: string): QueueWorkerHandle {
   if (activeWorker) return activeWorker;
 
   let stopped = false;
+  let paused = false;
   // NetInfo answers soon after subscribing, so the worker waits for that first answer rather than
   // assuming a connection and counting an attempt while offline (D-77).
   let connected = false;
@@ -206,6 +207,8 @@ export function startQueueWorker(): QueueWorkerHandle {
       const forwards = new Map<string, string>();
       runner = createQueueRunner({
         core,
+        senderId: userId,
+        canAttempt: () => !stopped && !paused,
         deliver: (item) => {
           if (item.payload.feedback === 'forward') forwards.set(item.temp_id, item.payload.sender_id);
           if (item.payload.attachments.length > 0) notifyQueueChange();
@@ -241,6 +244,16 @@ export function startQueueWorker(): QueueWorkerHandle {
     });
 
   const handle: QueueWorkerHandle = {
+    async pause() {
+      paused = true;
+      // Finish the current attempt before the shared client's credentials change.
+      await runner?.drain().catch(reportBackgroundFailure);
+      return () => {
+        if (stopped) return;
+        paused = false;
+        if (foreground && connected) void runner?.drain().catch(reportBackgroundFailure);
+      };
+    },
     stop(): void {
       if (stopped) return;
       stopped = true;
@@ -259,4 +272,8 @@ export function startQueueWorker(): QueueWorkerHandle {
 /** Stops the process-wide foreground worker before local data is wiped (D-109). */
 export function stopQueueWorker(): void {
   activeWorker?.stop();
+}
+
+export async function pauseQueueForAccountSwitch(): Promise<() => void> {
+  return (await activeWorker?.pause()) ?? (() => {});
 }

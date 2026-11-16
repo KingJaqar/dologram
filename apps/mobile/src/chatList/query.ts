@@ -28,6 +28,7 @@ type QueryRow = {
   other_max_read_seq: number;
   other_member_id: string | null;
   other_member_name: string | null;
+  other_member_profile: string | null;
 };
 
 /**
@@ -50,9 +51,12 @@ SELECT
      WHERE u.chat_id = c.chat_id
        AND u.sender_id <> ?
        AND u.seq IS NOT NULL
-       AND u.seq > m.last_read_seq
+       AND u.seq > MAX(
+         COALESCE(m.confirmed_last_read_seq, 0),
+         CASE WHEN pending.membership_joined_at = json_extract(m.payload, '$.joined_at')
+              THEN COALESCE(pending.last_read_seq, 0) ELSE 0 END)
        AND u.deleted_at IS NULL) AS unread_count,
-  (SELECT COALESCE(MAX(o.last_read_seq), 0) FROM cache_chat_members o
+  (SELECT COALESCE(MAX(o.confirmed_last_read_seq), 0) FROM cache_chat_members o
      WHERE o.chat_id = c.chat_id AND o.user_id <> ?) AS other_max_read_seq,
   (SELECT o.user_id FROM cache_chat_members o
      WHERE o.chat_id = c.chat_id AND o.user_id <> ? LIMIT 1) AS other_member_id,
@@ -62,9 +66,13 @@ SELECT
       AND n.nickname IS NOT NULL),
     (SELECT p.display_name FROM cache_profiles p WHERE p.user_id =
       (SELECT o.user_id FROM cache_chat_members o WHERE o.chat_id = c.chat_id AND o.user_id <> ? LIMIT 1))
-  ) AS other_member_name
+  ) AS other_member_name,
+  (SELECT p.payload FROM cache_profiles p WHERE p.user_id =
+    (SELECT o.user_id FROM cache_chat_members o WHERE o.chat_id = c.chat_id AND o.user_id <> ? LIMIT 1))
+    AS other_member_profile
 FROM cache_chats c
 JOIN cache_chat_members m ON m.chat_id = c.chat_id AND m.user_id = ?
+LEFT JOIN pending_read_states pending ON pending.chat_id = m.chat_id AND pending.user_id = m.user_id
 LEFT JOIN cache_messages lm ON lm.message_id = (
   SELECT y.message_id FROM cache_messages y
    WHERE y.chat_id = c.chat_id
@@ -94,7 +102,7 @@ export async function loadChatListRows(
   db: SQLiteDatabase,
   userId: string,
 ): Promise<ChatListSourceRow[]> {
-  const rows = await db.getAllAsync<QueryRow>(CHAT_LIST_SQL, [userId, userId, userId, userId, userId, userId]);
+  const rows = await db.getAllAsync<QueryRow>(CHAT_LIST_SQL, [userId, userId, userId, userId, userId, userId, userId]);
 
   const result: ChatListSourceRow[] = [];
   for (const row of rows) {
@@ -112,6 +120,7 @@ export async function loadChatListRows(
       otherMaxReadSeq: row.other_max_read_seq,
       otherMemberId: row.other_member_id,
       otherMemberName: row.other_member_name,
+      otherMemberAvatarUrl: (parseJson(row.other_member_profile ?? null) as { avatar_url?: string | null } | null)?.avatar_url ?? null,
     });
   }
   return result;

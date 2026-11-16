@@ -23,7 +23,7 @@ const acceptedVideoSnapshot = (callerId: string): CallSnapshot => ({
   },
   participants: [],
   capabilities: { canAnswer: false, canCancel: false, canJoin: true, canEnd: true, belongsToThisSession: true },
-  availability: { callingEnabled: true },
+  availability: { callingEnabled: true, nativeBackgroundEnabled: false },
   serverTime: '2026-11-11T00:00:00.000Z',
   cleanupState: 'not_required',
 });

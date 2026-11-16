@@ -1,0 +1,36 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dg-space-1);
+  height: 22px;
+  padding: 2px var(--dg-space-2);
+  border-radius: var(--dg-radius-sm);
+  font: var(--dg-type-label-sm);
+  letter-spacing: var(--dg-type-label-sm-letter-spacing);
+  white-space: nowrap;
+}
+
+.success {
+  background: var(--dg-color-bg-surface);
+  color: var(--dg-color-success);
+}
+
+.danger {
+  background: var(--dg-color-danger-bg);
+  color: var(--dg-color-danger);
+}
+
+.warning {
+  background: var(--dg-color-warning-bg);
+  color: var(--dg-color-warning-text);
+}
+
+.info {
+  background: var(--dg-color-info-bg);
+  color: var(--dg-color-info-text);
+}
+
+.neutral {
+  background: var(--dg-color-bg-surface);
+  color: var(--dg-color-text-primary);
+}

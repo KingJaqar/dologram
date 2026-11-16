@@ -126,7 +126,11 @@ function nextEntries(entries: readonly SearchHistoryEntry[], entry: SearchHistor
 
 export async function loadSearchHistory(userId: string): Promise<SearchHistorySnapshot> {
   if (!userId) return { entries: [], available: true };
-  const operation = cleanupBarrier.then(() => enqueue(userId, async () => undefined).then(() => readPayload(userId)));
+  const operation = cleanupBarrier.then(() => enqueue(userId, async () => undefined)
+    .then(async () => {
+      const result = await readPayload(userId);
+      return { entries: result.entries, available: result.available };
+    }));
   return withDeadline(operation);
 }
 
@@ -196,6 +200,7 @@ export function useSearchHistory(userId: string | null) {
     writeError: boolean;
   }>({ status: 'loading', entries: [], writeError: false });
   const revision = useRef(0);
+  const lastMutation = useRef<(() => Promise<void>) | null>(null);
 
   const reload = useCallback(async () => {
     if (!userId) {
@@ -214,13 +219,23 @@ export function useSearchHistory(userId: string | null) {
   }, [userId]);
 
   useEffect(() => {
-    void reload();
-    return () => { revision.current += 1; };
-  }, [reload]);
+    const currentRevision = ++revision.current;
+    let active = true;
+    void loadSearchHistory(userId ?? '').then((snapshot) => {
+      if (!active || revision.current !== currentRevision) return;
+      setState({ status: snapshot.available ? 'ready' : 'unavailable', entries: snapshot.entries, writeError: false });
+    }).catch(() => {
+      if (active && revision.current === currentRevision) setState((current) => ({ ...current, status: 'error' }));
+    });
+    return () => { active = false; revision.current += 1; };
+  }, [userId]);
 
   const record = useCallback(async (entry: SearchHistoryEntry) => {
+    const operation = () => recordSearchHistory(userId ?? '', entry);
+    lastMutation.current = operation;
     try {
-      await recordSearchHistory(userId ?? '', entry);
+      await operation();
+      lastMutation.current = null;
       await reload();
     } catch (error: unknown) {
       setState((current) => ({ ...current, writeError: true }));
@@ -229,8 +244,11 @@ export function useSearchHistory(userId: string | null) {
   }, [reload, userId]);
 
   const remove = useCallback(async (entry: SearchHistoryEntry) => {
+    const operation = () => removeSearchHistoryEntry(userId ?? '', entry);
+    lastMutation.current = operation;
     try {
-      await removeSearchHistoryEntry(userId ?? '', entry);
+      await operation();
+      lastMutation.current = null;
       await reload();
     } catch (error: unknown) {
       setState((current) => ({ ...current, writeError: true }));
@@ -239,8 +257,11 @@ export function useSearchHistory(userId: string | null) {
   }, [reload, userId]);
 
   const clear = useCallback(async () => {
+    const operation = () => clearSearchHistory(userId ?? '');
+    lastMutation.current = operation;
     try {
-      await clearSearchHistory(userId ?? '');
+      await operation();
+      lastMutation.current = null;
       await reload();
     } catch (error: unknown) {
       setState((current) => ({ ...current, writeError: true }));
@@ -248,5 +269,18 @@ export function useSearchHistory(userId: string | null) {
     }
   }, [reload, userId]);
 
-  return { ...state, reload, record, remove, clear };
+  const retry = useCallback(async () => {
+    const operation = lastMutation.current;
+    if (!operation) return reload();
+    try {
+      await operation();
+      lastMutation.current = null;
+      await reload();
+    } catch (error: unknown) {
+      setState((current) => ({ ...current, writeError: true }));
+      throw error;
+    }
+  }, [reload]);
+
+  return { ...state, reload, retry, record, remove, clear };
 }

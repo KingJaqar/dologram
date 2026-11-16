@@ -1,0 +1,77 @@
+.card {
+  display: grid;
+  gap: var(--dg-space-4);
+  min-width: 0;
+  padding: var(--dg-space-4);
+  border: 1px solid var(--dg-color-border-subtle);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-bg-app);
+  color: var(--dg-color-text-primary);
+  box-shadow: var(--dg-elevation-1);
+}
+
+.title {
+  margin: 0;
+  font: var(--dg-type-title-md);
+}
+
+.text {
+  margin: 0;
+  font: var(--dg-type-body-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dg-space-2);
+}
+
+.track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--dg-radius-full);
+  background: var(--dg-color-border-subtle);
+  animation: fade var(--dg-motion-duration-reduce-motion) ease-out;
+}
+
+.bar {
+  width: 40%;
+  height: 100%;
+  background: var(--dg-color-brand-primary);
+  animation: progress var(--dg-motion-duration-shimmer) ease-in-out infinite alternate;
+}
+
+.log {
+  height: 144px;
+  margin: 0;
+  padding: var(--dg-space-2);
+  overflow: auto;
+  border-radius: var(--dg-radius-sm);
+  background: var(--dg-color-bg-surface);
+  font: var(--dg-type-mono-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@keyframes progress {
+  to {
+    transform: translateX(150%);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}

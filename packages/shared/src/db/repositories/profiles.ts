@@ -16,14 +16,17 @@ export type ProfileRow = Tables<'profiles'>;
 export async function listProfilesByIds(
   client: DgClient,
   userIds: readonly string[],
+  signal?: Parameters<ReturnType<DgClient['rpc']>['abortSignal']>[0],
 ): Promise<DgResult<ProfileRow[]>> {
   if (userIds.length === 0) {
     return { data: [], error: null };
   }
-  const { data, error, status } = await client
+  const query = client
     .from('profiles')
     .select('*')
     .in('user_id', [...userIds]);
+  if (signal) { query.abortSignal(signal); query.retry(false); }
+  const { data, error, status } = await query;
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }

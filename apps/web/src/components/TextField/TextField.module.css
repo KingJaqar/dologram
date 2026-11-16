@@ -1,0 +1,17 @@
+.field { display: grid; align-content: start; gap: var(--dg-space-2); }
+.field label { font: var(--dg-type-label-md); color: var(--dg-color-text-primary); }
+.control { position: relative; display: flex; align-items: center; box-sizing: border-box; min-height: 44px; border: 1px solid var(--dg-color-border-strong); border-radius: var(--dg-radius-md); background: var(--dg-color-bg-app); }
+.control:focus-within { outline: 2px solid var(--dg-color-brand-primary); outline-offset: -1px; }
+.control input, .control textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; border: 0; border-radius: inherit; padding: var(--dg-space-3); background: transparent; color: var(--dg-color-text-primary); font: var(--dg-type-body-lg); outline: none; }
+.control textarea { max-height: 9em; resize: vertical; }
+.control input { height: 42px; min-height: 42px; padding-block: var(--dg-space-2); }
+.control:has(button) input { padding-inline-end: 44px; }
+.control > button { position: absolute; inset-inline-end: 0; top: 50%; transform: translateY(-50%); }
+.control input::placeholder, .control textarea::placeholder { color: var(--dg-color-text-secondary); }
+.control:has(:disabled), .control:has(input:read-only), .control:has(textarea:read-only) { background: var(--dg-color-bg-surface); border-color: var(--dg-color-border-subtle); }
+.control :disabled { color: var(--dg-color-text-disabled); }
+.help { display: flex; justify-content: space-between; gap: var(--dg-space-2); font: var(--dg-type-body-sm); color: var(--dg-color-text-secondary); }
+.help svg { vertical-align: middle; }
+.counter { margin-inline-start: auto; white-space: nowrap; }
+.field[data-error="true"] .control { outline: 2px solid var(--dg-color-danger); outline-offset: -1px; }
+.field[data-error="true"] .help { color: var(--dg-color-danger); }

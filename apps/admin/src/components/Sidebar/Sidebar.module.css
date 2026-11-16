@@ -1,0 +1,104 @@
+.sidebar {
+  display: flex;
+  flex: 0 0 240px;
+  flex-direction: column;
+  width: 240px;
+  padding: var(--dg-space-4);
+  border-right: 1px solid var(--dg-color-separator);
+  background: var(--dg-color-bg-surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--dg-space-2);
+  margin: 0 0 var(--dg-space-6);
+  font: var(--dg-type-title-md);
+  letter-spacing: var(--dg-type-title-md-letter-spacing);
+}
+
+.mark {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--dg-radius-sm);
+}
+
+.items {
+  display: grid;
+  gap: var(--dg-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--dg-space-3);
+  height: 40px;
+  padding: 0 var(--dg-space-3);
+  border-radius: var(--dg-radius-md);
+  color: var(--dg-color-text-primary);
+  font: var(--dg-type-body-md);
+  letter-spacing: var(--dg-type-body-md-letter-spacing);
+  text-decoration: none;
+}
+
+.item:hover {
+  background: var(--dg-color-bg-pressed);
+}
+
+.item[aria-current="page"] {
+  background: var(--dg-color-bg-selected);
+  color: var(--dg-color-brand-primary);
+}
+
+.tooltip {
+  display: none;
+}
+
+@media (width <= 1023px) {
+  .sidebar {
+    flex-basis: 64px;
+    width: 64px;
+    padding: var(--dg-space-4) var(--dg-space-2);
+  }
+
+  .brand,
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .item {
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+  }
+
+  .tooltip {
+    /* Fixed positioning keeps the rail label clear of sidebar overflow. */
+    position: fixed;
+    left: 64px;
+    z-index: var(--dg-z-sticky);
+    margin-top: var(--dg-space-2);
+    padding: var(--dg-space-1) var(--dg-space-3);
+    border: 1px solid var(--dg-color-border-strong);
+    border-radius: var(--dg-radius-sm);
+    background: var(--dg-color-bg-surface);
+    color: var(--dg-color-text-primary);
+    font: var(--dg-type-label-md);
+    white-space: nowrap;
+  }
+
+  .item:hover .tooltip,
+  .item:focus-visible .tooltip {
+    display: block;
+  }
+}

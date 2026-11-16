@@ -7,10 +7,15 @@
     "packages/*"
   ],
   "scripts": {
+    "admin": "npm run build --workspace apps/admin && npm run start --workspace apps/admin",
+    "admin:dev": "npm run dev --workspace apps/admin",
+    "create-user": "node --conditions=react-server --env-file=apps/admin/.env.local --import tsx scripts/create-user.ts",
+    "create-accounts": "node --conditions=react-server --env-file=apps/admin/.env.local --import tsx scripts/create-accounts.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "gen:types": "supabase gen types typescript --project-id dologram --ref none",
-    "scan:mobile-bundle": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1"
+    "scan:mobile-bundle": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scan-mobile-bundle.ps1",
+    "tokens": "tsx packages/shared/scripts/generate-tokens-css.ts"
   },
   "overrides": {
     "react": "19.2.3",
@@ -21,6 +26,7 @@
     "expo-constants": "57.0.23"
   },
   "devDependencies": {
-    "@react-native/jest-preset": "0.86.3"
+    "@react-native/jest-preset": "0.86.3",
+    "tsx": "4.23.15"
   }
 }

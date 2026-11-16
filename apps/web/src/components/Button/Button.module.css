@@ -1,0 +1,17 @@
+.button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--dg-space-2); min-height: 44px; min-width: 88px; max-width: 100%; padding: var(--dg-space-2) var(--dg-space-6); border: 1px solid transparent; border-radius: var(--dg-radius-md); font: var(--dg-type-label-lg); cursor: pointer; }
+.button > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.primary { background: var(--dg-color-brand-primary); color: var(--dg-color-brand-on-primary); }
+.primary:active { background: var(--dg-color-brand-pressed); }
+.secondary { background: var(--dg-color-bg-app); border-color: var(--dg-color-border-strong); color: var(--dg-color-text-primary); }
+.text { background: transparent; color: var(--dg-color-brand-primary); }
+.secondary:active, .text:active { background: var(--dg-color-bg-pressed); }
+.danger { --dg-button-danger-pressed: color-mix(in srgb, var(--dg-color-danger) 88%, var(--dg-color-shadow)); background: var(--dg-color-danger); color: var(--dg-color-danger-on-danger); }
+.danger:active { background: var(--dg-button-danger-pressed); }
+.button:disabled { cursor: default; }
+.button:disabled:not([aria-busy="true"]) { background: var(--dg-color-bg-disabled); color: var(--dg-color-text-disabled); }
+.secondary:disabled:not([aria-busy="true"]) { border-color: var(--dg-color-border-subtle); }
+.text:disabled:not([aria-busy="true"]) { background: transparent; }
+.hiddenLabel { visibility: hidden; }
+.progress { position: absolute; display: flex; align-items: center; gap: var(--dg-space-2); }
+.spinner { animation: turn var(--dg-motion-spinner-period) linear infinite; }
+@keyframes turn { to { transform: rotate(360deg); } }

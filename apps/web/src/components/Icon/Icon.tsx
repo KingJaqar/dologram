@@ -1,0 +1,90 @@
+import styles from './Icon.module.css';
+import { Clock, LoaderCircle, Check, Eye, XCircle, ChevronLeft, MessageCircle, Plus, Settings, ChevronRight, Archive, Folder, X, EllipsisVertical, CornerDownLeft, Forward, Pencil, Trash2, Copy, CheckCircle, RefreshCw, BellOff, Bell, ArchiveRestore, Pin, PinOff, Star, StarOff, CircleSlash2, UserPlus, MailOpen, FolderPlus, User, Users, FileText, EyeOff, Send, Paperclip, Camera, Phone, Mic, Volume2, VolumeX, Download, Share, Play, Ellipsis, LogOut, Lock, Search, Link, Image, Video, ThumbsUp, Heart, Smile, ThumbsDown, Angry, ChevronUp, LayoutDashboard, Wrench, ScrollText, ListChecks, CircleCheck, BadgeCheck, AlertTriangle, WifiOff, SignalLow, Wifi, Bookmark, Info, ArrowDown, type LucideIcon } from 'lucide-react';
+import { iconSizes, type LucideIconName, type IconSize } from '@dologram/shared/src/theme/icons';
+import { browserIcons, isBrowserLucideName, webIconNames, type WebIconName } from './webIcons';
+
+const icons: Record<LucideIconName, LucideIcon> = {
+  'clock': Clock,
+  'loader-circle': LoaderCircle,
+  'check': Check,
+  'eye': Eye,
+  'x-circle': XCircle,
+  'chevron-left': ChevronLeft,
+  'message-circle': MessageCircle,
+  'plus': Plus,
+  'settings': Settings,
+  'chevron-right': ChevronRight,
+  'archive': Archive,
+  'folder': Folder,
+  'x': X,
+  'ellipsis-vertical': EllipsisVertical,
+  'corner-down-left': CornerDownLeft,
+  'forward': Forward,
+  'pencil': Pencil,
+  'trash-2': Trash2,
+  'copy': Copy,
+  'check-circle': CheckCircle,
+  'circle-check': CircleCheck,
+  'refresh-cw': RefreshCw,
+  'bell-off': BellOff,
+  'bell': Bell,
+  'archive-restore': ArchiveRestore,
+  'pin': Pin,
+  'pin-off': PinOff,
+  'star': Star,
+  'star-off': StarOff,
+  'circle-slash-2': CircleSlash2,
+  'user-plus': UserPlus,
+  'mail-open': MailOpen,
+  'folder-plus': FolderPlus,
+  'user': User,
+  'users': Users,
+  'file-text': FileText,
+  'eye-off': EyeOff,
+  'send': Send,
+  'paperclip': Paperclip,
+  'camera': Camera,
+  'phone': Phone,
+  'mic': Mic,
+  'volume-2': Volume2,
+  'volume-x': VolumeX,
+  'download': Download,
+  'share': Share,
+  'play': Play,
+  'ellipsis': Ellipsis,
+  'log-out': LogOut,
+  'lock': Lock,
+  'search': Search,
+  'link': Link,
+  'image': Image,
+  'video': Video,
+  'thumbs-up': ThumbsUp,
+  'heart': Heart,
+  'smile': Smile,
+  'thumbs-down': ThumbsDown,
+  'angry': Angry,
+  'chevron-up': ChevronUp,
+  'layout-dashboard': LayoutDashboard,
+  'wrench': Wrench,
+  'scroll-text': ScrollText,
+  'list-checks': ListChecks,
+  'badge-check': BadgeCheck,
+  'alert-triangle': AlertTriangle,
+  'wifi-off': WifiOff,
+  'signal-low': SignalLow,
+  'wifi': Wifi,
+  'bookmark': Bookmark,
+  'info': Info,
+  'arrow-down': ArrowDown,
+};
+
+export interface IconProps { name: WebIconName; size?: IconSize; label?: string; className?: string; spin?: boolean }
+
+export function Icon({ name, size = 'md', label, className, spin = false }: IconProps) {
+  const semantic = webIconNames[name];
+  const Component = isBrowserLucideName(semantic) ? browserIcons[semantic] : icons[semantic];
+  const dimensions = iconSizes[size];
+  return <Component size={dimensions.size} strokeWidth={dimensions.stroke} className={[className, spin ? styles.spin : undefined].filter(Boolean).join(' ')}
+    role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false" />;
+}
+

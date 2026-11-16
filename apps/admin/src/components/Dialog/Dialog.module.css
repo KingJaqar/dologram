@@ -1,0 +1,34 @@
+.dialog {
+  z-index: var(--dg-z-dialog);
+  max-width: calc(100vw - var(--dg-space-8));
+  max-height: calc(100dvh - var(--dg-space-8));
+  padding: var(--dg-space-7);
+  overflow: auto;
+  border: 0;
+  border-radius: var(--dg-radius-lg);
+  background: var(--dg-color-bg-elevated);
+  color: var(--dg-color-text-primary);
+  box-shadow: var(--dg-elevation-3);
+}
+
+.dialog[open] {
+  display: grid;
+  gap: var(--dg-space-4);
+}
+
+.dialog::backdrop {
+  background: var(--dg-color-scrim);
+}
+
+.confirm {
+  width: 400px;
+}
+
+.form {
+  width: 520px;
+}
+
+.title {
+  margin: 0;
+  font: var(--dg-type-title-md);
+}

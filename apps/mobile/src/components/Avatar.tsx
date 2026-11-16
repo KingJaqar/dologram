@@ -6,11 +6,13 @@
  * Special: Saved Messages uses bookmark icon; deleted/former use person icon.
  * 12.3, D-95
  */
-import React, { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, View } from 'react-native';
+import { ThemeSurface, ThemeText as Text } from '../theme/ThemeSurface';
 import { useTheme } from '../theme/ThemeProvider';
 import { textStyle } from '../theme/typography';
 import { Icon } from './Icon';
+import { supabase } from '../lib/supabase';
 
 export type AvatarSize = 24 | 28 | 40 | 48 | 56 | 64 | 96;
 
@@ -18,12 +20,24 @@ export interface AvatarProps {
   id: string;
   displayName: string;
   size?: AvatarSize;
-  /** Public profile image URL. Falls back to initials when absent or unavailable. */
+  /** Render a full-width rectangular profile banner instead of a circular avatar. */
+  variant?: 'circle' | 'banner';
+  /** Height used by the full-width banner variant. */
+  bannerHeight?: number;
+  /** Profile storage path or signed URL. Falls back to initials when absent or unavailable. */
   imageUrl?: string | null;
+  imageBucket?: 'avatars' | 'chat-avatars';
   /** When true, renders the Saved Messages bookmark icon. */
   isSavedMessages?: boolean;
   /** When 'deleted' or 'former', renders the person icon on muted bg. */
   personState?: 'normal' | 'deleted' | 'former';
+}
+
+const PROFILE_AVATAR_BUCKET = 'avatars';
+const AVATAR_SIGNED_URL_LIFETIME = 60 * 60;
+
+function isRemoteUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
 }
 
 /** Computes initials from a display name (first code point of first two words). */
@@ -56,14 +70,46 @@ export function Avatar({
   id,
   displayName,
   size = 40,
+  variant = 'circle',
+  bannerHeight = 236,
   imageUrl,
+  imageBucket = PROFILE_AVATAR_BUCKET,
   isSavedMessages = false,
   personState = 'normal',
 }: AvatarProps) {
   const theme = useTheme();
   const c = theme.colors;
   const fills = theme.avatarFills;
+  const isBanner = variant === 'banner';
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<{ source: string; bucket: string; url: string } | null>(null);
+  // Never display a previous person's image while a new storage path is being signed.
+  const resolvedImageUrl = imageUrl && isRemoteUrl(imageUrl)
+    ? imageUrl
+    : resolved && resolved.source === imageUrl && resolved.bucket === imageBucket ? resolved.url : null;
+
+  useEffect(() => {
+    let active = true;
+    if (!imageUrl || isRemoteUrl(imageUrl)) return;
+
+    // Profile rows contain a storage path, not a browser-readable URL. Resolve it at render time so
+    // the private bucket can authorize the image for the current session.
+    void supabase.storage
+      .from(imageBucket)
+      .createSignedUrl(imageUrl, AVATAR_SIGNED_URL_LIFETIME)
+      .then(({ data, error }) => {
+        if (!active) return;
+        setFailedImageUrl(null);
+        setResolved(error || !data?.signedUrl ? null : { source: imageUrl, bucket: imageBucket, url: data.signedUrl });
+      })
+      .catch(() => {
+        if (active) setResolved(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [imageBucket, imageUrl]);
 
   let bgColor: string;
   let content: React.ReactNode;
@@ -88,14 +134,14 @@ export function Avatar({
         accessibilityLabel={personState === 'deleted' ? 'Deleted account' : 'Former member'}
       />
     );
-  } else if (imageUrl && failedImageUrl !== imageUrl) {
+  } else if (resolvedImageUrl && failedImageUrl !== resolvedImageUrl) {
     bgColor = c.badge.muted.bg;
     content = (
       <Image
-        source={{ uri: imageUrl }}
-        style={{ width: size, height: size }}
+        source={{ uri: resolvedImageUrl }}
+        style={isBanner ? { width: '100%', height: '100%' } : { width: size, height: size }}
         resizeMode="cover"
-        onError={() => setFailedImageUrl(imageUrl)}
+        onError={() => setFailedImageUrl(resolvedImageUrl)}
         accessibilityLabel="Profile picture"
       />
     );
@@ -125,12 +171,16 @@ export function Avatar({
     );
   }
 
+  // Most avatar fills are theme-independent. Keep those as plain views so a
+  // long chat list does not register needless transitions for every avatar.
+  const Container = isSavedMessages || personState !== 'normal' ? ThemeSurface : View;
+
   return (
-    <View
+    <Container
       style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
+        width: isBanner ? '100%' : size,
+        height: isBanner ? bannerHeight : size,
+        borderRadius: isBanner ? 0 : size / 2,
         backgroundColor: bgColor,
         alignItems: 'center',
         justifyContent: 'center',
@@ -140,6 +190,6 @@ export function Avatar({
       importantForAccessibility="no"
     >
       {content}
-    </View>
+    </Container>
   );
 }

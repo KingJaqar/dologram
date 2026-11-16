@@ -15,8 +15,16 @@ export const dologramColors = {
   warmIvory: '#EDE8D0',
 } as const;
 
-export const color = {
+/** Fixed artwork colors from the DoloGram logo, independent of the UI theme. */
+export const dologramLogoColors = {
+  outline: '#000000',
+  paper: '#EAEACC',
+  letter: '#464645',
+} as const;
+
+const baseColor = {
   light: {
+    connection: { stable: '#22C55E', unstable: '#EAB308', free: '#3B82F6', offline: '#EF4444' },
     bg: {
       app: dologramColors.warmIvory,
       chat: '#F3EFD9',
@@ -80,6 +88,7 @@ export const color = {
     },
   },
   dark: {
+    connection: { stable: '#22C55E', unstable: '#EAB308', free: '#3B82F6', offline: '#EF4444' },
     bg: {
       app: dologramColors.deepCharcoal,
       chat: '#252323',
@@ -103,7 +112,7 @@ export const color = {
     bubble: {
       outgoing: dologramColors.warmIvory,
       outgoingText: dologramColors.deepCharcoal,
-      incoming: '#252323',
+      incoming: '#383535',
       incomingText: dologramColors.warmIvory,
       join: '#4A4635',
       joinText: dologramColors.warmIvory,
@@ -146,6 +155,27 @@ export const color = {
 
 export type ColorScheme = 'light' | 'dark';
 export type ColorToken = string;
+
+/** Additive admin semantics; existing mobile colors retain their exact values. */
+function withAdminColors<T extends typeof baseColor.light | typeof baseColor.dark>(base: T, success: string) {
+  return {
+    ...base,
+    bg: { ...base.bg, disabled: base.bg.pressed, selected: base.bg.pressed },
+    text: { ...base.text, disabled: base.text.secondary },
+    brand: { ...base.brand, onPrimary: base.text.inverse },
+    border: { subtle: base.separator, strong: base.text.secondary },
+    focus: { ring: base.brand.primary },
+    danger: { text: base.error.text, bg: base.error.bg, onDanger: base.error.bg },
+    warning: { ...base.warning, bar: base.warning.text },
+    toast: { bg: base.text.primary, text: base.text.inverse, action: base.text.inverse },
+    success,
+  };
+}
+
+export const color = {
+  light: withAdminColors(baseColor.light, '#18794E'),
+  dark: withAdminColors(baseColor.dark, '#5FD39A'),
+} as const;
 
 // ─── Avatar fills ─────────────────────────────────────────────────────────────
 
@@ -191,6 +221,7 @@ export const typeTokens = {
   bodySm:     { family: 'Inter', weight: 400, size: 12, lineHeight: 16, letterSpacing: 0 },
   labelLg:    { family: 'Inter', weight: 500, size: 14, lineHeight: 20, letterSpacing: 0.01 },
   labelMd:    { family: 'Inter', weight: 500, size: 12, lineHeight: 16, letterSpacing: 0.02 },
+  labelSm:    { family: 'Inter', weight: 500, size: 12, lineHeight: 16, letterSpacing: 0.02 },
   mono:       { family: 'JetBrains Mono', weight: 400, size: 14, lineHeight: 18, letterSpacing: 0 },
   monoSm:     { family: 'JetBrains Mono', weight: 400, size: 12, lineHeight: 16, letterSpacing: 0 },
 } as const satisfies Record<string, TypeToken>;
@@ -258,6 +289,7 @@ export const motion = {
     toast: 4000,
     toastClose: 6000,
     spinner: 1000,
+    shimmer: 1200,
     reduceMotion: 100,
   },
   easing: {
@@ -268,6 +300,7 @@ export const motion = {
   },
   delay: {
     loading: 300,
+    search: 150,
   },
   toast: {
     duration: 4000,
@@ -282,6 +315,7 @@ export type MotionDurationToken = typeof motion.duration;
 export const z = {
   base: 0,
   banner: 10,
+  sticky: 100,
   overlay: 100,
   sheet: 200,
   dialog: 300,

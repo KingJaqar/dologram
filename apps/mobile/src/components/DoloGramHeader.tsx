@@ -4,10 +4,21 @@ import { Image, Pressable, StyleSheet, useWindowDimensions, View } from 'react-n
 import { TopBar } from './TopBar';
 import { HeaderNavActions } from './HeaderNavActions';
 import { useTheme } from '../theme/ThemeProvider';
+import { ThemeSurface } from '../theme/ThemeSurface';
 import { Icon } from './Icon';
-import { HeaderTab } from './HeaderTab';
+import { Badge } from './Badge';
+import type { ConnectionStatus } from '../net/connectionStatus';
+import {
+  COMPACT_ACTIVE_TAB_WIDTH,
+  HEADER_CONTROL_WIDTH,
+  HeaderTab,
+  useHeaderSelection,
+  WIDE_ACTIVE_TAB_WIDTH,
+  type HeaderSection,
+} from './HeaderTab';
 
 export interface DoloGramHeaderProps {
+  connectionStatus?: ConnectionStatus;
   onChatsPress: () => void;
   onFoldersPress?: () => void;
   onArchivePress?: () => void;
@@ -16,13 +27,16 @@ export interface DoloGramHeaderProps {
   /** Render the archive action even when the current screen is already Archive. */
   showArchive?: boolean;
   archivedCount?: number;
+  ignoredCount?: number;
+  chatsCount?: number;
   onProfilePress: () => void;
-  activeSection?: 'chats' | 'archive' | 'ignored' | 'folders' | 'settings';
+  activeSection?: HeaderSection;
   right?: React.ReactNode;
   below?: React.ReactNode;
 }
 
 export function DoloGramHeader({
+  connectionStatus,
   onChatsPress,
   onFoldersPress,
   onArchivePress,
@@ -30,6 +44,8 @@ export function DoloGramHeader({
   onSearchPress,
   showArchive,
   archivedCount = 0,
+  ignoredCount = 0,
+  chatsCount = 0,
   onProfilePress,
   activeSection = 'chats',
   right,
@@ -37,83 +53,108 @@ export function DoloGramHeader({
 }: DoloGramHeaderProps) {
   const theme = useTheme();
   const c = theme.colors;
+  const selection = useHeaderSelection(activeSection, theme.reduceMotion);
   const { width } = useWindowDimensions();
   const searchButton = useRef<View>(null);
-  const showActiveLabel = !onSearchPress || width >= (activeSection === 'chats' ? 354 : 362);
+  const archiveVisible = showArchive ?? onArchivePress !== undefined;
+  const horizontalPadding = width < 380 ? 0 : 4;
+  const availableWidth = width - 2 * horizontalPadding;
+  // Chats and Profile are always present. Reserve space for one active tab.
+  const inactiveCount = 1 + Number(!!onFoldersPress) + Number(archiveVisible)
+    + Number(!!onIgnoredPress) + Number(!!onSearchPress);
+  const compact = availableWidth < inactiveCount * HEADER_CONTROL_WIDTH + WIDE_ACTIVE_TAB_WIDTH;
+  const controlWidth = Math.max(
+    0,
+    Math.min(HEADER_CONTROL_WIDTH, Math.floor((availableWidth - COMPACT_ACTIVE_TAB_WIDTH) / inactiveCount)),
+  );
 
   return (
     <>
       <TopBar
         leftWide
-        horizontalPadding={onSearchPress && width < 380 ? 0 : 4}
+        horizontalPadding={horizontalPadding}
         left={
           <View style={styles.headerLeading}>
             <HeaderTab
               label="Chats"
+              section="chats"
+              selection={selection}
               active={activeSection === 'chats'}
               onPress={onChatsPress}
-              accessibilityLabel="Chats"
-              closedWidth={onSearchPress ? 44 : 48}
-              showLabel={showActiveLabel}
-              labelWidth={40}
+              accessibilityLabel={chatsCount > 0 ? `Chats, ${chatsCount} unread` : 'Chats'}
+              closedWidth={controlWidth}
+              compact={compact}
               iconWidth={40}
+              compactIconScale={0.625}
               icon={(
-                <Image
-                  source={require('../../assets/logo/dologram_logo.png')}
-                  style={styles.logo}
-                  accessible={false}
-                />
+                <View style={styles.badgedIcon}>
+                  <Image
+                    source={require('../../assets/logo/dologram_logo.png')}
+                    style={styles.logo}
+                    accessible={false}
+                  />
+                  {chatsCount > 0 ? (
+                    <View style={styles.badge}>
+                      <Badge count={chatsCount} />
+                    </View>
+                  ) : null}
+                </View>
               )}
             />
             {onFoldersPress ? (
               <HeaderTab
                 label="Folders"
+                section="folders"
+                selection={selection}
                 active={activeSection === 'folders'}
                 onPress={onFoldersPress}
                 accessibilityLabel="Folders"
-                showLabel={showActiveLabel}
+                closedWidth={controlWidth}
+                compact={compact}
                 icon={(
                   <Icon
-                  name="nav.folder"
-                  size="md"
-                  color={activeSection === 'folders' ? c.brand.primary : c.text.primary}
+                    name="nav.folder"
+                    size="md"
+                    color={activeSection === 'folders' ? c.brand.primary : c.text.primary}
                   />
                 )}
               />
             ) : null}
             <HeaderNavActions
-              showChats={false}
-              showArchive={showArchive ?? onArchivePress !== undefined}
+              selection={selection}
+              showArchive={archiveVisible}
               archiveCount={archivedCount}
+              ignoredCount={ignoredCount}
               activeSection={activeSection}
-              showNew={false}
               showProfile={false}
               onArchivePress={onArchivePress}
               onIgnoredPress={onIgnoredPress}
               showIgnored={onIgnoredPress !== undefined}
-              showActiveLabel={showActiveLabel}
+              controlWidth={controlWidth}
+              compact={compact}
             />
+          </View>
+        }
+        right={
+          <View style={styles.headerRight}>
             {onSearchPress ? (
               <Pressable
                 ref={searchButton}
                 accessibilityRole="button"
                 accessibilityLabel="Search chats and messages"
-                style={({ pressed }) => [styles.search, pressed && { backgroundColor: c.bg.pressed }]}
+                style={({ pressed }) => [styles.search, { width: controlWidth }, pressed && { backgroundColor: c.bg.pressed }]}
                 onPress={() => searchButton.current?.measureInWindow((x, _y, buttonWidth) => onSearchPress(x + buttonWidth / 2))}
               >
                 <Icon name="action.search" size="md" color={c.text.primary} />
               </Pressable>
             ) : null}
-          </View>
-        }
-        right={
-          <View style={styles.headerRight}>
             <HeaderNavActions
-              showChats={false}
+              selection={selection}
               activeSection={activeSection}
-              showNew
+              connectionStatus={connectionStatus}
               showProfile
-              showActiveLabel={showActiveLabel}
+              controlWidth={controlWidth}
+              compact={compact}
               onProfilePress={onProfilePress}
             />
             {right}
@@ -121,14 +162,14 @@ export function DoloGramHeader({
         }
       />
       {below ? (
-        <View
+        <ThemeSurface
           style={[
             styles.below,
             { backgroundColor: c.bg.chatList, borderBottomColor: c.separator },
           ]}
         >
           {below}
-        </View>
+        </ThemeSurface>
       ) : null}
     </>
   );
@@ -137,7 +178,7 @@ export function DoloGramHeader({
 const styles = StyleSheet.create({
   headerLeading: { flexDirection: 'row', alignItems: 'center' },
   headerRight: { flexDirection: 'row', alignItems: 'center' },
-  search: { width: 44, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  search: { height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   below: {
     minHeight: 48,
     flexDirection: 'row',
@@ -147,4 +188,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   logo: { width: 40, height: 40 },
+  badgedIcon: { position: 'relative' },
+  badge: { position: 'absolute', top: -9, right: -14 },
 });

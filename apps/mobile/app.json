@@ -14,9 +14,9 @@
       "package": "com.dologram.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo/dologram_logo.png",
-        "backgroundColor": "#0B6E69"
+        "backgroundColor": "#00000000"
       },
-      "permissions": ["BLUETOOTH_CONNECT"],
+      "permissions": ["BLUETOOTH_CONNECT", "android.permission.REQUEST_INSTALL_PACKAGES"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -25,11 +25,26 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-splash-screen",
-      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo/dologram_splash_light.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "backgroundColor": "#EDE8D0",
+          "dark": {
+            "image": "./assets/logo/dologram_splash_dark.png",
+            "backgroundColor": "#1D1C1C"
+          }
+        }
+      ],
+      ["expo-sqlite", { "useSQLCipher": true, "enableFTS": true }],
+      ["expo-secure-store", { "configureAndroidBackup": false }],
+      "./plugins/withMemoBackup",
+      "./plugins/withMemoAlarm",
       "expo-audio",
       "expo-video",
-      "expo-sharing",
+      ["expo-sharing", { "android": { "enabled": true, "singleShareMimeTypes": ["*/*"], "multipleShareMimeTypes": ["*/*"] } }],
       "expo-notifications",
       [
         "expo-media-library",

@@ -43,31 +43,31 @@ export type DiscardOptions = {
 
 export type DiscardResult =
   | { ok: true }
-  | { ok: false; reason: 'missing' | 'offline' | 'network' };
+  | { ok: false; reason: 'missing' | 'offline' | 'network' | 'server' };
 
 export interface QueueCore {
   /** Opens the store schema and returns leftover `sending` items to `queued` (LS-9). */
   init(): Promise<void>;
   enqueue(input: { messageId: string; payload: TextQueuePayload }): Promise<EnqueueResult>;
   listUnsent(): Promise<QueueItem[]>;
-  countUnsent(): Promise<number>;
+  countUnsent(senderId?: string): Promise<number>;
   /**
    * The items that may be attempted now: at most one per chat — the oldest unsent item — because
    * the rows of one chat are inserted strictly in enqueue order (D-93). An item still backing off,
    * in flight or failed blocks later items of its chat.
    */
-  nextDueItems(at?: number): Promise<QueueItem[]>;
+  nextDueItems(at?: number, senderId?: string): Promise<QueueItem[]>;
   /** Marks the item `sending` and returns the stored copy. */
   beginAttempt(item: QueueItem): Promise<QueueItem>;
   /** Persists that the message row exists while attachment work can still be retried. */
   markRowStored(item: QueueItem): Promise<QueueItem>;
-  applyResult(item: QueueItem, result: ClassifiedError | null): Promise<AttemptOutcome>;
+  applyResult(item: QueueItem, result: ClassifiedError | null, connected?: boolean): Promise<AttemptOutcome>;
   /** D-93: Retry resets the count and makes the item due at once. */
   retry(tempId: string): Promise<RetryResult>;
   /** D-93: Discard soft-deletes the server row first when it may exist. */
   discard(tempId: string, options: DiscardOptions): Promise<DiscardResult>;
   /** D-77: a returning connection makes every queued item due at once. */
-  makeAllDue(): Promise<void>;
+  makeAllDue(senderId?: string): Promise<void>;
   /** Removes sent items from the local queue. */
   cleanup(): Promise<QueueItem[]>;
 }
@@ -82,7 +82,7 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
     messageId: string;
     payload: TextQueuePayload;
   }): Promise<EnqueueResult> {
-    const unsent = await store.countUnsent();
+    const unsent = await store.countUnsent(input.payload.sender_id);
     if (unsent >= timing.maxUnsent) {
       return { ok: false, reason: 'queueFull' };
     }
@@ -100,16 +100,21 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
       last_error: null,
       created_at: at,
     };
-    await store.insert(item);
+    if (store.tryInsert) {
+      if (!await store.tryInsert(item, timing.maxUnsent)) return { ok: false, reason: 'queueFull' };
+    } else {
+      await store.insert(item);
+    }
     return { ok: true, item };
   }
 
-  async function nextDueItems(at: number = now()): Promise<QueueItem[]> {
+  async function nextDueItems(at: number = now(), senderId?: string): Promise<QueueItem[]> {
     const unsent = await store.listUnsent();
     const blockedChats = new Set<string>();
     const due: QueueItem[] = [];
 
     for (const item of unsent) {
+      if (senderId !== undefined && item.payload.sender_id !== senderId) continue;
       if (blockedChats.has(item.chat_id)) continue;
       // Once the message row is stored, attachment retries do not block later message rows.
       if (item.row_state !== 'stored') blockedChats.add(item.chat_id);
@@ -143,6 +148,7 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
   async function applyResult(
     item: QueueItem,
     result: ClassifiedError | null,
+    connected = true,
   ): Promise<AttemptOutcome> {
     const at = now();
 
@@ -174,10 +180,16 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
       return { status: 'deferred', retryAfterSec: Math.ceil(timing.timerMs / 1000) };
     }
 
-    const retryCount = item.retry_count + 1;
+    if (!connected) {
+      await store.update({ ...item, status: 'queued', last_error: 'network', next_attempt_at: at + timing.timerMs });
+      return { status: 'deferred', retryAfterSec: Math.ceil(timing.timerMs / 1000) };
+    }
+
+    const permanent = result.kind === 'server' && result.permanent === true;
+    const retryCount = permanent ? item.retry_count : item.retry_count + 1;
     const kind = result.kind === 'network' ? 'network' : 'server';
 
-    if (retryCount >= timing.maxAttempts) {
+    if (permanent || retryCount >= timing.maxAttempts) {
       await store.update({
         ...item,
         status: 'failed',
@@ -202,6 +214,7 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
   async function retry(tempId: string): Promise<RetryResult> {
     const item = await store.get(tempId);
     if (!item) return { ok: false, reason: 'missing' };
+
     if (item.status !== 'failed') return { ok: false, reason: 'notFailed' };
 
     const reset: QueueItem = {
@@ -221,17 +234,21 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
 
     if (item.row_state !== 'absent' || item.row_may_exist) {
       if (!options.online) return { ok: false, reason: 'offline' };
-      const { error } = await options.softDelete(item.temp_id);
-      // A missing row is already discarded; only a network failure leaves the item in place.
-      if (error && error.kind === 'network') return { ok: false, reason: 'network' };
+      try {
+        const { error } = await options.softDelete(item.temp_id);
+        // RLS-filtered zero-row responses cannot establish absence. Every rejection retains work.
+        if (error) return { ok: false, reason: error.kind === 'network' ? 'network' : 'server' };
+      } catch {
+        return { ok: false, reason: 'network' };
+      }
     }
 
     await store.delete(tempId);
     return { ok: true };
   }
 
-  async function makeAllDue(): Promise<void> {
-    await store.makeAllDue(now());
+  async function makeAllDue(senderId?: string): Promise<void> {
+    await store.makeAllDue(now(), senderId);
   }
 
   async function cleanup(): Promise<QueueItem[]> {
@@ -244,7 +261,7 @@ export function createQueueCore({ store, timing, now, random }: QueueCoreDeps): 
     init,
     enqueue,
     listUnsent: () => store.listUnsent(),
-    countUnsent: () => store.countUnsent(),
+    countUnsent: (senderId) => store.countUnsent(senderId),
     nextDueItems,
     beginAttempt,
     markRowStored,

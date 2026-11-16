@@ -16,13 +16,69 @@ import type {
   ReactionRow,
   SyncCacheStore,
 } from '@dologram/shared';
-import { deleteCachedChat } from './localCache';
+import { removeCachedMembership } from './localCache';
 import { markMessageReceived } from '../metrics/latency';
 
-export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
+type MemberConnection = Pick<SQLiteDatabase, 'getFirstAsync' | 'runAsync'>;
+
+async function upsertConfirmedMember(db: MemberConnection, row: ChatMemberRow): Promise<void> {
+  const current = await db.getFirstAsync<{
+    confirmed_last_read_seq: number | null;
+    confirmed_joined_at: string | null;
+    payload: string;
+  }>(
+    `SELECT confirmed_last_read_seq, confirmed_joined_at, payload
+       FROM cache_chat_members WHERE chat_id = ? AND user_id = ?`,
+    [row.chat_id, row.user_id],
+  );
+  let cachedJoinedAt = current?.confirmed_joined_at ?? null;
+  if (!cachedJoinedAt && current) {
+    try {
+      const payload: unknown = JSON.parse(current.payload);
+      if (typeof payload === 'object' && payload !== null && typeof (payload as { joined_at?: unknown }).joined_at === 'string') {
+        cachedJoinedAt = (payload as { joined_at: string }).joined_at;
+      }
+    } catch {
+      cachedJoinedAt = null;
+    }
+  }
+  if (cachedJoinedAt && cachedJoinedAt !== row.joined_at
+    && Date.parse(cachedJoinedAt) > Date.parse(row.joined_at)) return;
+  const sameMembership = cachedJoinedAt === row.joined_at;
+  const confirmedSeq = sameMembership
+    ? Math.max(current?.confirmed_last_read_seq ?? 0, row.last_read_seq)
+    : row.last_read_seq;
+  const storedRow = { ...row, last_read_seq: confirmedSeq };
+  await db.runAsync(
+    `INSERT INTO cache_chat_members
+       (chat_id, user_id, nickname, last_read_seq, payload, confirmed_last_read_seq, confirmed_joined_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(chat_id, user_id) DO UPDATE SET
+         nickname = excluded.nickname,
+         last_read_seq = excluded.last_read_seq,
+         payload = excluded.payload,
+         confirmed_last_read_seq = excluded.confirmed_last_read_seq,
+         confirmed_joined_at = excluded.confirmed_joined_at`,
+    [row.chat_id, row.user_id, row.nickname ?? null, confirmedSeq, JSON.stringify(storedRow), confirmedSeq, row.joined_at],
+  );
+}
+
+export function createSqliteCacheStore(db: SQLiteDatabase, userId?: string): SyncCacheStore {
   return {
     async init(): Promise<void> {
       // The schema is created and upgraded by getLocalDatabase().
+    },
+
+    async upgradeCheckpoints(): Promise<void> {
+      await db.withExclusiveTransactionAsync(async (txn) => {
+        const row = await txn.getFirstAsync<{ version: number }>('SELECT version FROM sync_checkpoint_upgrade');
+        if (row && row.version > 1) throw new Error('Unsupported sync checkpoint version');
+        if (row?.version === 1) return;
+        await txn.runAsync('DELETE FROM sync_checkpoint_backup', []);
+        await txn.runAsync('INSERT INTO sync_checkpoint_backup SELECT * FROM sync_state', []);
+        await txn.runAsync('UPDATE sync_state SET cursor = 0', []);
+        await txn.runAsync('INSERT INTO sync_checkpoint_upgrade(version) VALUES (1)', []);
+      });
     },
 
     async getCursor(chatId: string): Promise<number> {
@@ -42,15 +98,19 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
     },
 
     async hasChat(chatId: string): Promise<boolean> {
+      if (!userId) return false;
       const row = await db.getFirstAsync<{ chat_id: string }>(
-        'SELECT chat_id FROM cache_chats WHERE chat_id = ?',
-        [chatId],
+        `SELECT chat_id FROM cache_chat_members WHERE chat_id = ? AND user_id = ?`,
+        [chatId, userId],
       );
       return row !== null;
     },
 
     async listChatIds(): Promise<string[]> {
-      const rows = await db.getAllAsync<{ chat_id: string }>('SELECT chat_id FROM cache_chats');
+      if (!userId) return [];
+      const rows = await db.getAllAsync<{ chat_id: string }>(
+        'SELECT chat_id FROM cache_chat_members WHERE user_id = ?', [userId],
+      );
       return rows.map((row) => row.chat_id);
     },
 
@@ -63,15 +123,31 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
     },
 
     async upsertMember(row: ChatMemberRow): Promise<void> {
-      await db.runAsync(
-        `INSERT INTO cache_chat_members (chat_id, user_id, nickname, last_read_seq, payload)
-           VALUES (?, ?, ?, ?, ?)
-           ON CONFLICT(chat_id, user_id) DO UPDATE SET
-             nickname = excluded.nickname,
-             last_read_seq = excluded.last_read_seq,
-             payload = excluded.payload`,
-        [row.chat_id, row.user_id, row.nickname ?? null, row.last_read_seq, JSON.stringify(row)],
-      );
+      await db.withExclusiveTransactionAsync((txn) => upsertConfirmedMember(txn, row));
+    },
+
+    async replaceMembers(chatId: string, rows: readonly ChatMemberRow[]): Promise<void> {
+      if (rows.length === 0) throw new Error('Cannot replace members with an empty snapshot');
+      const memberIds = rows.map((row) => row.user_id);
+      await db.withExclusiveTransactionAsync(async (txn) => {
+        const placeholders = memberIds.map(() => '?').join(', ');
+        await txn.runAsync(
+          `DELETE FROM cache_chat_members WHERE chat_id = ? AND user_id NOT IN (${placeholders})`,
+          [chatId, ...memberIds],
+        );
+        for (const row of rows) await upsertConfirmedMember(txn, row);
+        if (userId) {
+          const own = rows.find((row) => row.user_id === userId);
+          if (own) {
+            await txn.runAsync(
+              `DELETE FROM pending_read_states
+                 WHERE user_id = ? AND chat_id = ?
+                   AND membership_joined_at IS NOT NULL AND membership_joined_at <> ?`,
+              [userId, chatId, own.joined_at],
+            );
+          }
+        }
+      });
     },
 
     async upsertMessage(row: MessageRow): Promise<void> {
@@ -87,7 +163,7 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
              sender_id = excluded.sender_id,
              created_at = excluded.created_at,
              deleted_at = excluded.deleted_at,
-             payload = excluded.payload`,
+             payload = excluded.payload WHERE excluded.sync_seq > cache_messages.sync_seq`,
         [
           row.message_id,
           row.chat_id,
@@ -109,7 +185,7 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
              message_id = excluded.message_id,
              chat_id = excluded.chat_id,
              sync_seq = excluded.sync_seq,
-             payload = excluded.payload`,
+             payload = excluded.payload WHERE excluded.sync_seq > cache_message_media.sync_seq`,
         [row.media_id, row.message_id, row.chat_id, row.sync_seq, JSON.stringify(row)],
       );
     },
@@ -122,7 +198,7 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
              chat_id = excluded.chat_id,
              sync_seq = excluded.sync_seq,
              removed_at = excluded.removed_at,
-             payload = excluded.payload`,
+             payload = excluded.payload WHERE excluded.sync_seq > cache_reactions.sync_seq`,
         [
           row.message_id,
           row.user_id,
@@ -146,7 +222,7 @@ export function createSqliteCacheStore(db: SQLiteDatabase): SyncCacheStore {
     },
 
     async deleteChat(chatId: string): Promise<void> {
-      await deleteCachedChat(db, chatId);
+      if (userId) await removeCachedMembership(db, chatId, userId);
     },
   };
 }

@@ -197,9 +197,11 @@ export function createSqliteQueueStore(db: SQLiteDatabase): LocalQueueStore {
       return rows.map(toItem);
     },
 
-    async countUnsent(): Promise<number> {
+    async countUnsent(senderId?: string): Promise<number> {
       const row = await db.getFirstAsync<{ count: number }>(
-        `SELECT COUNT(*) AS count FROM queue_items WHERE status <> 'sent'`,
+        `SELECT COUNT(*) AS count FROM queue_items WHERE status <> 'sent'
+           AND (? IS NULL OR json_extract(payload, '$.sender_id') = ?)`,
+        [senderId ?? null, senderId ?? null],
       );
       return row?.count ?? 0;
     },
@@ -208,10 +210,11 @@ export function createSqliteQueueStore(db: SQLiteDatabase): LocalQueueStore {
       await db.runAsync(`UPDATE queue_items SET status = 'queued' WHERE status = 'sending'`);
     },
 
-    async makeAllDue(now: number): Promise<void> {
+    async makeAllDue(now: number, senderId?: string): Promise<void> {
       await db.runAsync(
-        `UPDATE queue_items SET next_attempt_at = ? WHERE status = 'queued'`,
-        [now],
+        `UPDATE queue_items SET next_attempt_at = ? WHERE status = 'queued'
+           AND (? IS NULL OR json_extract(payload, '$.sender_id') = ?)`,
+        [now, senderId ?? null, senderId ?? null],
       );
     },
 

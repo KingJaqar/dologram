@@ -1,0 +1,3 @@
+.badge { display: inline-flex; justify-content: center; min-width: 20px; padding: var(--dg-space-1) var(--dg-space-2); border-radius: var(--dg-radius-full); font: var(--dg-type-label-sm); }
+.brand { background: var(--dg-color-badge-unread-bg); color: var(--dg-color-badge-unread-text); }
+.muted { background: var(--dg-color-badge-muted-bg); color: var(--dg-color-badge-muted-text); }

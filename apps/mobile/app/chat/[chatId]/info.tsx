@@ -1,6 +1,6 @@
 /** Messenger-style Chat Info / Conversation Details screen. */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -20,7 +20,8 @@ import {
 import { TopBar } from '../../../src/components/TopBar';
 import { goBackOrReplace } from '../../../src/navigation/goBackOrReplace';
 import { Avatar } from '../../../src/components/Avatar';
-import { Button } from '../../../src/components/Button';
+import { Button, IconButton } from '../../../src/components/Button';
+import { ChatActionsPopover } from '../../../src/components/ChatActionsPopover';
 import { ContactRow } from '../../../src/components/ContactRow';
 import { Dialog } from '../../../src/components/Dialog';
 import { EmptyState, ErrorState } from '../../../src/components/EmptyState';
@@ -28,6 +29,7 @@ import { MemberRow } from '../../../src/components/MemberRow';
 import { SkeletonRow } from '../../../src/components/Skeleton';
 import { BottomSheet } from '../../../src/components/BottomSheet';
 import { Icon } from '../../../src/components/Icon';
+import { MuteOptionGrid } from '../../../src/components/MuteOptionGrid';
 import { actionToast, type ToastAction, type ToastDetails } from '../../../src/notifications/toastCopy';
 import { useToast } from '../../../src/components/Toast';
 import { useTheme } from '../../../src/theme/ThemeProvider';
@@ -40,13 +42,16 @@ import { createSqliteCacheStore } from '../../../src/sync/cacheStore';
 import { useChatInfo } from '../../../src/chats/useChatInfo';
 import { useContacts } from '../../../src/chats/useContacts';
 import { mutationErrorMessage } from '../../../src/chats/errors';
-import { deleteCachedChat } from '../../../src/sync/localCache';
+import { removeCachedMembership } from '../../../src/sync/localCache';
 import { notifyCacheChange } from '../../../src/sync/cacheEvents';
 import { resyncNow } from '../../../src/sync/lifecycle';
 import { deleteChatFromDevice } from '../../../src/chatList/deleteChat';
 import { loadChatListPreferences, setChatListPreference } from '../../../src/chatList/preferences';
 import { useDelayedFlag } from '../../../src/hooks/useDelayedFlag';
-import { cacheMembers } from '../../../src/chat/readState';
+import { cacheMember } from '../../../src/chat/readState';
+import { loadChatSnapshot, type ChatMessageItem } from '../../../src/chat/query';
+import { useCall } from '../../../src/calls/useCall';
+import { attachmentLabel } from '../../../src/media/model';
 import {
   clearChatPreferences,
   loadChatPreferences,
@@ -60,16 +65,18 @@ type QuickActionProps = {
   iconName: string;
   label: string;
   disabled?: boolean;
+  width?: number;
   onPress: () => void;
 };
 
-function QuickAction({ iconName, label, disabled = false, onPress }: QuickActionProps) {
+function QuickAction({ iconName, label, disabled = false, width, onPress }: QuickActionProps) {
   const theme = useTheme();
   const c = theme.colors;
   return (
     <Pressable
       style={({ pressed }) => [
         styles.quickAction,
+        width ? { width, flex: 0 } : undefined,
         { backgroundColor: pressed && !disabled ? c.bg.pressed : 'transparent', opacity: disabled ? 0.5 : 1 },
       ]}
       onPress={onPress}
@@ -85,6 +92,46 @@ function QuickAction({ iconName, label, disabled = false, onPress }: QuickAction
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+function MenuItem({ iconName, label, destructive = false, onPress }: { iconName: string; label: string; destructive?: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  const c = theme.colors;
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.menuItem, pressed && { backgroundColor: c.bg.pressed }]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Icon name={iconName} size="md" color={destructive ? c.error.text : c.text.primary} accessibilityLabel="" />
+      <Text style={[textStyle(theme.typeTokens.bodyLg), { color: destructive ? c.error.text : c.text.primary }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function HorizontalSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const theme = useTheme();
+  const c = theme.colors;
+  return (
+    <View style={[styles.horizontalSection, { borderTopColor: c.separator }]}>
+      <Text style={[textStyle(theme.typeTokens.titleSm), styles.sectionTitle, { color: c.text.secondary }]}>{title}</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRow}>
+        {children}
+      </ScrollView>
+    </View>
+  );
+}
+
+function SharedEmpty() {
+  const theme = useTheme();
+  const c = theme.colors;
+  return (
+    <View style={styles.sharedEmpty}>
+      <Text style={[textStyle(theme.typeTokens.bodyMd), { color: c.text.primary }]}>{strings.chatInfo.noSharedContent}</Text>
+      <Text style={[textStyle(theme.typeTokens.bodySm), { color: c.text.secondary }]}>{strings.chatInfo.noSharedContentBody}</Text>
+    </View>
   );
 }
 
@@ -133,6 +180,7 @@ export default function ChatInfoScreen() {
   const net = useNetState();
   const { session } = useAuth();
   const { showToast } = useToast();
+  const { startVoiceCall, startVideoCall } = useCall();
   const userId = session?.user.id ?? null;
   const { loading, error, info, reload, refresh, applyMember } = useChatInfo(chatId);
   const showLoading = useDelayedFlag(loading);
@@ -155,6 +203,10 @@ export default function ChatInfoScreen() {
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [signedAvatarUrl, setSignedAvatarUrl] = useState<string | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [activeSharedTab, setActiveSharedTab] = useState<'media' | 'files' | 'links'>('media');
+  const [sharedMessages, setSharedMessages] = useState<ChatMessageItem[]>([]);
+  const [sharedLoading, setSharedLoading] = useState(true);
   const handledAddAction = useRef(false);
   const mutationLock = useRef(false);
   useEffect(() => {
@@ -169,6 +221,29 @@ export default function ChatInfoScreen() {
   // Nicknames are shared member labels. The legacy device-only preference is intentionally not
   // used for the title, so an old local value cannot mask the conversation's shared state.
   const shownTitle = info?.title || 'Chat';
+  const canCall = Boolean(net.isConnected && info && !info.isGroup && !info.savedMessages);
+
+  useEffect(() => {
+    if (!chatId || !userId) return;
+    let active = true;
+    setSharedLoading(true);
+    void getLocalDatabase().then((db) => loadChatSnapshot(db, chatId, userId, { limit: 200 })).then((snapshot) => {
+      if (active) setSharedMessages(snapshot.messages.filter((message) => message.deletedAt === null));
+    }).catch(() => {
+      if (active) setSharedMessages([]);
+    }).finally(() => {
+      if (active) setSharedLoading(false);
+    });
+    return () => { active = false; };
+  }, [chatId, userId]);
+
+  const sharedEntries = useMemo(() => sharedMessages.flatMap((message) => message.attachments.map((attachment) => ({ attachment, message }))), [sharedMessages]);
+  const sharedMedia = useMemo(() => sharedEntries.filter(({ attachment }) => attachment.mediaType === 'photo' || attachment.mediaType === 'video'), [sharedEntries]);
+  const sharedFiles = useMemo(() => sharedEntries.filter(({ attachment }) => attachment.mediaType === 'file'), [sharedEntries]);
+  const sharedLinks = useMemo(() => sharedMessages.flatMap((message) => {
+    const urls = message.content.match(/https?:\/\/[^\s)]+/g) ?? [];
+    return urls.map((url) => ({ message, url }));
+  }), [sharedMessages]);
 
   useEffect(() => {
     let active = true;
@@ -316,7 +391,7 @@ export default function ChatInfoScreen() {
         return;
       }
       const db = await getLocalDatabase();
-      await deleteCachedChat(db, chatId);
+      await removeCachedMembership(db, chatId, userId);
       notifyCacheChange();
       setLeaveVisible(false);
       router.replace('/(main)/(tabs)');
@@ -342,7 +417,7 @@ export default function ChatInfoScreen() {
         // a full resync can take seconds and must not leave the opposite action.
         applyMember(result.data);
         try {
-          await cacheMembers(await getLocalDatabase(), [result.data]);
+          await cacheMember(await getLocalDatabase(), result.data);
           await reload();
         } catch {
           // The server succeeded. Retain its state and reconcile later rather
@@ -391,22 +466,14 @@ export default function ChatInfoScreen() {
     }
   }, [chatId, info?.savedMessages, showToast, starred, userId]);
 
-  const removeChatFromDevice = useCallback(async (clearPreferences: boolean) => {
-    if (!chatId) return;
-    const db = await getLocalDatabase();
-    await deleteCachedChat(db, chatId);
-    if (clearPreferences && userId) await clearChatPreferences(userId, chatId);
-    notifyCacheChange();
-    router.replace('/(main)/(tabs)');
-  }, [chatId, router, userId]);
-
   const onBlock = useCallback(async () => {
     if (destructiveBusy || mutationLock.current) return;
     mutationLock.current = true;
     setDestructiveBusy(true);
     try {
       if (!(await updatePreferences({ blocked: true }))) return;
-      await removeChatFromDevice(false);
+      notifyCacheChange();
+      router.replace('/(main)/(tabs)');
     } catch {
       showToast({ message: strings.chatInfo.blockFailed });
     } finally {
@@ -414,7 +481,7 @@ export default function ChatInfoScreen() {
       setDestructiveBusy(false);
       setBlockVisible(false);
     }
-  }, [destructiveBusy, removeChatFromDevice, showToast, updatePreferences]);
+  }, [destructiveBusy, router, showToast, updatePreferences]);
 
   const onDelete = useCallback(async () => {
     if (destructiveBusy || mutationLock.current) return;
@@ -435,9 +502,44 @@ export default function ChatInfoScreen() {
     }
   }, [chatId, destructiveBusy, router, showToast, userId]);
 
+  const startCall = useCallback((kind: 'voice' | 'video') => {
+    if (!net.isConnected) {
+      showToast({ message: strings.callsHistory.offline, variant: 'error' });
+      return;
+    }
+    if (!chatId || !canCall) {
+      showToast({ message: strings.callsHistory.unavailable, variant: 'error' });
+      return;
+    }
+    void (kind === 'voice' ? startVoiceCall(chatId) : startVideoCall(chatId));
+  }, [canCall, chatId, net.isConnected, showToast, startVideoCall, startVoiceCall]);
+
   return (
     <View style={[styles.screen, { backgroundColor: c.bg.app }]}>
-      <TopBar title={strings.chatInfo.title} onBack={() => goBackOrReplace(router, chatId ? { pathname: '/chat/[chatId]', params: { chatId } } : '/(main)/(tabs)')} />
+      <TopBar
+        title={strings.chatInfo.title}
+        onBack={() => goBackOrReplace(router, chatId ? { pathname: '/chat/[chatId]', params: { chatId } } : '/(main)/(tabs)')}
+        right={(
+          <IconButton
+            iconName="nav.more"
+            accessibilityLabel="More chat actions"
+            accessibilityState={{ expanded: menuVisible }}
+            onPress={() => setMenuVisible((visible) => !visible)}
+          />
+        )}
+      />
+
+      {info ? (
+        <ChatActionsPopover visible={menuVisible} onClose={() => setMenuVisible(false)}>
+          <View style={styles.menu}>
+            {!info.savedMessages ? <MenuItem iconName={starred ? 'action.starOff' : 'action.star'} label={strings.chatInfo.menuAddStarred} onPress={() => { setMenuVisible(false); void toggleStar(); }} /> : null}
+            <MenuItem iconName={info.muted ? 'action.unmute' : 'action.mute'} label={strings.chatInfo.menuMute} onPress={() => { setMenuVisible(false); info.muted ? void updateOrganization({ muted_until: null }) : setMuteVisible(true); }} />
+            {!info.isGroup && !info.savedMessages ? <MenuItem iconName="action.newGroup" label={strings.chatInfo.menuCreateGroup} onPress={() => { setMenuVisible(false); router.push({ pathname: '/new-group', params: { groupWith: info.avatarId } }); }} /> : null}
+            {!info.isGroup && !info.savedMessages ? <MenuItem iconName="action.ignore" label={strings.chatInfo.menuBlock} onPress={() => { setMenuVisible(false); setBlockVisible(true); }} /> : null}
+            <MenuItem iconName="action.delete" label={strings.chatInfo.menuDeleteChat} destructive onPress={() => { setMenuVisible(false); setDeleteVisible(true); }} />
+          </View>
+        </ChatActionsPopover>
+      ) : null}
 
       <BottomSheet visible={avatarSheetVisible} onClose={() => setAvatarSheetVisible(false)}>
         <View style={[styles.avatarSheet, { padding: theme.space[4] }]}>
@@ -469,49 +571,51 @@ export default function ChatInfoScreen() {
         <ErrorState title={strings.chatInfo.unavailable} message={error ? strings.common.checkConnection : strings.chatInfo.unavailableBody} onRetry={() => void refresh()} />
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: theme.space[6] }]}>
-          <View style={[styles.header, { padding: theme.space[5], gap: theme.space[3] }]}>
-            <Pressable
-              onPress={() => setAvatarSheetVisible(true)}
-              disabled={!info.isGroup || !info.isOwner || avatarUploading || offline}
-              accessibilityRole={info.isGroup && info.isOwner ? 'button' : undefined}
-              accessibilityLabel={info.isGroup && info.isOwner ? strings.chatInfo.changePicture : shownTitle}
-              accessibilityState={{ disabled: !info.isGroup || !info.isOwner || avatarUploading || offline }}
-              style={styles.avatarButton}
-            >
-              <Avatar id={info.avatarId} displayName={shownTitle} imageUrl={info.isGroup ? signedAvatarUrl : info.avatarUrl} size={96} isSavedMessages={info.savedMessages} />
-              {info.isGroup && info.isOwner ? (
-                <View style={[styles.cameraBadge, { backgroundColor: c.brand.primary }]}>
-                  {avatarUploading ? <ActivityIndicator size="small" color={c.text.inverse} /> : <Icon name="action.camera" size="sm" color={c.text.inverse} accessibilityLabel="" />}
-                </View>
-              ) : null}
-            </Pressable>
-            <Text style={[textStyle(theme.typeTokens.titleLg), { color: c.text.primary, textAlign: 'center' }]} numberOfLines={2}>{shownTitle}</Text>
-            {info.subtitle.length > 0 ? <Text style={[textStyle(theme.typeTokens.bodyMd), { color: c.text.secondary }]} numberOfLines={1}>{info.subtitle}</Text> : null}
-            {preferences?.blocked ? <Text style={[textStyle(theme.typeTokens.bodySm), { color: c.error.text }]}>Blocked on this device</Text> : null}
-          </View>
+          <Pressable
+            style={[styles.profileFrame, { backgroundColor: c.bg.surface }]}
+            onPress={() => {
+              if (info.isGroup && info.isOwner) setAvatarSheetVisible(true);
+              else router.push({ pathname: '/chat/[chatId]/profile', params: { chatId } });
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={info.isGroup && info.isOwner ? strings.chatInfo.changePicture : `Open ${shownTitle}'s profile`}
+          >
+            <Avatar id={info.avatarId} displayName={shownTitle} imageUrl={info.isGroup ? signedAvatarUrl : info.avatarUrl} variant="banner" bannerHeight={236} isSavedMessages={info.savedMessages} />
+            {info.isGroup && info.isOwner ? <View style={[styles.cameraBadge, { backgroundColor: c.brand.primary }]}>{avatarUploading ? <ActivityIndicator size="small" color={c.text.inverse} /> : <Icon name="action.camera" size="sm" color={c.text.inverse} accessibilityLabel="" />}</View> : null}
+            <Text style={[textStyle(theme.typeTokens.titleLg), styles.profileName, { color: c.text.primary }]} numberOfLines={1}>{shownTitle}</Text>
+            <Text style={[textStyle(theme.typeTokens.bodyMd), styles.profileUsername, { color: c.text.secondary }]} numberOfLines={1}>{info.isGroup ? info.subtitle : info.subtitle ? `@${info.subtitle}` : ''}</Text>
+          </Pressable>
 
+          {preferences?.blocked ? <Text style={[textStyle(theme.typeTokens.bodySm), styles.offline, { color: c.error.text }]}>Blocked on this device</Text> : null}
           {offline ? <Text style={[textStyle(theme.typeTokens.bodySm), styles.offline, { color: c.text.secondary }]}>{strings.chatInfo.offline}</Text> : null}
 
-          <View style={[styles.quickRow, { paddingHorizontal: theme.space[3], paddingBottom: theme.space[4] }]}>
-            {info.isGroup ? <QuickAction iconName="action.edit" label={strings.chatInfo.groupName} disabled={offline || !info.isOwner} onPress={() => router.push({ pathname: '/chat/[chatId]/group-name', params: { chatId } })} /> : null}
-            <QuickAction iconName="action.edit" label={strings.chatInfo.nicknames} onPress={() => router.push({ pathname: '/chat/[chatId]/nicknames', params: { chatId } })} />
-            <QuickAction iconName="action.search" label={strings.chatInfo.search} onPress={() => router.push({ pathname: '/chat/[chatId]/search', params: { chatId } })} />
-            <QuickAction iconName="nav.settings" label={strings.chatInfo.customise} onPress={() => router.push({ pathname: '/chat/[chatId]/customise', params: { chatId } })} />
-          </View>
+          <HorizontalSection title="Chat Details">
+            {info.isGroup ? <QuickAction width={108} iconName="action.edit" label={strings.chatInfo.groupName} disabled={offline || !info.isOwner} onPress={() => router.push({ pathname: '/chat/[chatId]/group-name', params: { chatId } })} /> : null}
+            <QuickAction width={96} iconName="action.edit" label={strings.chatInfo.nicknames} onPress={() => router.push({ pathname: '/chat/[chatId]/nicknames', params: { chatId } })} />
+            <QuickAction width={96} iconName="action.search" label={strings.chatInfo.search} onPress={() => router.push({ pathname: '/chat/[chatId]/search', params: { chatId } })} />
+            <QuickAction width={112} iconName="action.pin" label={strings.chatInfo.pinnedMessages} onPress={() => router.push({ pathname: '/chat/[chatId]/pinned', params: { chatId } })} />
+            <QuickAction width={96} iconName="nav.settings" label={strings.chatInfo.customise} onPress={() => router.push({ pathname: '/chat/[chatId]/customise', params: { chatId } })} />
+          </HorizontalSection>
 
-          <View style={[styles.section, { borderTopColor: c.separator, borderBottomColor: c.separator }]}>
-            <InfoRow iconName="action.gallery" label={strings.chatInfo.mediaFilesLinks} onPress={() => router.push({ pathname: '/chat/[chatId]/media', params: { chatId } })} />
-            <InfoRow iconName="action.pin" label={strings.chatInfo.pinnedMessages} onPress={() => router.push({ pathname: '/chat/[chatId]/pinned', params: { chatId } })} />
-          </View>
+          {!info.isGroup && !info.savedMessages ? (
+            <HorizontalSection title="Calling Options">
+              <QuickAction width={108} iconName="action.phone" label={strings.chatInfo.voiceCall} disabled={!canCall} onPress={() => startCall('voice')} />
+              <QuickAction width={108} iconName="action.camera" label={strings.chatInfo.videoCall} disabled={!canCall} onPress={() => startCall('video')} />
+              <QuickAction width={116} iconName="action.phone" label={strings.chatInfo.callsHistory} onPress={() => router.push({ pathname: '/chat/[chatId]/calls', params: { chatId } })} />
+            </HorizontalSection>
+          ) : null}
 
-          <Text style={[textStyle(theme.typeTokens.titleSm), styles.sectionTitle, { color: c.text.secondary }]}>Actions</Text>
-          <View style={styles.section}>
-            {!info.savedMessages ? <InfoRow iconName={starred ? 'action.starOff' : 'action.star'} label={starred ? strings.chatInfo.unstar : strings.chatInfo.star} onPress={() => void toggleStar()} /> : null}
-            <InfoRow iconName={info.muted ? 'action.unmute' : 'action.mute'} label={info.muted ? strings.chatInfo.unmute(shownTitle) : strings.chatInfo.mute(shownTitle)} detail={info.muted ? strings.organization.untilUnmuted : undefined} disabled={offline || organizationBusy} onPress={() => (info.muted ? void updateOrganization({ muted_until: null }) : setMuteVisible(true))} />
-            <InfoRow iconName="action.unmute" label={strings.chatInfo.notifications} detail={preferences?.notifications === false ? strings.chatInfo.off : strings.chatInfo.on} onPress={() => router.push({ pathname: '/chat/[chatId]/notifications', params: { chatId } })} />
-            {!info.isGroup && !info.savedMessages ? <InfoRow iconName="action.newGroup" label={strings.chatInfo.createGroup(shownTitle)} onPress={() => router.push({ pathname: '/new-group', params: { groupWith: info.avatarId } })} /> : null}
-            {info.isGroup ? <InfoRow iconName={info.archived ? 'action.unarchive' : 'action.archive'} label={info.archived ? strings.organization.unarchive : strings.organization.archive} disabled={offline || organizationBusy} onPress={() => void updateOrganization({ archived: !info.archived })} /> : null}
-            {!info.isGroup && !info.savedMessages ? <InfoRow iconName="action.ignore" label={strings.chatInfo.block(shownTitle)} onPress={() => setBlockVisible(true)} /> : null}
+          <HorizontalSection title="Chat Settings">
+            {!info.savedMessages ? <QuickAction width={116} iconName={starred ? 'action.starOff' : 'action.star'} label={strings.chatInfo.menuAddStarred} onPress={() => void toggleStar()} /> : null}
+            <QuickAction width={96} iconName={info.muted ? 'action.unmute' : 'action.mute'} label={strings.chatInfo.menuMute} disabled={offline || organizationBusy} onPress={() => (info.muted ? void updateOrganization({ muted_until: null }) : setMuteVisible(true))} />
+            <QuickAction width={112} iconName="action.unmute" label={strings.chatInfo.notifications} onPress={() => router.push({ pathname: '/chat/[chatId]/notifications', params: { chatId } })} />
+            {!info.isGroup && !info.savedMessages ? <QuickAction width={140} iconName="action.newGroup" label={strings.chatInfo.menuCreateGroup} onPress={() => router.push({ pathname: '/new-group', params: { groupWith: info.avatarId } })} /> : null}
+            {info.isGroup ? <QuickAction width={100} iconName={info.archived ? 'action.unarchive' : 'action.archive'} label={info.archived ? strings.organization.unarchive : strings.organization.archive} disabled={offline || organizationBusy} onPress={() => void updateOrganization({ archived: !info.archived })} /> : null}
+          </HorizontalSection>
+
+          <View style={styles.managementSection}>
+            {!info.isGroup && !info.savedMessages ? <InfoRow iconName="action.ignore" label={strings.chatInfo.menuBlock} onPress={() => setBlockVisible(true)} /> : null}
+            <InfoRow iconName="action.delete" label={strings.chatInfo.menuDeleteChat} destructive onPress={() => setDeleteVisible(true)} />
           </View>
 
           {info.isGroup ? (
@@ -523,27 +627,43 @@ export default function ChatInfoScreen() {
             </View>
           ) : null}
 
-          <View style={[styles.section, styles.dangerSection, { borderTopColor: c.separator }]}><InfoRow iconName="action.delete" label={strings.chatInfo.deleteChat} destructive onPress={() => setDeleteVisible(true)} /></View>
+          <View style={[styles.sharedSection, { borderTopColor: c.separator }]}>
+            <View style={[styles.sharedTabs, { backgroundColor: c.bg.surface }]} accessibilityRole="tablist">
+              {([
+                ['media', strings.chatInfo.media, 'action.gallery'],
+                ['files', strings.chatInfo.files, 'action.file'],
+                ['links', strings.chatInfo.links, 'action.link'],
+              ] as const).map(([tab, label, iconName]) => {
+                const active = activeSharedTab === tab;
+                return (
+                  <Pressable key={tab} style={({ pressed }) => [styles.sharedTab, active && { backgroundColor: c.bg.elevated }, pressed && { backgroundColor: c.bg.pressed }]} onPress={() => setActiveSharedTab(tab)} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: active }}>
+                    <Icon name={iconName} size="md" color={active ? c.brand.primary : c.text.secondary} accessibilityLabel="" />
+                    <Text style={[textStyle(theme.typeTokens.labelMd), styles.sharedTabLabel, { color: active ? c.brand.primary : c.text.secondary }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {sharedLoading ? <ActivityIndicator style={styles.sharedLoading} color={c.brand.primary} /> : activeSharedTab === 'links' ? (
+              sharedLinks.length === 0 ? <SharedEmpty /> : sharedLinks.map(({ message, url }, index) => <Pressable key={`${message.messageId}-${url}-${index}`} style={({ pressed }) => [styles.sharedRow, pressed && { backgroundColor: c.bg.pressed }]} onPress={() => void Linking.openURL(url)} accessibilityRole="link" accessibilityLabel={url}><View style={[styles.sharedIcon, { backgroundColor: c.bg.surface }]}><Icon name="action.link" size="md" color={c.brand.primary} accessibilityLabel="" /></View><Text style={[textStyle(theme.typeTokens.bodyMd), styles.sharedText, { color: c.text.primary }]} numberOfLines={2}>{url}</Text><Icon name="nav.forward" size="sm" color={c.text.muted} accessibilityLabel="" /></Pressable>)
+            ) : (
+              (activeSharedTab === 'media' ? sharedMedia : sharedFiles).length === 0 ? <SharedEmpty /> : (activeSharedTab === 'media' ? sharedMedia : sharedFiles).map(({ attachment, message }) => <Pressable key={attachment.mediaId} style={({ pressed }) => [styles.sharedRow, pressed && { backgroundColor: c.bg.pressed }]} onPress={() => router.push({ pathname: '/chat/[chatId]/media/[mediaId]', params: { chatId, mediaId: attachment.mediaId } })} accessibilityRole="button" accessibilityLabel={`Open ${attachmentLabel(attachment.mediaType)}`}><View style={[styles.sharedIcon, { backgroundColor: c.bg.surface }]}><Icon name={attachment.mediaType === 'photo' ? 'media.photo' : attachment.mediaType === 'video' ? 'media.video' : 'media.file'} size="md" color={c.brand.primary} accessibilityLabel="" /></View><View style={styles.sharedText}><Text style={[textStyle(theme.typeTokens.bodyMd), { color: c.text.primary }]}>{attachmentLabel(attachment.mediaType)}</Text><Text style={[textStyle(theme.typeTokens.bodySm), { color: c.text.secondary }]} numberOfLines={1}>{message.content || 'Shared in chat'}</Text></View><Icon name="nav.forward" size="sm" color={c.text.muted} accessibilityLabel="" /></Pressable>)
+            )}
+          </View>
         </ScrollView>
       )}
 
       <BottomSheet visible={addVisible} onClose={() => { if (!adding) setAddVisible(false); }}>
         <View style={{ paddingBottom: theme.space[6] }}>
           <Text style={[textStyle(theme.typeTokens.titleMd), { color: c.text.primary, paddingHorizontal: theme.space[4], paddingBottom: theme.space[2] }]}>{strings.chatInfo.addMembers}</Text>
-          {contacts.length === 0 ? <EmptyState iconName="action.newChat" title={strings.newGroup.noContacts} message={strings.newGroup.noContactsBody} /> : <ScrollView style={{ maxHeight: 320 }}>{contacts.map((contact) => <ContactRow key={contact.userId} userId={contact.userId} displayName={contact.displayName} selected={addSelected.includes(contact.userId)} disabled={adding || !addSelected.includes(contact.userId) && addSelected.length >= maxSelectableMembers} onToggle={onToggleAdd} />)}</ScrollView>}
+          {contacts.length === 0 ? <EmptyState iconName="action.newChat" title={strings.newGroup.noContacts} message={strings.newGroup.noContactsBody} /> : <ScrollView style={{ maxHeight: 320 }}>{contacts.map((contact) => <ContactRow key={contact.userId} userId={contact.userId} displayName={contact.displayName} avatarUrl={contact.avatarUrl} selected={addSelected.includes(contact.userId)} disabled={adding || !addSelected.includes(contact.userId) && addSelected.length >= maxSelectableMembers} onToggle={onToggleAdd} />)}</ScrollView>}
           <View style={{ paddingHorizontal: theme.space[4], paddingTop: theme.space[3] }}><Button label={strings.chatInfo.add} onPress={() => void onAddMembers()} disabled={offline || addSelected.length === 0 || adding} loading={adding} fullWidth /></View>
         </View>
       </BottomSheet>
 
       <BottomSheet visible={muteVisible} onClose={() => setMuteVisible(false)}>
-        <View style={{ paddingBottom: theme.space[5] }}>
-          <Text style={[textStyle(theme.typeTokens.titleMd), { color: c.text.primary, padding: theme.space[4] }]}>{strings.organization.mute}</Text>
-          {([
-            ['oneHour', strings.organization.oneHour],
-            ['eightHours', strings.organization.eightHours],
-            ['oneWeek', strings.organization.oneWeek],
-            ['untilUnmuted', strings.organization.untilUnmuted],
-          ] as const).map(([option, label]) => <QuickAction key={option} iconName="action.mute" label={label} disabled={offline || organizationBusy} onPress={() => selectMute(option)} />)}
+        <View style={styles.muteSheet}>
+          <Text style={[textStyle(theme.typeTokens.titleMd), styles.muteTitle, { color: c.text.primary }]}>{strings.organization.mute}</Text>
+          <MuteOptionGrid disabled={offline || organizationBusy} onSelect={selectMute} />
         </View>
       </BottomSheet>
 
@@ -558,19 +678,28 @@ export default function ChatInfoScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { flexGrow: 1 },
-  header: { alignItems: 'center' },
-  avatarButton: { position: 'relative' },
+  profileFrame: {
+    width: '100%', height: 236, alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden',
+  },
+  profileName: { position: 'absolute', left: 16, bottom: 16, maxWidth: '62%' },
+  profileUsername: { position: 'absolute', right: 16, bottom: 18, maxWidth: '34%' },
   cameraBadge: {
-    position: 'absolute', right: -2, bottom: -2, width: 32, height: 32, borderRadius: 16,
+    position: 'absolute', right: 16, bottom: 52, width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   offline: { paddingHorizontal: 16, paddingBottom: 12 },
-  quickRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
-  quickAction: { flex: 1, minHeight: 88, alignItems: 'center', justifyContent: 'flex-start', paddingVertical: 6, borderRadius: 12, gap: 6 },
+  quickAction: { minHeight: 88, alignItems: 'center', justifyContent: 'flex-start', paddingVertical: 6, borderRadius: 12, gap: 6 },
   quickIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { textAlign: 'center', minHeight: 30 },
+  muteSheet: { paddingBottom: 12, gap: 8 },
+  muteTitle: { paddingHorizontal: 16, paddingTop: 4 },
   section: { borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
   sectionTitle: { paddingHorizontal: 16, paddingTop: 22, paddingBottom: 6 },
+  horizontalSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingBottom: 10 },
+  horizontalRow: { paddingHorizontal: 12, gap: 4 },
+  menu: { paddingVertical: 4 },
+  menuItem: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 20 },
+  managementSection: { borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
   infoRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingVertical: 8 },
   rowIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, gap: 2 },
@@ -580,6 +709,15 @@ const styles = StyleSheet.create({
   addRow: { height: 64, flexDirection: 'row', alignItems: 'center', gap: 12 },
   addIcon: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   leaveRow: { alignItems: 'flex-start', paddingHorizontal: 16, paddingTop: 12 },
+  sharedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8 },
+  sharedTabs: { flexDirection: 'row', gap: 4, marginHorizontal: 12, padding: 4, borderRadius: 20 },
+  sharedTab: { flex: 1, minWidth: 0, height: 44, borderRadius: 16, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  sharedTabLabel: { flexShrink: 1 },
+  sharedLoading: { padding: 24 },
+  sharedEmpty: { alignItems: 'center', gap: 4, paddingHorizontal: 20, paddingVertical: 28 },
+  sharedRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8 },
+  sharedIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  sharedText: { flex: 1 },
   avatarSheet: { gap: 4 },
   avatarSheetRow: {
     minHeight: 56, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 16,

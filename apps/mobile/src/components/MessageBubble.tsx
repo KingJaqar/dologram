@@ -34,6 +34,8 @@ export type MessageBubbleProps = {
   pinned?: boolean;
   /** Optional per-chat outgoing bubble color selected in Chat Info > Customise. */
   accentColor?: string;
+  /** Search terms are highlighted only in the message body when supplied. */
+  highlightQuery?: string;
 };
 
 function formatTime(value: string): string {
@@ -84,6 +86,7 @@ export function MessageBubble({
   lowSignalActive = false,
   pinned = false,
   accentColor,
+  highlightQuery,
 }: MessageBubbleProps) {
   const theme = useTheme();
   const c = theme.colors;
@@ -95,6 +98,8 @@ export function MessageBubble({
   const deleted = item.deletedAt !== null;
   const label = statusLabel(item, status, lowSignalActive);
   const editedLabel = item.editedAt && !deleted ? strings.chat.edited : null;
+  const hasBubbleContent = deleted || Boolean(item.content) || Boolean(replyPreview) || Boolean(!own && item.senderName);
+  const hasAttachments = !deleted && (item.attachments.length > 0 || item.attachmentCount > item.attachments.length);
   const statusColor = item.pending?.status === 'failed' ? c.error.text : c.text.muted;
   const contentColor = own ? c.bubble.outgoingText : c.bubble.incomingText;
   const timestampStyle = {
@@ -154,36 +159,51 @@ export function MessageBubble({
     <View style={[styles.row, own ? styles.ownRow : styles.receivedRow]}>
       <View style={styles.bubbleRow}>
         {pinned && !deleted ? <View style={styles.pinnedIcon}><Icon name="action.pin" size="xs" color={c.text.muted} accessibilityLabel="" /></View> : null}
-        <Pressable
-          onPress={handlePress}
-          onLongPress={onLongPress}
-          delayLongPress={400}
-          style={({ pressed }) => [styles.bubble, { backgroundColor: own ? (accentColor ?? c.bubble.outgoing) : c.bubble.incoming, borderRadius: theme.radius.bubble, opacity: pressed ? 0.86 : 1, maxWidth: '78%' }]}
-          accessibilityRole="button"
-          accessibilityLabel={`${own ? 'You' : item.senderName}, ${deleted ? strings.chat.deletedMessage : item.content}${item.editedAt ? `, ${strings.chat.edited}` : ''}${pinned ? `, ${strings.chat.pinned}` : ''}${label ? `, ${label}` : ', sent'}`}
-        >
-          {!own && item.senderName ? <Text style={[textStyle(theme.typeTokens.labelMd), { color: c.text.secondary }]}>{item.senderName}</Text> : null}
-          {replyPreview ? (
-            <View style={[styles.replyQuote, { borderLeftColor: own ? c.bubble.outgoingText : c.brand.primary, backgroundColor: own ? c.bubble.join : c.bg.surface }]}>
-              <Text style={[textStyle(theme.typeTokens.labelMd), { color: contentColor }]} numberOfLines={1}>{replyPreview.senderName}</Text>
-              <Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]} numberOfLines={1}>{replyPreview.deleted ? strings.chat.deletedMessage : replyPreview.content}</Text>
-            </View>
-          ) : null}
-          {deleted ? (
-            <View style={styles.deletedRow}><Icon name="chat.deleted" size="xs" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodyMd), styles.deleted, { color: contentColor }]}>{strings.chat.deletedMessage}</Text></View>
-          ) : item.content ? <MessageText content={item.content} color={contentColor} /> : null}
-          {!deleted ? item.attachments.map((attachment, index) => (
-            <AttachmentTile
-              key={attachment.mediaId}
-              attachment={attachment}
-              index={index}
-              total={item.attachmentCount}
-              pending={item.pending?.status === 'sending' && Boolean(attachment.localUri)}
-              onOpen={() => onAttachmentPress?.(attachment)}
-            />
-          )) : null}
-          {!deleted ? Array.from({ length: Math.max(0, item.attachmentCount - item.attachments.length) }, (_, index) => <View key={`upload-${index}`} style={[styles.attachment, { backgroundColor: own ? c.bubble.join : c.bg.surface }]} accessibilityLabel={`${strings.media.waitingUpload}, ${item.attachments.length + index + 1} of ${item.attachmentCount}`}><Icon name="action.file" size="md" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]}>{strings.media.waitingUpload}</Text></View>) : null}
-          {reactions.length > 0 ? (
+        <View style={[styles.messageStack, own ? styles.ownRow : styles.receivedRow]}>
+          {hasBubbleContent ? <Pressable
+            onPress={handlePress}
+            onLongPress={onLongPress}
+            delayLongPress={400}
+            style={({ pressed }) => [styles.bubble, { backgroundColor: own ? (accentColor ?? c.bubble.outgoing) : c.bubble.incoming, borderRadius: theme.radius.bubble, opacity: pressed ? 0.86 : 1 }]}
+            accessibilityRole="button"
+             accessibilityLabel={`${own ? 'You' : item.senderName}, ${deleted ? strings.chat.deletedMessage : item.content}${item.editedAt ? `, ${strings.chat.edited}` : ''}${pinned ? `, ${strings.chat.pinned}` : ''}${label ? `, ${label}` : ''}`}
+          >
+            {!own && item.senderName ? <Text style={[textStyle(theme.typeTokens.labelMd), { color: c.text.secondary }]}>{item.senderName}</Text> : null}
+            {replyPreview ? (
+              <View style={[styles.replyQuote, { borderLeftColor: own ? c.bubble.outgoingText : c.brand.primary, backgroundColor: own ? c.bubble.join : c.bg.surface }]}>
+                <Text style={[textStyle(theme.typeTokens.labelMd), { color: contentColor }]} numberOfLines={1}>{replyPreview.senderName}</Text>
+                <Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]} numberOfLines={1}>{replyPreview.deleted ? strings.chat.deletedMessage : replyPreview.content}</Text>
+              </View>
+            ) : null}
+            {deleted ? (
+              <View style={styles.deletedRow}><Icon name="chat.deleted" size="xs" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodyMd), styles.deleted, { color: contentColor }]}>{strings.chat.deletedMessage}</Text></View>
+            ) : item.content ? <MessageText content={item.content} color={contentColor} highlightQuery={highlightQuery} /> : null}
+            {reactions.length > 0 ? (
+              <View style={styles.reactions}>
+                {reactions.map((reaction) => (
+                  <Pressable hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }} key={reaction.emoji} onPress={() => onReactionPress?.(reaction.emoji)} disabled={reactionDisabled || !onReactionPress} accessibilityRole="button" accessibilityLabel={`${reaction.emoji}, ${reaction.count} reactions${reaction.own ? ', you reacted' : ''}`} accessibilityState={{ disabled: reactionDisabled || !onReactionPress, selected: reaction.own }} style={({ pressed }) => [styles.reaction, { backgroundColor: reaction.own ? c.bg.pressed : c.bg.surface, borderColor: reaction.own ? c.brand.primary : c.separator, opacity: reactionDisabled ? 0.5 : pressed ? 0.75 : 1 }]}>
+                    <Text style={{ color: c.text.primary }}>{reaction.emoji}</Text><Text style={[textStyle(theme.typeTokens.labelMd), { color: reaction.own ? c.brand.primary : c.text.primary }]}>{reaction.count}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+            {!own && timeMounted ? <Animated.Text style={[textStyle(theme.typeTokens.bodySm), styles.timestamp, { color: c.text.muted }, timestampStyle]}>{formatTime(item.createdAt)}</Animated.Text> : null}
+          </Pressable> : null}
+          {hasAttachments ? <View style={styles.attachments}>
+            {!deleted ? item.attachments.map((attachment, index) => (
+              <AttachmentTile
+                key={attachment.mediaId}
+                attachment={attachment}
+                index={index}
+                total={item.attachmentCount}
+                pending={item.pending?.status === 'sending' && Boolean(attachment.localUri)}
+                onOpen={() => onAttachmentPress?.(attachment)}
+                onLongPress={onLongPress}
+              />
+            )) : null}
+            {!deleted ? Array.from({ length: Math.max(0, item.attachmentCount - item.attachments.length) }, (_, index) => <Pressable key={`upload-${index}`} onLongPress={onLongPress} delayLongPress={400} accessibilityLabel={`${strings.media.waitingUpload}, ${item.attachments.length + index + 1} of ${item.attachmentCount}`} accessibilityHint={onLongPress ? 'Long press for message actions' : undefined} style={[styles.attachment, { backgroundColor: own ? c.bubble.join : c.bg.surface }]}><Icon name="action.file" size="md" color={contentColor} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: contentColor }]}>{strings.media.waitingUpload}</Text></Pressable>) : null}
+          </View> : null}
+          {!hasBubbleContent && reactions.length > 0 ? (
             <View style={styles.reactions}>
               {reactions.map((reaction) => (
                 <Pressable hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }} key={reaction.emoji} onPress={() => onReactionPress?.(reaction.emoji)} disabled={reactionDisabled || !onReactionPress} accessibilityRole="button" accessibilityLabel={`${reaction.emoji}, ${reaction.count} reactions${reaction.own ? ', you reacted' : ''}`} accessibilityState={{ disabled: reactionDisabled || !onReactionPress, selected: reaction.own }} style={({ pressed }) => [styles.reaction, { backgroundColor: reaction.own ? c.bg.pressed : c.bg.surface, borderColor: reaction.own ? c.brand.primary : c.separator, opacity: reactionDisabled ? 0.5 : pressed ? 0.75 : 1 }]}>
@@ -192,8 +212,8 @@ export function MessageBubble({
               ))}
             </View>
           ) : null}
-          {!own && timeMounted ? <Animated.Text style={[textStyle(theme.typeTokens.bodySm), styles.timestamp, { color: c.text.muted }, timestampStyle]}>{formatTime(item.createdAt)}</Animated.Text> : null}
-        </Pressable>
+          {!own && !hasBubbleContent && timeMounted ? <Animated.Text style={[textStyle(theme.typeTokens.bodySm), styles.timestamp, { color: c.text.muted }, timestampStyle]}>{formatTime(item.createdAt)}</Animated.Text> : null}
+        </View>
       </View>
       {own && (editedLabel || label || timeMounted) ? (
         <View style={styles.statusRow}>
@@ -211,12 +231,15 @@ const styles = StyleSheet.create({
   row: { width: '100%', paddingHorizontal: 12, marginVertical: 3 },
   ownRow: { alignItems: 'flex-end' },
   receivedRow: { alignItems: 'flex-start' },
-  bubbleRow: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
+  // Resolve the width limit against the full row so short bubbles can fit their text.
+  bubbleRow: { flexDirection: 'row', alignItems: 'center', maxWidth: '78%' },
   pinnedIcon: { width: 20, alignItems: 'center', marginRight: 4 },
   bubble: { paddingHorizontal: 12, paddingVertical: 8 },
   deleted: { fontStyle: 'italic' },
   deletedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   replyQuote: { borderLeftWidth: 3, paddingLeft: 8, paddingVertical: 4, marginBottom: 6, borderRadius: 4 },
+  messageStack: { flexShrink: 1 },
+  attachments: { alignItems: 'flex-start' },
   attachment: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8, marginTop: 6, borderRadius: 8 },
   reactions: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reaction: { minHeight: 28, paddingHorizontal: 8, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },

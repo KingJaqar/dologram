@@ -176,7 +176,7 @@ export default function NewGroupScreen() {
               <ContactRow
                 key={contact.userId}
                 userId={contact.userId}
-                displayName={contact.displayName}
+                displayName={contact.displayName} avatarUrl={contact.avatarUrl}
                 selected={isSelected}
                 disabled={!isSelected && selected.length >= maxSelectableMembers}
                 onToggle={onToggle}

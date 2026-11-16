@@ -1,0 +1,18 @@
+.panel, .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dg-space-2);
+}
+
+.panel {
+  padding: var(--dg-space-4);
+  border: 1px dashed var(--dg-color-border-strong);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-bg-surface);
+}
+
+.label {
+  color: var(--dg-color-text-secondary);
+  font: var(--dg-type-label-md);
+}

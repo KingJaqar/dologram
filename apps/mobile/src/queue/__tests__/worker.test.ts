@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 async function startConnected() {
-  startQueueWorker();
+  startQueueWorker('user-a');
   const notifyNet = jest.mocked(subscribeNetState).mock.calls[0]![0];
   notifyNet({ isConnected: true, type: 'wifi', cellularGeneration: null });
   await jest.advanceTimersByTimeAsync(0);

@@ -49,6 +49,7 @@ function profile(userId: string, displayName: string, username: string): Profile
     avatar_url: null,
     display_name: displayName,
     premium_flags: null,
+    roles: 'user',
     user_id: userId,
     username,
   };

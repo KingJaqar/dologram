@@ -1,34 +1,56 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { strings, removeMember, updateOwnMember, type ChatListItem } from '@dologram/shared';
 import { actionToast, type ToastAction } from '../../notifications/toastCopy';
 import { ChatOrganizationActions } from '../ChatOrganizationActions';
 import { ThemeProvider } from '../../theme/ThemeProvider';
 import { setChatListPreference } from '../preferences';
+import { updateChatPreferences } from '../../chats/preferences';
 import { deleteChatFromDevice } from '../deleteChat';
-import { cacheMembers } from '../../chat/readState';
-import { deleteCachedChat } from '../../sync/localCache';
+import { cacheMember } from '../../chat/readState';
+import { removeCachedMembership } from '../../sync/localCache';
 import type { FolderState } from '../../folders/useFolders';
 
 const mockPush = jest.fn();
 const mockToast = jest.fn();
 const mockSetChats = jest.fn().mockResolvedValue(null);
+const mockTrash = jest.fn().mockResolvedValue(undefined);
 let mockOnline = true;
+let mockDeferSheetExit = false;
+let mockSheetOnExited: (() => void) | undefined;
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('../../auth/AuthProvider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
 jest.mock('../../net/netState', () => ({ useNetState: () => ({ isConnected: mockOnline }) }));
 jest.mock('../../lib/supabase', () => ({ supabase: {} }));
 jest.mock('../../queue/db', () => ({ getLocalDatabase: async () => ({}) }));
-jest.mock('../../chat/readState', () => ({ cacheMembers: jest.fn().mockResolvedValue(undefined) }));
-jest.mock('../../sync/localCache', () => ({ deleteCachedChat: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../../chat/readState', () => ({ cacheMember: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../../sync/localCache', () => ({ removeCachedMembership: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../preferences', () => ({ setChatListPreference: jest.fn().mockResolvedValue({}) }));
+jest.mock('../../chats/preferences', () => ({ updateChatPreferences: jest.fn().mockResolvedValue({ blocked: false }) }));
 jest.mock('../deleteChat', () => ({ deleteChatFromDevice: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../../memos/vault', () => ({
+  activeMemoScope: () => 'me',
+  withMemoStore: (_scope: unknown, work: (store: unknown) => Promise<void>) => work({ trash: mockTrash }),
+}));
 jest.mock('../../components/Toast', () => ({ useToast: () => ({ showToast: mockToast }), ToastModalHost: () => null }));
 jest.mock('../../folders/useFolders', () => ({ useFolders: () => ({
   folders: [{ folder_id: 'work', name: 'Work', chatIds: [] }], setChats: mockSetChats,
 }) }));
 jest.mock('../../components/Icon', () => ({ Icon: () => null }));
-jest.mock('../../components/BottomSheet', () => ({ BottomSheet: ({ visible, children }: { visible: boolean; children: React.ReactNode }) => visible ? children : null }));
+jest.mock('../../components/BottomSheet', () => {
+  const react = jest.requireActual<typeof import('react')>('react');
+  return {
+    BottomSheet: ({ visible, onExited, children }: { visible: boolean; onExited?: () => void; children: React.ReactNode }) => {
+      mockSheetOnExited = onExited;
+      const wasVisible = react.useRef(false);
+      react.useEffect(() => {
+        if (wasVisible.current && !visible && !mockDeferSheetExit) onExited?.();
+        wasVisible.current = visible;
+      }, [visible, onExited]);
+      return visible || mockDeferSheetExit ? children : null;
+    },
+  };
+});
 jest.mock('@dologram/shared', () => ({
   ...jest.requireActual('@dologram/shared'),
   updateOwnMember: jest.fn(), removeMember: jest.fn(),
@@ -40,18 +62,40 @@ const item: ChatListItem = {
   savedMessages: false, avatarId: 'user', avatarName: 'User', ownStatus: null, accessibilityLabel: 'Chat',
 };
 
-function setup(patch: Partial<ChatListItem> = {}, ignored = false) {
+function setup(patch: Partial<ChatListItem> = {}, ignored = false, blocked = false) {
   const onClose = jest.fn();
   const folders = { folders: [{ folder_id: 'work', name: 'Work', chatIds: [] }], setChats: mockSetChats } as unknown as FolderState;
-  const screen = render(<ThemeProvider><ChatOrganizationActions item={{ ...item, ...patch }} folders={folders} ignored={ignored} onClose={onClose} /></ThemeProvider>);
+  const screen = render(<ThemeProvider><ChatOrganizationActions item={{ ...item, ...patch }} folders={folders} ignored={ignored} blocked={blocked} onClose={onClose} /></ThemeProvider>);
   return { screen, onClose };
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockOnline = true;
+  mockDeferSheetExit = false;
+  mockSheetOnExited = undefined;
   jest.mocked(updateOwnMember).mockResolvedValue({ data: { chat_id: 'chat' } as never, error: null });
   jest.mocked(removeMember).mockResolvedValue({ data: true, error: null });
+});
+
+test.each([false, true])('keeps the menu rows unchanged while closing (group: %s)', (isGroup) => {
+  mockDeferSheetExit = true;
+  const folders = { folders: [], setChats: mockSetChats } as unknown as FolderState;
+  const onClose = jest.fn();
+  const view = (selection: ChatListItem | null) => (
+    <ThemeProvider><ChatOrganizationActions item={selection} folders={folders} onClose={onClose} /></ThemeProvider>
+  );
+  const screen = render(view({ ...item, isGroup }));
+  const labels = () => screen.getAllByRole('button').map((button) => button.props.accessibilityLabel);
+  const openLabels = labels();
+  expect(openLabels).toContain(strings.organization.deleteConversation);
+  if (isGroup) expect(openLabels).toContain(strings.organization.leaveGroup);
+
+  screen.rerender(view(null));
+  expect(labels()).toEqual(openLabels);
+
+  act(() => mockSheetOnExited?.());
+  expect(screen.queryByLabelText('Chat conversation actions')).toBeNull();
 });
 
 test.each([
@@ -68,6 +112,13 @@ test.each([
   expect(setChatListPreference).toHaveBeenCalledWith('me', 'chat', key, enabled);
 });
 
+test('Unblock clears the local blocked preference and closes', async () => {
+  const { screen, onClose } = setup({}, false, true);
+  fireEvent.press(screen.getByLabelText('Unblock'));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(updateChatPreferences).toHaveBeenCalledWith('me', 'chat', { blocked: false });
+});
+
 test.each([
   ['Archive', {}, { archived: true }],
   ['Unarchive', { archived: true }, { archived: false }],
@@ -77,7 +128,7 @@ test.each([
   fireEvent.press(screen.getByLabelText(label));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   expect(updateOwnMember).toHaveBeenCalledWith({}, 'chat', 'me', expected);
-  expect(cacheMembers).toHaveBeenCalled();
+  expect(cacheMember).toHaveBeenCalled();
 });
 
 test.each(['1 hour', '8 hours', '1 week', 'Until I unmute'])('mute option %s persists', async (label) => {
@@ -88,11 +139,15 @@ test.each(['1 hour', '8 hours', '1 week', 'Until I unmute'])('mute option %s per
   expect(updateOwnMember).toHaveBeenCalledWith({}, 'chat', 'me', { muted_until: label === 'Until I unmute' ? 'infinity' : expect.any(String) });
 });
 
-test('Add members opens the member picker directly and chat head is absent', () => {
-  const { screen } = setup({ isGroup: true, canAddMembers: true });
+test('Add members opens the member picker directly and chat head is absent', async () => {
+  const { screen, onClose } = setup({ isGroup: true, canAddMembers: true });
   expect(screen.queryByLabelText('Open chat head')).toBeNull();
   fireEvent.press(screen.getByLabelText('Add members'));
-  expect(mockPush).toHaveBeenCalledWith({ pathname: '/chat/[chatId]/info', params: { chatId: 'chat', action: 'add-members' } });
+  await waitFor(() => expect(mockPush).toHaveBeenCalledWith({
+    pathname: '/chat/[chatId]/info', params: { chatId: 'chat', action: 'add-members' },
+  }));
+  // The navigation only starts once the sheet has closed.
+  expect(onClose.mock.invocationCallOrder[0]).toBeLessThan(mockPush.mock.invocationCallOrder[0]);
 });
 
 test('folder changes stay open so more folders can be selected', async () => {
@@ -103,8 +158,8 @@ test('folder changes stay open so more folders can be selected', async () => {
   expect(onClose).not.toHaveBeenCalled();
 });
 
-test('delete requires confirmation and does not ignore or leave the chat', async () => {
-  const { screen, onClose } = setup();
+test.each([false, true])('delete requires confirmation and does not ignore or leave the chat (group: %s)', async (isGroup) => {
+  const { screen, onClose } = setup({ isGroup });
   fireEvent.press(screen.getByLabelText('Delete'));
   expect(deleteChatFromDevice).not.toHaveBeenCalled();
   fireEvent.press(screen.getByLabelText('Delete'));
@@ -114,6 +169,21 @@ test('delete requires confirmation and does not ignore or leave the chat', async
   expect(removeMember).not.toHaveBeenCalled();
 });
 
+test('memo Delete waits for the sheet exit and confirmation before moving to trash', async () => {
+  mockDeferSheetExit = true;
+  const { screen, onClose } = setup({ chatId: 'memo:memo-id', conversation: { kind: 'memo', memoId: 'memo-id' } });
+  fireEvent.press(screen.getByLabelText('Delete'));
+  expect(mockTrash).not.toHaveBeenCalled();
+  expect(screen.queryByText(strings.memos.trashTitle)).toBeNull();
+  act(() => mockSheetOnExited?.());
+  expect(screen.getByText(strings.memos.trashTitle)).toBeTruthy();
+  expect(mockTrash).not.toHaveBeenCalled();
+  fireEvent.press(screen.getAllByLabelText('Delete').slice(-1)[0]);
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(mockTrash).toHaveBeenCalledWith('memo-id', expect.any(Number));
+  expect(deleteChatFromDevice).not.toHaveBeenCalled();
+});
+
 test('leaving a group removes membership only after confirmation', async () => {
   const { screen, onClose } = setup({ isGroup: true });
   fireEvent.press(screen.getByLabelText('Leave group'));
@@ -121,7 +191,7 @@ test('leaving a group removes membership only after confirmation', async () => {
   fireEvent.press(screen.getByLabelText('Leave'));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   expect(removeMember).toHaveBeenCalledWith({}, 'chat', 'me');
-  expect(deleteCachedChat).toHaveBeenCalledWith({}, 'chat');
+  expect(removeCachedMembership).toHaveBeenCalledWith({}, 'chat', 'me');
 });
 
 test('server failure is visible and does not close or remove cached data', async () => {
@@ -130,7 +200,7 @@ test('server failure is visible and does not close or remove cached data', async
   fireEvent.press(screen.getByLabelText('Archive'));
   await waitFor(() => expect(mockToast).toHaveBeenCalledWith({ message: strings.toasts.actions.archiveChat.error, variant: 'error', placement: 'bottom' }));
   expect(onClose).not.toHaveBeenCalled();
-  expect(cacheMembers).not.toHaveBeenCalled();
+  expect(cacheMember).not.toHaveBeenCalled();
 });
 
 test('offline server actions cannot run', () => {

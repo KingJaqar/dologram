@@ -7,7 +7,7 @@ export type ClassifiedError =
   | { kind: 'rateLimited'; retryAfterSec: number }
   | { kind: 'deferred' }
   | { kind: 'network' }
-  | { kind: 'server'; code: string | null; status: number | null };export type DgResult<T> = { data: T; error: null } | { data: null; error: ClassifiedError };
+  | { kind: 'server'; code: string | null; status: number | null; permanent?: boolean };export type DgResult<T> = { data: T; error: null } | { data: null; error: ClassifiedError };
 export type ErrorMessageKey
  =
   | 'chat.statusSent'

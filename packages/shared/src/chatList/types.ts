@@ -30,6 +30,7 @@ export type ChatListSourceRow = {
   otherMemberId: string | null;
   /** Display name of that member, or of the group title holder when the profile is missing. */
   otherMemberName: string | null;
+  otherMemberAvatarUrl?: string | null;
 };
 
 /** The delivery status CMP-09 shows before the preview of the caller's own last message. */
@@ -37,6 +38,8 @@ export type ChatListOwnStatus = 'sent' | 'seen';
 
 /** A chat row as CMP-09 renders it. */
 export type ChatListItem = {
+  /** Omitted for existing ordinary chat callers. Memo keys use memo:<UUID>. */
+  conversation?: { kind: 'memo'; memoId: string } | { kind: 'chat'; chatId: string };
   chatId: string;
   /** Group title, the other member's display name, or "Saved Messages" (AND-03). */
   title: string;
@@ -58,6 +61,8 @@ export type ChatListItem = {
   /** Id and name the avatar is built from (CMP-05). */
   avatarId: string;
   avatarName: string;
+  /** Storage path or remote URL for the profile/group photo. */
+  avatarUrl?: string | null;
   ownStatus: ChatListOwnStatus | null;
   archived: boolean;
   /** Label for screen readers: name, unread count, muted, preview, time (CMP-09). */
@@ -81,6 +86,8 @@ export type BuildChatListOptions = {
   ignoredChatIds?: readonly string[];
   /** Lists ignored conversations across both archive states. */
   ignored?: boolean;
+  /** Lists all rows supplied by the caller, regardless of archive/ignored organization. */
+  blocked?: boolean;
   deletedChatIds?: readonly string[];
   unreadChatIds?: readonly string[];
 };

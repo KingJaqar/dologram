@@ -35,13 +35,18 @@ export type ChatScreenSnapshot = {
   title: string;
   subtitle: string;
   savedMessages: boolean;
+  directProfile: { userId: string; displayName: string; avatarUrl: string | null } | null;
   myLastReadSeq: number;
   unreadCount: number;
   hasMoreBefore: boolean;
 };
 
 type PayloadRow = { payload: string };
-type MemberPayloadRow = { user_id: string; payload: string };
+type MemberPayloadRow = {
+  user_id: string;
+  payload: string;
+  confirmed_last_read_seq: number | null;
+};
 type ProfilePayloadRow = { user_id: string; display_name: string; payload: string };
 type ReactionPayloadRow = { message_id: string; payload: string };
 
@@ -202,16 +207,17 @@ export async function loadChatSnapshotForMessage(
   userId: string,
   messageId: string,
   limit: number,
-): Promise<{ snapshot: ChatScreenSnapshot; beforeSeq?: number }> {
+): Promise<{ snapshot: ChatScreenSnapshot; beforeSeq?: number; targetAvailable: boolean }> {
   const latest = await loadChatSnapshot(db, chatId, userId, { limit });
-  if (latest.messages.some((message) => message.messageId === messageId)) return { snapshot: latest };
-  const target = await db.getFirstAsync<{ seq: number }>(
-    'SELECT seq FROM cache_messages WHERE chat_id = ? AND message_id = ? AND seq IS NOT NULL',
+  const latestTarget = latest.messages.find((message) => message.messageId === messageId);
+  if (latestTarget) return { snapshot: latest, targetAvailable: latestTarget.deletedAt === null };
+  const target = await db.getFirstAsync<{ seq: number; deleted_at: string | null }>(
+    'SELECT seq, deleted_at FROM cache_messages WHERE chat_id = ? AND message_id = ? AND seq IS NOT NULL',
     [chatId, messageId],
   );
-  if (!target) return { snapshot: latest };
+  if (!target) return { snapshot: latest, targetAvailable: false };
   const beforeSeq = target.seq + Math.min(11, limit);
-  return { snapshot: await loadChatSnapshot(db, chatId, userId, { limit, beforeSeq }), beforeSeq };
+  return { snapshot: await loadChatSnapshot(db, chatId, userId, { limit, beforeSeq }), beforeSeq, targetAvailable: target.deleted_at === null };
 }
 
 export async function loadChatSnapshot(
@@ -229,12 +235,25 @@ export async function loadChatSnapshot(
   if (!isChatRow(chat)) throw new Error('This chat is not available offline.');
 
   const memberRows = await db.getAllAsync<MemberPayloadRow>(
-    'SELECT user_id, payload FROM cache_chat_members WHERE chat_id = ?',
+    `SELECT user_id, payload, confirmed_last_read_seq
+       FROM cache_chat_members WHERE chat_id = ?`,
     [chatId],
   );
+  const pendingRead = await db.getFirstAsync<{ last_read_seq: number; membership_joined_at: string | null }>(
+    'SELECT last_read_seq, membership_joined_at FROM pending_read_states WHERE user_id = ? AND chat_id = ?',
+    [userId, chatId],
+  );
   const members = memberRows
-    .map((row) => parsePayload<ChatMemberRow>(row.payload))
-    .filter(isMemberRow);
+    .map((row) => {
+      const member = parsePayload<ChatMemberRow>(row.payload);
+      if (!isMemberRow(member)) return null;
+      const confirmed = row.confirmed_last_read_seq;
+      const ownPending = member.user_id === userId && pendingRead?.membership_joined_at === member.joined_at
+        ? pendingRead.last_read_seq
+        : 0;
+      return { ...member, last_read_seq: Math.max(confirmed ?? 0, ownPending) };
+    })
+    .filter((member): member is ChatMemberRow => member !== null);
   const membersById = new Map(members.map((member) => [member.user_id, member]));
   const ownMember = members.find((member) => member.user_id === userId);
   if (!ownMember) throw new Error('This chat is not available.');
@@ -313,7 +332,7 @@ export async function loadChatSnapshot(
     pending: null,
   }));
 
-  const queueItems = (await getUnsentItems()).filter((item) => item.chat_id === chatId);
+  const queueItems = (await getUnsentItems()).filter((item) => item.chat_id === chatId && item.payload.sender_id === userId);
   const messages = mergeMessages(delivered, queueItems.map(pendingMessage));
   const savedMessages = chat.type === 'direct' && chat.direct_key === userId;
   const otherMember = members.find((member) => member.user_id !== userId);
@@ -323,6 +342,17 @@ export async function loadChatSnapshot(
       ? chat.title ?? strings.chatList.unknownMember
     : profileName(profiles, membersById, otherMember?.user_id ?? '');
   const subtitle = chat.type === 'group' ? strings.chatInfo.membersCount(members.length) : '';
+  const otherProfileRow = profileRows.find((row) => row.user_id === otherMember?.user_id);
+  const otherProfile = otherProfileRow
+    ? parsePayload<{ avatar_url?: string | null }>(otherProfileRow.payload)
+    : null;
+  const directProfile = chat.type === 'direct' && !savedMessages && otherMember
+    ? {
+        userId: otherMember.user_id,
+        displayName: profiles.get(otherMember.user_id) || title,
+        avatarUrl: otherProfile?.avatar_url ?? null,
+      }
+    : null;
   const unreadRow = await db.getFirstAsync<{ count: number }>(
     `SELECT COUNT(*) AS count FROM cache_messages
        WHERE chat_id = ? AND sender_id <> ? AND seq > ? AND deleted_at IS NULL`,
@@ -336,6 +366,7 @@ export async function loadChatSnapshot(
     title,
     subtitle,
     savedMessages,
+    directProfile,
     myLastReadSeq: ownMember.last_read_seq,
     unreadCount: unreadRow?.count ?? 0,
     hasMoreBefore,

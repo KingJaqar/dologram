@@ -11,13 +11,26 @@ import type { DgResult } from '../result';
 
 export type ChatRow = Tables<'chats'>;
 
-/** Every chat the caller is a member of; chats RLS filters the rest out. */
-export async function listMyChats(client: DgClient): Promise<DgResult<ChatRow[]>> {
-  const { data, error, status } = await client.from('chats').select('*');
-  if (error) {
-    return { data: null, error: classifyError(error, status) };
+/** Every chat with a membership for the active account, even beyond the API's row cap. */
+export async function listMyChats(client: DgClient, userId: string, signal?: Parameters<ReturnType<DgClient['rpc']>['abortSignal']>[0]): Promise<DgResult<ChatRow[]>> {
+  const chats: ChatRow[] = [];
+  let after: string | undefined;
+  for (let page = 0; page < 1000; page++) {
+    const query = client.from('chats').select('*, chat_members!inner()')
+      .eq('chat_members.user_id', userId)
+      .order('chat_id')
+      .limit(500);
+    if (after) query.gt('chat_id', after);
+    if (signal) { query.abortSignal(signal); query.retry(false); }
+    const { data, error, status } = await query;
+    if (error) return { data: null, error: classifyError(error, status) };
+    if (data.length === 0) return { data: chats, error: null };
+    chats.push(...data);
+    const next = data.at(-1)?.chat_id;
+    if (!next || (after && next <= after)) return { data: null, error: { kind: 'server', code: null, status: 502 } };
+    after = next;
   }
-  return { data, error: null };
+  return { data: null, error: { kind: 'server', code: null, status: 504 } };
 }
 
 export type CreateChatInput = {
@@ -41,12 +54,13 @@ export async function createChat(
 }
 
 /** One chat, or null when the caller is no longer a member or the chat is gone (D-91). */
-export async function getChat(client: DgClient, chatId: string): Promise<DgResult<ChatRow | null>> {
-  const { data, error, status } = await client
+export async function getChat(client: DgClient, chatId: string, signal?: Parameters<ReturnType<DgClient['rpc']>['abortSignal']>[0]): Promise<DgResult<ChatRow | null>> {
+  const query = client
     .from('chats')
     .select('*')
-    .eq('chat_id', chatId)
-    .maybeSingle();
+    .eq('chat_id', chatId);
+  if (signal) { query.abortSignal(signal); query.retry(false); }
+  const { data, error, status } = await query.maybeSingle();
   if (error) {
     return { data: null, error: classifyError(error, status) };
   }

@@ -12,6 +12,8 @@ import { stopQueueWorker } from '../queue/worker';
 import { notifyQueueChange } from '../queue/events';
 import { notifyCacheChange } from '../sync/cacheEvents';
 import { stopSync } from '../sync/lifecycle';
+import { clearSearchHistoryStorage } from '../search/history';
+import { clearChatListSnapshots } from '../chatList/startupSnapshot';
 
 const CLEAR_LOCAL_DATA_SQL = `
 DELETE FROM cache_folder_chats;
@@ -31,6 +33,7 @@ DELETE FROM queue_items;
 export async function clearLocalData(): Promise<void> {
   stopQueueWorker();
   stopSync();
+  await clearChatListSnapshots();
 
   const db = await getLocalDatabase();
   const queue = createSqliteQueueStore(db);
@@ -38,6 +41,7 @@ export async function clearLocalData(): Promise<void> {
 
   await deleteQueuedAttachmentFiles(queuedItems);
   await db.execAsync(CLEAR_LOCAL_DATA_SQL);
+  await clearSearchHistoryStorage();
   notifyQueueChange();
   notifyCacheChange();
 }

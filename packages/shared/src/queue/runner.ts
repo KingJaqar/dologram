@@ -44,20 +44,26 @@ export type QueueRunner = {
 export type QueueRunnerDeps = {
   core: QueueCore;
   deliver: AttachmentDeliverFn;
+  senderId?: string;
+  canAttempt?: () => boolean;
+  /** Optional live connectivity observation; disconnected failures do not consume attempts. */
+  isConnected?: () => boolean;
   onAttempt?: (record: AttemptRecord) => void;
 };
 
 const EMPTY: DrainSummary = { attempted: 0, sent: 0, failed: 0, retrying: 0, deferred: 0 };
 
-export function createQueueRunner({ core, deliver, onAttempt }: QueueRunnerDeps): QueueRunner {
+export function createQueueRunner({ core, deliver, onAttempt, senderId, canAttempt, isConnected }: QueueRunnerDeps): QueueRunner {
   let inFlight: Promise<DrainSummary> | null = null;
 
   async function runDrain(): Promise<DrainSummary> {
-    const due = await core.nextDueItems();
+    const due = await core.nextDueItems(undefined, senderId);
     const summary: DrainSummary = { ...EMPTY };
 
     for (const item of due) {
+      if (canAttempt && !canAttempt()) break;
       const sending = await core.beginAttempt(item);
+      if (canAttempt && !canAttempt()) break;
       let attemptItem = sending;
       let result: ClassifiedError | null;
       try {
@@ -80,7 +86,7 @@ export function createQueueRunner({ core, deliver, onAttempt }: QueueRunnerDeps)
         result = classifyError(error);
       }
 
-      const outcome = await core.applyResult(attemptItem, result);
+      const outcome = await core.applyResult(attemptItem, result, isConnected?.() ?? true);
       summary.attempted += 1;
       switch (outcome.status) {
         case 'sent':
@@ -112,7 +118,7 @@ export function createQueueRunner({ core, deliver, onAttempt }: QueueRunnerDeps)
 
   async function handleConnectivity(connected: boolean): Promise<DrainSummary> {
     if (!connected) return { ...EMPTY };
-    await core.makeAllDue();
+    await core.makeAllDue(senderId);
     return drain();
   }
 

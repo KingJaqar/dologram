@@ -5,7 +5,7 @@
  *
  * All names confirmed present in lucide-react-native@1.70.0 dist/cjs/icons/.
  */
-export const iconNames: Record<string, string> = {
+const semanticIcons = {
   // --- Status (message delivery) ---
   'status.queued': 'clock',
   'status.sending': 'loader-circle',
@@ -42,12 +42,15 @@ export const iconNames: Record<string, string> = {
   'action.star': 'star',
   'action.starOff': 'star-off',
   'action.ignore': 'circle-slash-2',
+  'action.unignore': 'circle-slash-2',
   'action.addMembers': 'user-plus',
   'action.markUnread': 'mail-open',
   'action.addToFolder': 'folder-plus',
   'action.folder': 'folder',
+  'action.removeFromFolder': 'folder',
   'action.newChat': 'user',
   'action.newGroup': 'users',
+  'action.newMemo': 'file-text',
   'action.showPassword': 'eye',
   'action.view': 'eye',
   'action.hidePassword': 'eye-off',
@@ -66,6 +69,7 @@ export const iconNames: Record<string, string> = {
   'action.signOut': 'log-out',
   'action.changePassword': 'lock',
   'action.search': 'search',
+  'action.link': 'link',
 
   // --- Attachment / media types ---
   'media.photo': 'image',
@@ -84,6 +88,14 @@ export const iconNames: Record<string, string> = {
   'emoji.clap': 'check',
 
   // --- Admin ---
+  'admin.overview': 'layout-dashboard',
+  'admin.accounts': 'users',
+  'admin.maintenance': 'wrench',
+  'admin.audit': 'scroll-text',
+  'admin.settingsCheck': 'list-checks',
+  'admin.lock': 'lock',
+  'admin.pass': 'circle-check',
+  'person.badge': 'badge-check',
   'admin.fail': 'x-circle',
   'admin.success': 'check-circle',
   'admin.warning': 'alert-triangle',
@@ -106,7 +118,12 @@ export const iconNames: Record<string, string> = {
   // --- Jump ---
   'ui.jumpToBottom': 'arrow-down',
   'ui.loading': 'loader-circle',
-};
+} as const;
+
+export type IconName = keyof typeof semanticIcons;
+export type LucideIconName = typeof semanticIcons[IconName];
+// Preserve dynamic string indexing for existing mobile consumers.
+export const iconNames: typeof semanticIcons & Record<string, LucideIconName> = semanticIcons;
 
 /**
  * @deprecated Use iconNames. Kept for backward compat with existing Icon.tsx.

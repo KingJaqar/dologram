@@ -1,0 +1,5 @@
+email,username,display_name
+t46a@example.test,t46_alpha,T46 Alpha
+t46b@example.test,t46_bravo,T46 Bravo
+t46c@example.test,t46_charlie,T46 Charlie
+t46bad@example.test,bad,T46 Invalid

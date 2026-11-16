@@ -1,0 +1,50 @@
+.field {
+  display: grid;
+  gap: var(--dg-space-2);
+}
+
+.label {
+  font: var(--dg-type-label-lg);
+}
+
+.input {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 var(--dg-space-3);
+  border: 1px solid var(--dg-color-border-strong);
+  border-radius: var(--dg-radius-md);
+  background: var(--dg-color-bg-input);
+  color: var(--dg-color-text-primary);
+  font: var(--dg-type-body-lg);
+}
+
+.input::placeholder {
+  color: var(--dg-color-text-secondary);
+}
+
+.input:focus {
+  outline: 2px solid var(--dg-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--dg-color-danger);
+}
+
+.input:disabled {
+  background: var(--dg-color-bg-disabled);
+  color: var(--dg-color-text-disabled);
+}
+
+.mono {
+  font-family: var(--dg-font-mono), monospace;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--dg-space-1);
+  margin: 0;
+  color: var(--dg-color-danger);
+  font: var(--dg-type-body-sm);
+}

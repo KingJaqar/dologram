@@ -14,6 +14,7 @@ import { Icon } from './Icon';
 export interface ContactRowProps {
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
   selected: boolean;
   /** True when the D-58 limit is reached and this row is not selected. */
   disabled?: boolean;
@@ -23,6 +24,7 @@ export interface ContactRowProps {
 export function ContactRow({
   userId,
   displayName,
+  avatarUrl,
   selected,
   disabled = false,
   onToggle,
@@ -42,7 +44,7 @@ export function ContactRow({
       accessibilityLabel={displayName}
       accessibilityState={{ checked: selected, disabled }}
     >
-      <Avatar id={userId} displayName={displayName} size={48} />
+      <Avatar id={userId} displayName={displayName} imageUrl={avatarUrl} size={48} />
 
       <Text style={[textStyle(theme.typeTokens.bodyLg), styles.name, { color: c.text.primary }]} numberOfLines={1}>
         {displayName}

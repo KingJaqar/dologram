@@ -1,0 +1,38 @@
+import groovy.json.JsonSlurper
+
+// Read existing local credentials in the Gradle process so secrets never enter argv.
+gradle.beforeProject { project ->
+    if (project.path == ':app') {
+        project.pluginManager.withPlugin('com.android.application') {
+            project.extensions.getByName('androidComponents').finalizeDsl { android ->
+                // Keep generated React Native C++ object paths within Windows Ninja limits.
+                android.defaultConfig.externalNativeBuild.cmake.arguments.add('-DCMAKE_OBJECT_PATH_MAX=250')
+                android.externalNativeBuild.cmake.buildStagingDirectory =
+                    new File(project.rootDir, '../../../.tmp/cxx').canonicalFile
+                def credentialsFile = new File(project.rootDir.parentFile, 'credentials.json')
+                if (!credentialsFile.isFile()) {
+                    throw new GradleException('Local release requires apps/mobile/credentials.json')
+                }
+                def credentials = new JsonSlurper().parse(credentialsFile)?.android?.keystore
+                if (!credentials || ['keystorePath', 'keystorePassword', 'keyAlias', 'keyPassword'].any {
+                    !(credentials[it] instanceof String) || credentials[it].isEmpty()
+                }) {
+                    throw new GradleException('Local Android signing credentials are incomplete')
+                }
+                def store = new File(credentials.keystorePath)
+                if (!store.isAbsolute()) {
+                    store = new File(credentialsFile.parentFile, credentials.keystorePath)
+                }
+                if (!store.isFile()) {
+                    throw new GradleException('Local release signing keystore is missing')
+                }
+                def signing = android.signingConfigs.maybeCreate('localRelease')
+                signing.storeFile = store
+                signing.storePassword = credentials.keystorePassword
+                signing.keyAlias = credentials.keyAlias
+                signing.keyPassword = credentials.keyPassword
+                android.buildTypes.getByName('release').signingConfig = signing
+            }
+        }
+    }
+}

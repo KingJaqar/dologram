@@ -80,6 +80,48 @@ export type Database = {
           },
         ];
       };
+      call_device_preferences: {
+        Row: {
+          blocked: boolean;
+          chat_id: string;
+          enabled: boolean;
+          push_token: string;
+          sounds: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          blocked?: boolean;
+          chat_id: string;
+          enabled?: boolean;
+          push_token: string;
+          sounds?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          blocked?: boolean;
+          chat_id?: string;
+          enabled?: boolean;
+          push_token?: string;
+          sounds?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'call_device_preferences_chat_id_fkey';
+            columns: ['chat_id'];
+            isOneToOne: false;
+            referencedRelation: 'chats';
+            referencedColumns: ['chat_id'];
+          },
+          {
+            foreignKeyName: 'call_device_preferences_push_token_fkey';
+            columns: ['push_token'];
+            isOneToOne: false;
+            referencedRelation: 'push_tokens';
+            referencedColumns: ['token'];
+          },
+        ];
+      };
       call_participants: {
         Row: {
           call_id: string;
@@ -314,6 +356,48 @@ export type Database = {
           },
         ];
       };
+      message_read_receipts: {
+        Row: {
+          chat_id: string;
+          expires_at: string;
+          message_id: string;
+          message_seq: number;
+          read_at: string;
+          user_id: string;
+        };
+        Insert: {
+          chat_id?: string;
+          expires_at: string;
+          message_id: string;
+          message_seq?: number;
+          read_at?: string;
+          user_id: string;
+        };
+        Update: {
+          chat_id?: string;
+          expires_at?: string;
+          message_id?: string;
+          message_seq?: number;
+          read_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_read_receipts_chat_id_fkey';
+            columns: ['chat_id'];
+            isOneToOne: false;
+            referencedRelation: 'chats';
+            referencedColumns: ['chat_id'];
+          },
+          {
+            foreignKeyName: 'message_read_receipts_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['message_id'];
+          },
+        ];
+      };
       messages: {
         Row: {
           attachment_count: number;
@@ -383,6 +467,7 @@ export type Database = {
           avatar_url: string | null;
           display_name: string;
           premium_flags: string[] | null;
+          roles: 'user' | 'admin';
           user_id: string;
           username: string;
         };
@@ -390,6 +475,7 @@ export type Database = {
           avatar_url?: string | null;
           display_name: string;
           premium_flags?: string[] | null;
+          roles?: 'user' | 'admin';
           user_id: string;
           username: string;
         };
@@ -397,6 +483,7 @@ export type Database = {
           avatar_url?: string | null;
           display_name?: string;
           premium_flags?: string[] | null;
+          roles?: 'user' | 'admin';
           user_id?: string;
           username?: string;
         };
@@ -406,6 +493,8 @@ export type Database = {
         Row: {
           android_channel_id: string | null;
           badges: boolean;
+          call_android_channel_id: string | null;
+          call_notifications: boolean;
           created_at: string;
           last_seen_at: string;
           message_previews: boolean;
@@ -419,6 +508,8 @@ export type Database = {
         Insert: {
           android_channel_id?: string | null;
           badges?: boolean;
+          call_android_channel_id?: string | null;
+          call_notifications?: boolean;
           created_at?: string;
           last_seen_at?: string;
           message_previews?: boolean;
@@ -432,6 +523,8 @@ export type Database = {
         Update: {
           android_channel_id?: string | null;
           badges?: boolean;
+          call_android_channel_id?: string | null;
+          call_notifications?: boolean;
           created_at?: string;
           last_seen_at?: string;
           message_previews?: boolean;
@@ -501,9 +594,47 @@ export type Database = {
           },
         ];
       };
+      user_read_privacy: {
+        Row: {
+          read_time_visibility: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          read_time_visibility: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          read_time_visibility?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
+      get_chat_member_snapshot: {
+        Args: { p_chat_id: string };
+        Returns: Json;
+      };
+      get_message_read_participants: {
+        Args: { p_chat_id: string; p_message_id: string };
+        Returns: Json;
+      };
+      get_my_read_privacy: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      mark_chat_read: {
+        Args: { p_chat_id: string; p_max_seq: number; p_membership_joined_at: string };
+        Returns: Database['public']['Tables']['chat_members']['Row'][];
+      };
+      open_direct_chat: {
+        Args: { p_other_user_id: string; p_chat_id: string };
+        Returns: string;
+      };
       call_record_webhook: {
         Args: {
           p_event_time: string;
@@ -590,9 +721,17 @@ export type Database = {
         Args: { username: string };
         Returns: { display_name: string; user_id: string }[];
       };
+      search_people: {
+        Args: { p_query: string };
+        Returns: { user_id: string; username: string | null; display_name: string }[];
+      };
       set_chat_nickname: {
         Args: { p_chat_id: string; p_nickname: string | null; p_user_id: string };
         Returns: Database['public']['Tables']['chat_members']['Row'][];
+      };
+      set_my_read_privacy: {
+        Args: { p_read_time_visibility: string };
+        Returns: string;
       };
     };
     Enums: { [_ in never]: never };

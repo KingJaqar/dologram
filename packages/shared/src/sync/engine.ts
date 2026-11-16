@@ -1,8 +1,8 @@
 /**
  * Sync engine (M2-05, 6.4, D-40, D-43, D-91, T-13).
  *
- * A Postgres Changes event is merged into the cache by key. The per-chat cursor is the highest
- * sync_seq received and is advanced only by a resync pass, so an event that arrives before the
+ * A Postgres Changes event is merged into the cache by key. The per-chat cursor is a confirmed common
+ * page boundary and is advanced only by a resync pass, so an event that arrives before the
  * pass that covers an offline gap can never hide the rows behind it. On start, foreground and
  * reconnect (`resyncAll`) the engine re-subscribes, refreshes every chat and its members, prunes
  * chats the server no longer lists, and fetches the messages, message_media and reactions rows
@@ -32,10 +32,13 @@ export type SyncEngineDeps = {
   delivery: SyncDelivery;
   /** Pages of 500 rows in the shipped app; injectable so tests stay small (M2-05). */
   pageSize: number;
+  /** A capped pass returns failed/incomplete with its safe continuation retained. */
+  maxPages?: number;
   /** Background failures (an event that cannot be merged) are surfaced, never swallowed. */
   onError: (error: unknown) => void;
   /** Called after a change is merged, so the UI can re-read the cache. */
   onChange?: (change: ChangePayload) => void;
+  onMetadataChange?: () => void;
 };
 
 export interface SyncEngine {
@@ -62,15 +65,23 @@ export function createSyncEngine({
   source,
   delivery,
   pageSize,
+  maxPages = MAX_PAGES_PER_CHAT,
   onError,
   onChange,
+  onMetadataChange,
 }: SyncEngineDeps): SyncEngine {
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1 || !Number.isSafeInteger(maxPages) || maxPages < 1) throw new Error('Invalid sync page bounds');
   let started = false;
+  let revision = 0;
   let unsubscribe: (() => void) | null = null;
   let inflight: Promise<SyncSummary> | null = null;
   const ensuringChats = new Set<string>();
-  /** Chats whose cache contained every row up to the cursor when the last pass finished. */
-  const caughtUp = new Set<string>();
+  const invalidatedMemberRefreshes = new Map<string, Promise<void>>();
+  const queuedMemberRefreshes = new Set<string>();
+  const memberRevisions = new Map<string, number>();
+  const memberRefreshCounts = new Map<string, number>();
+
+  const isCurrent = (pass: number) => started && revision === pass;
 
   // One writer at a time: event merges and resync pages never interleave their cursor updates.
   let writeChain: Promise<unknown> = Promise.resolve();
@@ -87,18 +98,19 @@ export function createSyncEngine({
       media?: readonly MessageMediaRow[];
       reactions?: readonly ReactionRow[];
     },
-    advanceCursor: boolean,
+    cursor: number | null,
+    pass: number,
   ): Promise<void> {
     const all = [...(rows.messages ?? []), ...(rows.media ?? []), ...(rows.reactions ?? [])];
     if (all.length === 0) return;
-    const highest = maxSyncSeq(all);
     await serial(async () => {
-      for (const row of rows.messages ?? []) await store.upsertMessage(row);
-      for (const row of rows.media ?? []) await store.upsertMedia(row);
-      for (const row of rows.reactions ?? []) await store.upsertReaction(row);
+      if (!isCurrent(pass)) return;
+      for (const row of rows.messages ?? []) { if (!isCurrent(pass)) return; await store.upsertMessage(row); }
+      for (const row of rows.media ?? []) { if (!isCurrent(pass)) return; await store.upsertMedia(row); }
+      for (const row of rows.reactions ?? []) { if (!isCurrent(pass)) return; await store.upsertReaction(row); }
       // The cursor moves only forwards and only behind rows that are already stored (D-40).
-      if (advanceCursor && highest > (await store.getCursor(chatId))) {
-        await store.setCursor(chatId, highest);
+      if (isCurrent(pass) && cursor !== null && cursor > (await store.getCursor(chatId))) {
+        await store.setCursor(chatId, cursor);
       }
     });
   }
@@ -107,36 +119,48 @@ export function createSyncEngine({
    * Refreshes one chat's row and members. `missing` means the caller is no longer a member
    * (D-91); `error` keeps the cache untouched so a transient failure cannot delete data.
    */
-  async function refreshChatMeta(chatId: string): Promise<'ok' | 'missing' | 'error'> {
-    const chat = await source.fetchChat(chatId);
+  async function refreshChatMeta(
+    chatId: string,
+    pass: number,
+    knownChat?: ChatRow,
+    expectedMemberRevision = memberRevisions.get(chatId) ?? 0,
+  ): Promise<'ok' | 'missing' | 'error' | 'stale'> {
+    if (!isCurrent(pass)) return 'error';
+    const chat = knownChat ? { data: knownChat, error: null } : await source.fetchChat(chatId);
+    if (!isCurrent(pass)) return 'error';
     if (chat.error) return 'error';
     const chatRow: ChatRow | null = chat.data;
     if (!chatRow) return 'missing';
 
     const members = await source.fetchMembers(chatId);
-    if (members.error) return 'error';
+    if (members.error || !isCurrent(pass)) return 'error';
+    if (members.data.length === 0 || members.data.some((row) => row.chat_id !== chatId)
+      || new Set(members.data.map((row) => row.user_id)).size !== members.data.length) return 'error';
 
     // AND-03 titles and sender names come from the profiles of the chat's members. A profile
     // failure must not block the chat's history, so it is retried on the next pass and the list
     // falls back to its placeholder name until then.
     const profiles = await source.fetchProfiles(members.data.map((row) => row.user_id));
 
+    let applied = false;
     await serial(async () => {
+      if (!isCurrent(pass) || (memberRevisions.get(chatId) ?? 0) !== expectedMemberRevision) return;
       await store.upsertChat(chatRow);
-      for (const row of members.data) await store.upsertMember(row);
+      await store.replaceMembers(chatId, members.data);
       if (!profiles.error) {
         for (const row of profiles.data) await store.upsertProfile(row);
       }
+      applied = true;
     });
-    return 'ok';
+    return applied ? 'ok' : 'stale';
   }
 
   /** Fetches one chat's rows after its cursor, one page per table per round (M2-05). */
-  async function resyncPages(chatId: string): Promise<boolean> {
+  async function resyncPages(chatId: string, pass: number): Promise<boolean> {
     let after = await store.getCursor(chatId);
 
-    for (let page = 0; page < MAX_PAGES_PER_CHAT; page += 1) {
-      if (!started) return false;
+    for (let page = 0; page < maxPages; page += 1) {
+      if (!isCurrent(pass)) return false;
 
       const [messages, media, reactions] = await Promise.all([
         source.fetchMessagesAfter(chatId, after, pageSize),
@@ -144,50 +168,107 @@ export function createSyncEngine({
         source.fetchReactionsAfter(chatId, after, pageSize),
       ]);
 
+      if (!isCurrent(pass)) return false;
       if (messages.error || media.error || reactions.error) {
-        caughtUp.delete(chatId);
         return false;
       }
 
-      const rows = { messages: messages.data, media: media.data, reactions: reactions.data };
-      const count = messages.data.length + media.data.length + reactions.data.length;
-      if (count === 0) {
-        caughtUp.add(chatId);
-        return true;
+      const pages = [messages.data, media.data, reactions.data];
+      // Reject malformed, unordered, cross-chat and non-progressing pages before any write.
+      for (const rows of pages) {
+        let previous = after;
+        if (rows.length > pageSize) return false;
+        for (const row of rows) {
+          if (row.chat_id !== chatId || !Number.isSafeInteger(row.sync_seq) || row.sync_seq <= previous) return false;
+          previous = row.sync_seq;
+        }
       }
-
-      const next = Math.max(
-        after,
-        maxSyncSeq(messages.data),
-        maxSyncSeq(media.data),
-        maxSyncSeq(reactions.data),
-      );
-      await mergeRows(chatId, rows, true);
-      // A server that returns rows without advancing sync_seq would repeat the same page forever.
-      if (next <= after) {
-        caughtUp.add(chatId);
-        return true;
-      }
+      const full = pages.filter((rows) => rows.length === pageSize);
+      const next = full.length > 0
+        ? Math.min(...full.map(maxSyncSeq))
+        : Math.max(after, ...pages.map(maxSyncSeq));
+      if (next <= after && pages.some((rows) => rows.length > 0)) return false;
+      await mergeRows(chatId, { messages: messages.data, media: media.data, reactions: reactions.data }, next, pass);
+      if (!isCurrent(pass)) return false;
+      if (full.length === 0) return true;
       after = next;
     }
-
-    return true;
+    // Keep the safe checkpoint, but never report a capped catch-up as complete.
+    return false;
   }
 
   async function resyncChat(chatId: string): Promise<boolean> {
-    const meta = await refreshChatMeta(chatId);
+    const pass = revision;
+    const meta = await refreshChatMeta(chatId, pass);
+    if (!isCurrent(pass)) return false;
     if (meta === 'error') return false;
+    if (meta === 'stale') {
+      startInvalidatedMemberRefresh(chatId);
+      return false;
+    }
     if (meta === 'missing') {
-      caughtUp.delete(chatId);
-      await serial(() => store.deleteChat(chatId));
+      await serial(async () => { if (isCurrent(pass)) await store.deleteChat(chatId); });
       return true;
     }
-    return resyncPages(chatId);
+    onMetadataChange?.();
+    return resyncPages(chatId, pass);
+  }
+
+  function bumpMemberRevision(chatId: string): number {
+    const next = (memberRevisions.get(chatId) ?? 0) + 1;
+    memberRevisions.set(chatId, next);
+    return next;
+  }
+
+  function startInvalidatedMemberRefresh(chatId: string): void {
+    if (!started || invalidatedMemberRefreshes.has(chatId)) return;
+    const attempts = memberRefreshCounts.get(chatId) ?? 0;
+    if (attempts >= 4) { onError(new Error('Member refresh limit reached; a full resync is required.')); return; }
+    memberRefreshCounts.set(chatId, attempts + 1);
+    const pass = revision;
+    const memberRevision = memberRevisions.get(chatId) ?? 0;
+    const refresh = (async () => {
+      if (!isCurrent(pass)) return;
+      const known = await store.hasChat(chatId);
+      const result = await refreshChatMeta(chatId, pass, undefined, memberRevision);
+      if (!isCurrent(pass)) return;
+      if (result === 'missing') {
+        await serial(async () => { if (isCurrent(pass)) await store.deleteChat(chatId); });
+      }
+      if (result === 'ok' || result === 'missing') memberRefreshCounts.delete(chatId);
+      if (result === 'ok' && !known && !(await resyncPages(chatId, pass)) && isCurrent(pass)) onError(new Error('Chat history catch-up incomplete; safe continuation retained.'));
+      if (result === 'error') onError(new Error('Member refresh incomplete; cached roster retained.'));
+      else onMetadataChange?.();
+    })();
+    invalidatedMemberRefreshes.set(chatId, refresh);
+    const settled = () => {
+      if (invalidatedMemberRefreshes.get(chatId) === refresh) invalidatedMemberRefreshes.delete(chatId);
+      if (queuedMemberRefreshes.delete(chatId) && isCurrent(pass)) startInvalidatedMemberRefresh(chatId);
+    };
+    void refresh.then(settled, (error: unknown) => { onError(error); settled(); });
+  }
+
+  function invalidateMembers(chatId: string): void {
+    if (!started) return;
+    bumpMemberRevision(chatId);
+    if (invalidatedMemberRefreshes.has(chatId)) {
+      queuedMemberRefreshes.add(chatId);
+      return;
+    }
+    startInvalidatedMemberRefresh(chatId);
   }
 
   async function runResyncAll(): Promise<SyncSummary> {
+    const pass = revision;
+    memberRefreshCounts.clear();
+    if (!isCurrent(pass)) return { chats: 0, pruned: 0, failed: 0 };
+    // Realtime can discover a chat while this request is in flight. Only memberships
+    // known before the request are eligible for pruning from this server snapshot.
+    const localIds = await store.listChatIds();
+    const localRevisions = new Map(localIds.map((id) => [id, memberRevisions.get(id) ?? 0]));
+    if (!isCurrent(pass)) return { chats: 0, pruned: 0, failed: 0 };
     const chats = await source.fetchChats();
-    if (chats.error) {
+    if (chats.error || !isCurrent(pass)) {
       return { chats: 0, pruned: 0, failed: 1 };
     }
 
@@ -195,10 +276,10 @@ export function createSyncEngine({
     let pruned = 0;
 
     await serial(async () => {
-      for (const row of chats.data) await store.upsertChat(row);
-      for (const localId of await store.listChatIds()) {
+      for (const localId of localIds) {
+        if (!isCurrent(pass)) return;
         // Only a successful chat list fetch may prune; an offline pass never reaches this line.
-        if (!serverIds.has(localId)) {
+        if (!serverIds.has(localId) && (memberRevisions.get(localId) ?? 0) === localRevisions.get(localId)) {
           await store.deleteChat(localId);
           pruned += 1;
         }
@@ -206,15 +287,20 @@ export function createSyncEngine({
     });
 
     let failed = 0;
+    const ready: string[] = [];
     for (const row of chats.data) {
-      if (!started) break;
-      const ok = await resyncChat(row.chat_id);
-      if (!ok) failed += 1;
+      if (!isCurrent(pass)) break;
+      const result = await refreshChatMeta(row.chat_id, pass, row);
+      if (result === 'ok') ready.push(row.chat_id);
+      else if (result === 'stale') { failed += 1; startInvalidatedMemberRefresh(row.chat_id); }
+      else failed += 1;
     }
+    if (isCurrent(pass)) onMetadataChange?.();
 
-    // A pruned chat can no longer be caught up.
-    for (const chatId of [...caughtUp]) {
-      if (!serverIds.has(chatId)) caughtUp.delete(chatId);
+    for (const chatId of ready) {
+      if (!isCurrent(pass)) break;
+      const ok = await resyncPages(chatId, pass);
+      if (!ok) failed += 1;
     }
 
     return { chats: chats.data.length, pruned, failed };
@@ -237,7 +323,8 @@ export function createSyncEngine({
     ensuringChats.add(chatId);
     try {
       if (await store.hasChat(chatId)) return;
-      await resyncChat(chatId);
+      const pass = revision;
+      if (!(await resyncChat(chatId)) && isCurrent(pass)) onError(new Error('Unknown chat catch-up incomplete; cached rows retained.'));
     } finally {
       ensuringChats.delete(chatId);
     }
@@ -245,37 +332,40 @@ export function createSyncEngine({
 
   async function applyChange(change: ChangePayload): Promise<void> {
     if (!started) return;
+    const pass = revision;
     const chatId = change.row.chat_id;
 
     // A chat first seen through an event has no cache and no cursor; fetch them first, otherwise
     // raising the cursor from the event would hide its earlier history from the resync.
     if (!(await store.hasChat(chatId))) {
+      if (!isCurrent(pass)) return;
       await ensureChat(chatId);
       // Offline or refused: leave the event out; the next resync fetches it by sync_seq.
       if (!(await store.hasChat(chatId))) return;
     }
+    if (!isCurrent(pass)) return;
 
-    // Only a chat whose cache is complete up to its cursor may advance it from an event, so a
-    // channel that dropped while the app was backgrounded cannot skip the rows it missed.
-    const advanceCursor = caughtUp.has(chatId);
+    const cursor = null; // Realtime never establishes completeness of an offline gap.
     if (change.table === 'messages') {
-      await mergeRows(chatId, { messages: [change.row] }, advanceCursor);
+      await mergeRows(chatId, { messages: [change.row] }, cursor, pass);
     } else if (change.table === 'message_media') {
-      await mergeRows(chatId, { media: [change.row] }, advanceCursor);
+      await mergeRows(chatId, { media: [change.row] }, cursor, pass);
     } else if (change.table === 'reactions') {
-      await mergeRows(chatId, { reactions: [change.row] }, advanceCursor);
+      await mergeRows(chatId, { reactions: [change.row] }, cursor, pass);
     } else {
-      await serial(() => store.upsertMember(change.row));
+      await serial(async () => { if (isCurrent(pass)) await store.upsertMember(change.row); });
     }
-    onChange?.(change);
+    if (isCurrent(pass)) onChange?.(change);
   }
 
   function subscribeDelivery(): void {
     unsubscribe?.();
     unsubscribe = delivery.subscribe({
       onChange: (change) => {
+        if (change.table === 'chat_members') bumpMemberRevision(change.row.chat_id);
         void applyChange(change).catch((error: unknown) => onError(error));
       },
+      onMembersInvalidated: invalidateMembers,
       // 7.1 Channel drops: a rejoined channel is followed by a resync of what it missed.
       onStatus: (status) => {
         if (status !== 'connected' || !started) return;
@@ -285,17 +375,25 @@ export function createSyncEngine({
   }
 
   async function start(): Promise<SyncSummary> {
+    const pass = ++revision;
     await store.init();
+    if (pass !== revision) return { chats: 0, pruned: 0, failed: 0 };
+    await store.upgradeCheckpoints();
+    if (pass !== revision) return { chats: 0, pruned: 0, failed: 0 };
     started = true;
-    caughtUp.clear();
     // 6.4: re-subscribe on every foreground and reconnect, then fetch what was missed.
     subscribeDelivery();
     return resyncAll();
   }
 
   function stop(): void {
+    revision += 1;
     started = false;
-    caughtUp.clear();
+    inflight = null;
+    invalidatedMemberRefreshes.clear();
+    queuedMemberRefreshes.clear();
+    memberRevisions.clear();
+    memberRefreshCounts.clear();
     unsubscribe?.();
     unsubscribe = null;
   }

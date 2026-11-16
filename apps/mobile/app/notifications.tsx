@@ -19,9 +19,11 @@ import {
 import {
   getPushRegistration,
   isNotificationRuntimeAvailable,
+  setMemoReminderPresentationPreferences,
   subscribePushRegistration,
   syncPushRegistration,
 } from '../src/notifications/pushNotifications';
+import { loadMemoReminderPreferences, updateMemoReminderPreferences, type MemoReminderPreferences } from '../src/notifications/memoPreferences';
 
 function SectionHeader({ children }: { children: string }) {
   const theme = useTheme();
@@ -58,6 +60,7 @@ export default function NotificationsScreen() {
   const userId = status === 'signedIn' ? session?.user.id : undefined;
   const [loaded, setLoaded] = useState<{ userId: string; preferences: NotificationPreferences } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [memoPreferences, setMemoPreferences] = useState<MemoReminderPreferences | null>(null);
   const saveInProgress = useRef(false);
   const registration = useSyncExternalStore(subscribePushRegistration, () => getPushRegistration(userId));
   const preferences = loaded && loaded.userId === userId ? loaded.preferences : null;
@@ -70,6 +73,7 @@ export default function NotificationsScreen() {
       .catch(() => {
         if (active) showToast({ message: strings.common.couldNotLoad });
       });
+    void loadMemoReminderPreferences(userId).then((result) => { if (active) setMemoPreferences(result); }).catch(() => undefined);
     return () => {
       active = false;
     };
@@ -90,6 +94,16 @@ export default function NotificationsScreen() {
       saveInProgress.current = false;
       setSaving(false);
     }
+  }
+
+  async function updateMemo(patch: Partial<MemoReminderPreferences>) {
+    if (!userId || !memoPreferences || saveInProgress.current) return;
+    saveInProgress.current = true; setSaving(true);
+    try {
+      const next = await updateMemoReminderPreferences(userId, patch);
+      setMemoPreferences(next); setMemoReminderPresentationPreferences(next);
+    } catch { showToast({ message: strings.notifications.saveFailed, variant: 'error' }); }
+    finally { saveInProgress.current = false; setSaving(false); }
   }
 
   async function openDeviceSettings() {
@@ -170,6 +184,13 @@ export default function NotificationsScreen() {
         <View style={[styles.infoRow, { paddingHorizontal: theme.space[4] }]}>
           <Text style={[textStyle(theme.typeTokens.bodyLg), { color: theme.colors.text.primary }]}>{strings.notifications.chatOverrides}</Text>
           <Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.text.secondary }]}>{strings.notifications.chatOverridesDescription}</Text>
+        </View>
+
+        <SectionHeader>Memo reminders</SectionHeader>
+        <View style={{ paddingHorizontal: theme.space[4] }}>
+          <SwitchRow label="Reminders" description="Show local memo reminders for this account." value={memoPreferences?.enabled === true} onValueChange={(value) => void updateMemo({ enabled: value })} disabled={saving || !memoPreferences} />
+          <SwitchRow label="Reminder sounds" description="Use the separate memo reminder notification channel." value={memoPreferences?.sounds === true} onValueChange={(value) => void updateMemo({ sounds: value })} disabled={saving || !memoPreferences?.enabled} />
+          <SwitchRow label="Reminder vibration" description="Vibrate the separate memo reminder channel." value={memoPreferences?.vibration === true} onValueChange={(value) => void updateMemo({ vibration: value })} disabled={saving || !memoPreferences?.enabled} />
         </View>
 
         {Platform.OS !== 'web' && <>

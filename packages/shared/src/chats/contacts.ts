@@ -11,12 +11,14 @@ import { strings } from '../strings';
 export type ContactCandidate = {
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
 };
 
 /** One `chat_members` row joined with the cached profile name, as the SQL adapter returns it. */
 export type CachedContactRow = {
   user_id: string;
   display_name: string | null;
+  avatar_url?: string | null;
 };
 
 /** Group members besides the creator (D-58: at most 100 members, so at most 99 added). */
@@ -48,6 +50,7 @@ export function buildContactList(
     contacts.push({
       userId: row.user_id,
       displayName: row.display_name ?? strings.chatList.unknownMember,
+      avatarUrl: row.avatar_url ?? null,
     });
   }
 

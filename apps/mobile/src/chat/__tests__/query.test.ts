@@ -9,7 +9,8 @@ test('opens an older search match with bounded surrounding history and keeps cur
   try {
     sqlite.exec(`
       CREATE TABLE cache_chats (chat_id TEXT, payload TEXT);
-      CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, payload TEXT);
+      CREATE TABLE cache_chat_members (chat_id TEXT, user_id TEXT, payload TEXT, confirmed_last_read_seq INTEGER, confirmed_joined_at TEXT);
+      CREATE TABLE pending_read_states (user_id TEXT, chat_id TEXT, last_read_seq INTEGER, membership_joined_at TEXT);
       CREATE TABLE cache_profiles (user_id TEXT, display_name TEXT, payload TEXT);
       CREATE TABLE cache_messages (chat_id TEXT, message_id TEXT, sender_id TEXT, seq INTEGER, deleted_at TEXT, payload TEXT);
       CREATE TABLE cache_message_media (chat_id TEXT, message_id TEXT, media_id TEXT, payload TEXT);
@@ -18,9 +19,9 @@ test('opens an older search match with bounded surrounding history and keeps cur
     sqlite.prepare('INSERT INTO cache_chats VALUES (?, ?)').run('chat', JSON.stringify({
       chat_id: 'chat', type: 'group', title: 'Group', created_at: '2026-11-11T00:00:00Z',
     }));
-    sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, ?)').run('chat', 'me', JSON.stringify({
-      chat_id: 'chat', user_id: 'me', last_read_seq: 0,
-    }));
+    sqlite.prepare('INSERT INTO cache_chat_members VALUES (?, ?, ?, ?, ?)').run('chat', 'me', JSON.stringify({
+      chat_id: 'chat', user_id: 'me', joined_at: '2026-11-11T00:00:00Z', last_read_seq: 0,
+    }), 0, '2026-11-11T00:00:00Z');
     for (let seq = 1; seq <= 400; seq++) {
       sqlite.prepare('INSERT INTO cache_messages VALUES (?, ?, ?, ?, NULL, ?)').run('chat', String(seq), 'me', seq, JSON.stringify({
         chat_id: 'chat', message_id: String(seq), sender_id: 'me', seq, content: 'hello',
@@ -38,14 +39,24 @@ test('opens an older search match with bounded surrounding history and keeps cur
     expect(older.snapshot.messages.at(-1)?.seq).toBe(110);
     expect(older.snapshot.hasMoreBefore).toBe(true);
     expect(older.beforeSeq).toBe(111);
+    expect(older.targetAvailable).toBe(true);
 
     const recent = await loadChatSnapshotForMessage(db, 'chat', 'me', '395', 50);
     expect(recent.beforeSeq).toBeUndefined();
     expect(recent.snapshot.messages.at(-1)?.seq).toBe(400);
+    expect(recent.targetAvailable).toBe(true);
 
     const missing = await loadChatSnapshotForMessage(db, 'chat', 'me', 'missing', 50);
     expect(missing.beforeSeq).toBeUndefined();
     expect(missing.snapshot.messages.at(-1)?.seq).toBe(400);
+    expect(missing.targetAvailable).toBe(false);
+
+    sqlite.prepare('INSERT INTO cache_messages VALUES (?, ?, ?, ?, ?, ?)').run('chat', 'deleted', 'me', 401, '2026-11-11T01:00:00Z', JSON.stringify({
+      chat_id: 'chat', message_id: 'deleted', sender_id: 'me', seq: 401, content: 'deleted needle',
+      created_at: '2026-11-11T01:00:00Z', deleted_at: '2026-11-11T02:00:00Z',
+    }));
+    const deleted = await loadChatSnapshotForMessage(db, 'chat', 'me', 'deleted', 50);
+    expect(deleted.targetAvailable).toBe(false);
   } finally {
     sqlite.close();
   }

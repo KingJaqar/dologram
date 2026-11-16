@@ -613,6 +613,61 @@ native/provider verification can remain pending.
 - **Required items:** (1) reachable history, stable cursor pagination, direction/outcome/duration and retry/call-again; (2) startup/subscribe/refetch/revision and signaling/media outage recovery; (3) crash/access-loss/deletion cleanup and max-duration/rate/quota handling; (4) functional flags, local/server preference behavior and minimum operational metrics/alerts; (5) V1-V5 failure matrix plus affected messaging/account/media regression, with timing budgets and remaining gate status recorded.
 - **Implementation gate:** the Phase 5 history, resilience, cleanup, flags, preferences, and operational code plus automated/source checks are complete. Optional foreground/media/fault evidence may be collected later; it does not block Phase 5 coding completion or pull Phase 6/7/8 implementation backward into Phase 5. Release readiness remains a separate optional evidence claim.
 
+#### Phase 5 progress — 2026-11-12 (Asia/Manila)
+
+**Status: Complete for coding scope — 100% of Phase 5; overall calling-plan
+progress 67% (30/45 equal-weight items). Phase 6 has not started.** The
+history route, shared cursor consumer, foreground alert policy, Realtime status
+recovery, bounded media recovery, existing server cleanup/limits integration,
+preference listeners, user-facing limit errors, and focused tests are complete.
+No new dependency, migration, native file, deployment, or external service
+configuration was added.
+
+| Item | Status | Evidence |
+| --- | --- | --- |
+| Reachable history, pagination, display, retry/call-again | Complete for coding scope | `app/chat/[chatId]/calls.tsx`, `src/calls/history.ts`, `historyFormat.ts`; ChatInfo direct-chat entry; shared strict tuple cursor reused; initial/partial error, empty, refresh, pagination retry and call-again paths. |
+| Startup/subscribe/refetch/revision and outage recovery | Complete for coding scope | `CallProvider.tsx`, `realtime.ts`, `recovery.ts`; subscribe status, subscribe-then-fetch, bounded 1s/3s/5s refresh/media recovery, existing revision guard and AppState/polling retained. History reloads now invalidate stale requests on focus loss/account access loss and surface unexpected query failures. |
+| Cleanup, access loss, deletion, max duration, rate/quota | Complete for coding scope | Existing account teardown callers and Phase 1/2 RLS/cascade/worker/limit code verified; terminal/media timers clean up; feature-disabled/rate-limited errors are surfaced. Live fault-injection remains pending. |
+| Flags, preferences, metrics/alerts | Complete for coding scope | Existing server flags, `safeDiagnostic`/worker diagnostics, local chat/global notification listeners, server `muted_until` check, local block decline and history retention. Live operational timing/provider evidence remains pending. |
+| V1-V5 matrix and affected regression | Complete for coding scope | `docs/test-results/calling/phase-05.md` and `context-index.md`; shared 21/154, focused calls 8 suites/14 tests, typecheck and focused ESLint passed; mobile lint remains pre-existing; MuMu/peer evidence pending. |
+
+**Acceptance status:** CALL-09-CALL-12 and CALL-16-CALL-17 are met for coding
+and source/automated checks, including stale-history request invalidation and
+bounded unexpected-query error handling. CALL-18 remains pending manual release-artifact
+verification owned by Phase 8. Live media, provider, fault-injection, direct
+authorization/deletion, process-loss, and timing-budget evidence is explicitly
+pending and is not claimed as passed.
+
+The plan’s generic `src/app` route wording was adapted to the repository’s
+actual `apps/mobile/app` Expo Router root. The plan’s historical audit text says
+the schema ends at migration 027; the current tree already contains later
+user-owned calling migrations through 034, while Phase 5 required no new
+migration and did not start or modify Phase 6/7 work. See the [Phase 5 report](../docs/test-results/calling/phase-05.md) and [context index](../docs/test-results/calling/phase-05/context-index.md) for the packet identity, baselines, exact commands, and pending gates.
+
+**Next phase ready to start: yes —** Phase 5 coding contracts and automated
+evidence are complete. Phase 6 was intentionally not started; its real push and
+provider checks remain its own scope.
+
+#### Phase 5 execution refresh — 2026-11-12 (Asia/Manila)
+
+The existing Phase 5 implementation was revalidated against the current
+working copy before editing. The only scoped correction was in
+`apps/mobile/src/calls/history.ts`: focus loss, sign-out, or account access loss
+now invalidates in-flight history requests; reload resets pagination state; and
+unexpected query throws become the existing retryable history error. No new
+dependency, migration, native file, deployment, external service configuration,
+or Phase 6/7 change was added.
+
+Fresh verification: `npm run typecheck` passed; shared Vitest passed 21 files /
+154 tests; focused mobile calling Jest passed 8 suites / 14 tests; focused
+ESLint for `src/calls/history.ts` passed. The full mobile lint baseline remains
+failed with 15 pre-existing errors and 4 warnings outside the changed file.
+The refreshed scoped Repomix 1.18.1 packet contains 51 entries, 497,493 bytes,
+and SHA-256 `541AB3D4D4753BEAF9B13523B5FCEF5510A729C42B5A19DC8AEDAA704CF49966`;
+its `history.ts` entry was reread after the correction. MuMu/peer media,
+provider, fault-injection, direct authorization/deletion, process-loss, and
+release-artifact evidence remain pending as recorded above.
+
 ### Phase 6 — Expiring invitation notifications
 
 - **Scope/requirements:** CALL-10, CALL-13, CALL-16-CALL-18.
@@ -621,6 +676,68 @@ native/provider verification can remain pending.
 - **Required items:** (1) expiry-aware/deduplicated dispatch to validated recipients only; (2) backward-compatible call channel registration/server fields without broadening the message channel constraint; (3) foreground handler and notification response discrimination, generic privacy defaults, wrong-account/stale handling; (4) cross-device accepted/end cancellation, preference changes, retries/receipts and token cleanup; (5) V2/V4/V6 real push/tap/expiry tests and existing message notification regressions.
 - **Implementation gate:** expiry-aware dispatch, correct-account routing, tap validation, stale-alert handling, and message compatibility are coded and tested. A real notification delivery/tap run is optional follow-up evidence and is not a Phase 6 coding blocker. Ordinary notification delivery remains distinct from Phase 7 native ringing.
 
+#### Phase 6 progress — 2026-11-12 (Asia/Manila)
+
+**Status: Complete for coding scope — 100% of Phase 6; overall calling-plan
+progress 78% (35/45 equal-weight items). Phase 7 has not started.** The
+expiry-aware call outbox, validated-recipient dispatcher, device/chat
+preference projection, separate call channels, generic `call_invite`/
+`call_ended` payloads, foreground discrimination, authenticated deadline tap
+validation, cross-device terminal notifications, receipt/token cleanup, and
+bounded retry handling are implemented. No dependency, remote migration,
+deployment, native build, provider configuration, or external service change
+was performed.
+
+| Item | Status | Evidence |
+| --- | --- | --- |
+| Expiry-aware/deduplicated dispatch | Complete for coding scope | `031_call_notification_outbox.sql`, `callNotifications.ts`, `send-call-notifications`; state/revision/event/recipient dedupe, expiry, membership/mute/Auth checks, leases, bounded retries. |
+| Call channel/capability and preference projection | Complete for coding scope | Separate `calls-v1-<sound><vibration>` channels, constrained `call_android_channel_id`, `call_notifications`, RLS `call_device_preferences`, registration/change/reconnect synchronization. |
+| Handler/router/privacy/stale handling | Complete for coding scope | `pushNotifications.ts`, root layout, `notificationValidation.ts`; generic payloads without peer details, recipient/account/status/membership/deadline revalidation, message compatibility. |
+| Cross-device outcomes/preferences/receipts | Complete for coding scope | Status-triggered invitation/accepted/declined/cancelled/missed/ended/failed outbox rows; silent terminal payloads, current projection/mute checks, Expo receipt handling and invalid-token deletion. |
+| V2/V4/V6 and message regression coverage | Complete for coding/source checks | 11 mobile focused suites/67 tests and existing message notification tests pass; Deno/SQL/provider/native push runs remain pending because runtimes/targets are unavailable. |
+
+**Acceptance status:** CALL-13 and CALL-16 are met for coding/source and
+automated checks. CALL-18 remains pending Phase 8 release-artifact
+verification. Real push delivery/tap/expiry, SQL/RLS/trigger execution, and
+provider/native artifact evidence are pending and are not claimed as passed.
+
+The plan’s historical suggestion to allocate the Phase 6 migration after 027
+was adapted to the current tree, which already contains 028-030; Phase 6 uses
+the next sequential `031_call_notification_outbox.sql`. See the [Phase 6
+report](../docs/test-results/calling/phase-06.md) and [context
+index](../docs/test-results/calling/phase-06/context-index.md).
+
+Current execution phase: Phase 6 — 100% complete for coding scope. Completed:
+all five implementation items above. Remaining: optional live/provider/native
+verification and Phase 8 release evidence. Blockers: none for the coding gate.
+
+Next phase ready to start: yes — Phase 7 may begin from the Phase 6 contracts,
+but it was intentionally not started in this execution.
+
+#### Phase 6 execution audit refresh — 2026-11-12 (Asia/Manila)
+
+The Phase 6 coding status remains **Complete**. Current-source review found and
+corrected three reliability boundaries without expanding scope: outbox state
+updates now require the exact active lease, registration does not report success
+when the call device-preference projection fails, and the root tap router only
+routes validated `call_invite` payloads (terminal or malformed call-shaped
+payloads cannot bypass notification discrimination). No dependency, migration
+number, remote migration, deployment, native build, provider configuration, or
+Phase 7 work was added in this refresh.
+
+Current verification: root typecheck passed; shared tests passed 21 files/154
+tests; focused Phase 6 mobile tests passed 2 suites/6 tests; owned mobile lint
+passed; `git diff --check` passed. The broader focused calls/notifications run
+retains three pre-existing `ChatInfoScreen`/`CallProvider` test failures (11
+passing suites, 66 passing tests); the failure is outside the Phase 6-owned
+paths. Deno, Supabase CLI, and psql are unavailable; ADB enumerated the assigned
+MuMu endpoint but its daemon could not start. SQL/RLS/trigger execution and
+real provider/native push delivery remain pending and are not claimed as passed.
+
+Phase 6 progress remains 100% (5/5 implementation items). Overall calling-plan
+progress remains 78% (35/45 equal-weight items). Phase 7 remains intentionally
+not started.
+
 ### Phase 7 — Native Android background/lock-screen calling
 
 - **Scope/requirements:** CALL-10-CALL-11, CALL-14-CALL-18; existing Android-first delivery. iOS/web delivery is not added to this phase.
@@ -628,6 +745,26 @@ native/provider verification can remain pending.
 - **Affected components:** native calling integration through config plugins, calling provider/audio/session bridge, server expiry/push actions and capability flags; no unrelated native refactor.
 - **Required items:** (1) select/verify the supported native approach and Android permission/OS-state matrix before bridge-dependent changes; (2) implement incoming presentation and native answer/decline/end mapped to existing transactions; (3) capability-gated background audio/signaling lifecycle replacing foreground-only background teardown, with camera policy and foreground-service cleanup; (4) expiration/cancellation/sign-out/lockscreen race recovery and foreground-only fallback when capability is disabled/unavailable; (5) V4/V7 direct native-state checks with source-matched artifact and regression evidence.
 - **Implementation gate:** every advertised Android state and its unsupported/force-stopped fallback are implemented and covered by automated/source checks. Direct assigned-environment verification is optional follow-up evidence; iOS PushKit/CallKit remains future discovery only.
+
+#### Phase 7 progress — 2026-11-12
+
+Phase 7 is **100% complete for coding scope**. The implementation selected a local Expo-compatible Android module, `@dologram/call-background`, using an Android microphone foreground service plus call-style/full-screen notification actions. The action receiver persists answer/decline/end intents, and `CallProvider` consumes them through the existing server transition state machine. Core-Telecom was reviewed against the pinned Expo/LiveKit stack but was not added because no maintained compatible bridge was confirmed in the repository; the selected fallback is explicit and capability-gated.
+
+| Item | Status and evidence |
+| --- | --- |
+| 1. Native approach and permission/OS matrix | Complete: official Expo SDK 57 notification/audio behavior and Android Telecom/CallStyle/foreground-service documentation reviewed; Expo autolinking and Android SDK 36 compile passed. |
+| 2. Native incoming presentation and answer/decline/end | Complete for coding/source gate: lock-screen/full-screen notification, durable receiver action handoff, and existing transition/capability checks implemented. |
+| 3. Capability-gated lifecycle, audio/signaling and camera policy | Complete: server `native_background_enabled` flag exposed by migration 032; provider starts/stops the service only when capability and OS support are present, stops video camera in background, and cleans up terminal/session media. |
+| 4. Expiry/cancellation/sign-out/race recovery and fallback | Complete for source/automated gate: terminal/mismatched actions are ignored, cleanup stops the service, and unsupported/disabled states retain foreground-only teardown. |
+| 5. V4/V7 regression evidence | Complete for automated/source evidence; direct MuMu native runtime evidence remains pending because the installed APK predates this bridge. |
+
+Acceptance evidence and the Android state matrix are recorded in the [Phase 7 report](../docs/test-results/calling/phase-07.md) and [context index](../docs/test-results/calling/phase-07/context-index.md). Automated results: focused mobile call tests 8 suites/14 tests passed; shared tests 20 files/149 tests passed; Android debug Kotlin compile passed; Expo autolinking and merged manifest checks passed. The final mobile lint run still reports unrelated workspace findings, and a newly appearing untracked `apps/mobile/src/components/MuteOptionGrid.tsx` causes five typecheck errors; neither is a Phase 7-owned file or change. No migration, deployment, artifact upload, external service configuration, or later phase was performed.
+
+Current execution phase: Phase 7 — 100% complete for coding scope. Completed: all five implementation items above with automated/source evidence. Remaining: source-matched MuMu runtime verification, migration/flag deployment, and release/provider evidence. Blockers: none for the coding gate; external/manual evidence is pending.
+
+Overall calling-plan progress: 89% (40 of 45 equal-weight implementation items completed; optional live/release evidence is not counted as coding weight).
+
+Next phase ready to start: yes — Phase 8 can use the Phase 7 contracts and report, but it was intentionally not started in this execution.
 
 ### Phase 8 — Artifact verification, rollout, and rollback
 

@@ -6,6 +6,7 @@
  * and are never unarchived by a new message.
  */
 import { strings } from '../strings';
+import { selectReadStatus } from '../chat/readStatus';
 import { formatChatListTime } from './format';
 import { messagePreview } from './preview';
 import type { BuildChatListOptions, ChatListItem, ChatListSourceRow } from './types';
@@ -62,8 +63,8 @@ export function buildChatList(
   const unreadChatIds = new Set(options.unreadChatIds ?? []);
 
   const items = rows
-    .filter((row) => options.ignored || row.myMember.archived === wantArchived)
-    .filter((row) => ignoredChatIds.has(row.chat.chat_id) === (options.ignored === true))
+    .filter((row) => options.blocked || options.ignored || row.myMember.archived === wantArchived)
+    .filter((row) => options.blocked || ignoredChatIds.has(row.chat.chat_id) === (options.ignored === true))
     .filter((row) => !deletedChatIds.has(row.chat.chat_id))
     .map((row): ChatListItem => {
       const savedMessages = isSavedMessages(row);
@@ -75,18 +76,20 @@ export function buildChatList(
         locale: options.locale,
         timeZone: options.timeZone,
       });
-      const ownStatus =
-        !savedMessages && row.lastMessage !== null && row.lastMessage.sender_id === options.userId
-          ? row.otherMaxReadSeq >= row.lastMessage.seq
-            ? 'seen'
-            : 'sent'
-          : null;
+      const ownStatus = selectReadStatus({
+        senderId: row.lastMessage?.sender_id ?? '',
+        currentUserId: options.userId,
+        seq: row.lastMessage?.seq ?? null,
+        otherMaxReadSeq: row.otherMaxReadSeq,
+        savedMessages,
+      });
 
       const labelParts = [title];
       if (unreadCount > 0) labelParts.push(`${unreadCount} unread`);
       if (isMuted(row.myMember.muted_until, options.now)) labelParts.push('muted');
       if (preview.length > 0) labelParts.push(preview);
       if (timeLabel.length > 0) labelParts.push(timeLabel);
+      if (ownStatus !== null) labelParts.push(ownStatus === 'seen' ? strings.chat.statusSeen : strings.chat.statusSent);
 
       return {
         chatId: row.chat.chat_id,
@@ -100,8 +103,9 @@ export function buildChatList(
         pinned: pinnedChatIds.has(row.chat.chat_id),
         canAddMembers: row.chat.type === 'group' && row.myMember.role === 'owner',
         savedMessages,
-        avatarId: savedMessages ? row.chat.chat_id : (row.otherMemberId ?? row.chat.chat_id),
+        avatarId: savedMessages || row.chat.type === 'group' ? row.chat.chat_id : (row.otherMemberId ?? row.chat.chat_id),
         avatarName: savedMessages ? strings.chatList.savedMessages : title,
+        avatarUrl: savedMessages ? null : row.chat.type === 'group' ? (row.chat.avatar_url ?? null) : (row.otherMemberAvatarUrl ?? null),
         ownStatus,
         archived: row.myMember.archived,
         accessibilityLabel: labelParts.join(', '),

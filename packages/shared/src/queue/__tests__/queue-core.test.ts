@@ -100,6 +100,18 @@ describe('queue core (M2-02)', () => {
     expect(due.map((item) => item.temp_id).sort()).toEqual(['a-1', 'b-1']);
   });
 
+  it('keeps an inactive account’s outbox from blocking the active account in the same chat', async () => {
+    const { core, store } = harness();
+    const first = await core.enqueue({ messageId: 'a-1', payload: payload('shared') });
+    if (!first.ok) throw new Error('expected the first message to be queued');
+    await store.update({ ...first.item, status: 'failed' });
+    await core.enqueue({ messageId: 'a-2', payload: payload('shared') });
+    await core.enqueue({ messageId: 'b-1', payload: { ...payload('shared'), sender_id: 'user-b' } });
+
+    expect(await core.nextDueItems(undefined, 'user-a')).toEqual([]);
+    expect((await core.nextDueItems(undefined, 'user-b')).map((item) => item.temp_id)).toEqual(['b-1']);
+  });
+
   it('blocks the rest of a chat while its head is backing off or failed', async () => {
     const { core } = harness();
     await core.enqueue({ messageId: 'a-1', payload: payload('chat-a') });

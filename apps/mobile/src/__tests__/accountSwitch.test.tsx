@@ -12,6 +12,8 @@ import { useToast } from '../components/Toast';
 import { AccountSwitcherPopover } from '../components/AccountSwitcherPopover';
 import { loadSavedAccounts, saveCurrentAccount, saveSessionAccount, shouldSkipAccountSwitchConfirmation, skipAccountSwitchConfirmation, type SavedAccount } from '../auth/savedAccounts';
 import { switchToSavedAccount } from '../auth/accountSession';
+import { pauseQueueForAccountSwitch } from '../queue/worker';
+import { pauseSyncForAccountSwitch } from '../sync/lifecycle';
 import ManageAccountsScreen from '../../app/manage-accounts';
 
 jest.mock('../lib/supabase', () => ({
@@ -24,6 +26,8 @@ jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('../notifications/pushNotifications', () => ({
   withPushRegistrationPaused: jest.fn((_id: string, change: () => Promise<unknown>) => change()),
 }));
+jest.mock('../queue/worker', () => ({ pauseQueueForAccountSwitch: jest.fn() }));
+jest.mock('../sync/lifecycle', () => ({ pauseSyncForAccountSwitch: jest.fn() }));
 
 const currentSession = { user: { id: 'current', email: 'current@example.com' }, access_token: 'current-access', refresh_token: 'current-fresh-token' } as Session;
 const nextSession = { user: { id: 'other', email: 'other@example.com' }, access_token: 'other-access', refresh_token: 'other-rotated-token' } as Session;
@@ -52,7 +56,29 @@ beforeEach(async () => {
   refreshSession.mockResolvedValue({ data: { session: nextSession }, error: null });
   (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: currentSession }, error: null });
   (supabase.auth.setSession as jest.Mock).mockResolvedValue({ data: { session: nextSession }, error: null });
+  jest.mocked(pauseQueueForAccountSwitch).mockResolvedValue(() => {});
+  jest.mocked(pauseSyncForAccountSwitch).mockReturnValue(() => {});
   await saveCurrentAccount(otherAccount);
+});
+
+test('switching waits for the outgoing delivery and resumes the old account if activation fails', async () => {
+  const resumeQueue = jest.fn();
+  const resumeSync = jest.fn();
+  let finishDelivery!: (resume: () => void) => void;
+  jest.mocked(pauseQueueForAccountSwitch).mockImplementationOnce(() => new Promise((resolve) => {
+    finishDelivery = resolve;
+  }));
+  jest.mocked(pauseSyncForAccountSwitch).mockReturnValueOnce(resumeSync);
+  const error = new Error('activation failed');
+  jest.mocked(supabase.auth.setSession).mockRejectedValueOnce(error);
+
+  const switchAccount = switchToSavedAccount('other', 'current', currentProfile);
+  await waitFor(() => expect(pauseQueueForAccountSwitch).toHaveBeenCalledTimes(1));
+  expect(supabase.auth.setSession).not.toHaveBeenCalled();
+  finishDelivery(resumeQueue);
+  await expect(switchAccount).rejects.toBe(error);
+  expect(resumeQueue).toHaveBeenCalledTimes(1);
+  expect(resumeSync).toHaveBeenCalledTimes(1);
 });
 
 test('the signed-in account opens its chat list immediately', async () => {
@@ -82,6 +108,24 @@ test('the popover current account closes the switcher and opens chats', async ()
   expect(router.replace).toHaveBeenCalledWith('/(main)/(tabs)');
   expect(refreshSession).not.toHaveBeenCalled();
   await screen.findByRole('button', { name: 'Switch to Maria' });
+});
+
+test('the popover omits the empty other-accounts placeholder', async () => {
+  await AsyncStorage.clear();
+  const screen = render(<AccountSwitcherPopover visible onClose={jest.fn()} />, { wrapper: Wrapper });
+
+  await screen.findByRole('button', { name: 'Switch to Juan' });
+  await waitFor(() => expect(screen.queryByText(`${strings.manageAccounts.otherAccounts}: —`)).toBeNull());
+});
+
+test('the popover theme switch stays open while changing theme', async () => {
+  const onClose = jest.fn();
+  const screen = render(<AccountSwitcherPopover visible onClose={onClose} />, { wrapper: Wrapper });
+
+  fireEvent.press(await screen.findByRole('switch', { name: strings.settings.theme }));
+
+  await waitFor(() => expect(screen.getByRole('switch', { name: strings.settings.theme })).toBeTruthy());
+  expect(onClose).not.toHaveBeenCalled();
 });
 
 test('a saved account can be restored while signed out', async () => {

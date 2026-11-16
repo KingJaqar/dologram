@@ -1,0 +1,7 @@
+.bar { position: fixed; bottom: 0; inset-inline: 0; display: flex; align-items: start; justify-content: space-around; box-sizing: border-box; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--dg-color-border-subtle); background: var(--dg-color-bg-app); z-index: var(--dg-z-sticky); }
+.bar a, .bar button { display: flex; align-items: center; justify-content: center; width: 56px; height: 55px; border: 0; background: transparent; color: var(--dg-color-text-primary); cursor: pointer; border-radius: var(--dg-radius-md); }
+.bar [aria-current="page"] { background: var(--dg-color-bg-surface); }
+.bar [aria-current="page"] svg { stroke-width: 2.5; }
+.bar a:hover, .bar button:hover { background: var(--dg-color-bg-pressed); }
+.choices { display: flex; flex-direction: column; padding: var(--dg-space-4); }
+@media (min-width: 768px) { .bar { display: none; } }

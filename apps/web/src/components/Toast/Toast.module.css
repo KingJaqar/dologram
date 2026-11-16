@@ -1,0 +1,5 @@
+.toast { position: fixed; box-sizing: border-box; bottom: calc(var(--dg-space-4) + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: space-between; gap: var(--dg-space-4); width: max-content; min-width: min(240px, calc(100% - var(--dg-space-8))); max-width: min(480px, calc(100% - var(--dg-space-8))); padding: var(--dg-space-3) var(--dg-space-4); border-radius: var(--dg-radius-md); background: var(--dg-color-toast-bg); color: var(--dg-color-toast-text); font: var(--dg-type-body-md); box-shadow: var(--dg-elevation-2); z-index: var(--dg-z-toast); animation: appear var(--dg-motion-duration-modal) var(--dg-motion-easing-ease-out); }
+.action { min-height: 44px; border: 0; border-radius: var(--dg-radius-md); background: transparent; color: var(--dg-color-toast-action); padding: var(--dg-space-2); font: var(--dg-type-label-lg); cursor: pointer; }
+.action:focus-visible { outline-color: var(--dg-color-toast-action); }
+@keyframes appear { from { opacity: 0; translate: 0 var(--dg-space-4); } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

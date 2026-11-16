@@ -1,0 +1,28 @@
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--dg-space-3);
+  padding: var(--dg-space-6);
+  text-align: center;
+}
+
+.circle {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--dg-radius-full);
+  background: var(--dg-color-bg-surface);
+  color: var(--dg-color-text-secondary);
+}
+
+.title {
+  margin: 0;
+  font: var(--dg-type-title-md);
+}
+
+.body {
+  margin: 0;
+  color: var(--dg-color-text-secondary);
+  font: var(--dg-type-body-md);
+}

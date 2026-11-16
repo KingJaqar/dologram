@@ -1,0 +1,25 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dg-space-4);
+  height: 56px;
+  padding: 0 var(--dg-space-8);
+  border-bottom: 1px solid var(--dg-color-separator);
+  background: var(--dg-color-bg-app);
+}
+
+.project {
+  margin: 0;
+  overflow: hidden;
+  font: var(--dg-type-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--dg-space-2);
+}

@@ -6,11 +6,12 @@ import { strings } from '@dologram/shared';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import { ids } from '../lib/ids';
-import { loadChatPreferences, subscribeChatPreferenceChanges } from '../chats/preferences';
-import { loadNotificationPreferences } from '../notifications/preferences';
+import { subscribeChatPreferenceChanges } from '../chats/preferences';
+import { subscribeNotificationPreferenceChanges } from '../notifications/preferences';
 import { useTheme } from '../theme/ThemeProvider';
 import { acquireCallAudio } from './audioOwnership';
 import { createVideoCall, createVoiceCall, fetchCallSnapshot, fetchCallToken, transitionCall, type CallApiError } from './api';
+import { consumeCallBackgroundAction, isCallBackgroundNativeAvailable, startCallBackground, stopCallBackground } from './background';
 import { registerCallSessionTeardown } from './lifecycle';
 import {
   connectCall,
@@ -25,6 +26,8 @@ import {
   type CallVideoTrack,
 } from './media';
 import { startCallRealtime, type CallRealtimeHandle } from './realtime';
+import { loadIncomingCallAlertState } from './alerts';
+import { callRecoveryDelayMs } from './recovery';
 import { isTerminalCallStatus, phaseForSnapshot, shouldStartCamera, type CallViewState } from './state';
 import { CallContext, snapshotCall, type CallContextValue } from './useCall';
 
@@ -53,6 +56,8 @@ function isRetryableError(error: unknown): boolean {
 function callErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message === 'CALL_NATIVE_UNAVAILABLE') return strings.calls.missingNative;
   if (error instanceof Error && /(CALL_MICROPHONE_DENIED|permission|not allowed|denied)/i.test(error.message)) return strings.calls.micDenied;
+  if (error instanceof Error && /CALL_RATE_LIMITED/i.test(error.message)) return strings.calls.rateLimited;
+  if (error instanceof Error && /CALL_FEATURE_DISABLED/i.test(error.message)) return strings.calls.featureDisabled;
   if (isRetryableError(error)) return strings.calls.providerUnavailable;
   return strings.calls.callFailed;
 }
@@ -90,6 +95,12 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const peerNameRequestRef = useRef(new Set<string>());
   const microphoneDeniedRef = useRef(false);
   const cameraDeniedRef = useRef(false);
+  const realtimeRecoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeRecoveryAttemptRef = useRef(0);
+  const mediaRecoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mediaRecoveryAttemptRef = useRef(0);
+  const nativeBackgroundActiveRef = useRef(false);
+  const appStateRef = useRef(AppState.currentState);
 
   viewRef.current = view;
 
@@ -102,15 +113,42 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const stopMedia = useCallback(async () => {
+    if (mediaRecoveryTimerRef.current) {
+      clearTimeout(mediaRecoveryTimerRef.current);
+      mediaRecoveryTimerRef.current = null;
+    }
     const connection = mediaRef.current;
     mediaRef.current = null;
     mediaConnectedRef.current = false;
     mediaStartingRef.current = false;
     releaseAudioRef.current?.();
     releaseAudioRef.current = null;
+    await stopCallBackground(viewRef.current.callId);
+    nativeBackgroundActiveRef.current = false;
     await connection?.stop();
     setViewSafe((current) => ({ ...current, cameraEnabled: false, videoTracks: [] }));
   }, [setViewSafe]);
+
+  const syncNativeBackground = useCallback(async (snapshot: CallViewState['snapshot']): Promise<boolean> => {
+    const call = snapshot?.call;
+    const incoming = call?.status === 'ringing' && snapshot?.capabilities.canAnswer === true;
+    const outgoing = call?.status === 'ringing' && snapshot?.capabilities.canCancel === true;
+    const shouldRun = Boolean(call)
+      && !isTerminalCallStatus(call?.status)
+      && snapshot?.availability.nativeBackgroundEnabled === true
+      && isCallBackgroundNativeAvailable()
+      && (call?.status !== 'ringing' || incoming || outgoing);
+
+    if (!shouldRun || !call) {
+      await stopCallBackground(call?.callId ?? null);
+      nativeBackgroundActiveRef.current = false;
+      return false;
+    }
+
+    const started = await startCallBackground(call.callId, viewRef.current.peerName, call.mediaType, incoming);
+    nativeBackgroundActiveRef.current = started;
+    return started;
+  }, []);
 
   const refreshCameraDevices = useCallback(async () => {
     const connection = mediaRef.current;
@@ -145,11 +183,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       phase: phaseForSnapshot(next, mediaConnectedRef.current, current.mediaAvailable),
       error: null,
     }));
+    void syncNativeBackground(next);
 
     if (call.status === 'ringing' && next.capabilities.canAnswer && !blockedDeclinesRef.current.has(call.callId) && userId) {
-      const preferences = await loadChatPreferences(userId, call.chatId).catch(() => null);
-      await loadNotificationPreferences(userId).catch(() => undefined);
-      if (preferences?.blocked) {
+      const alertState = await loadIncomingCallAlertState(userId, call.chatId);
+      if (alertState.blocked) {
         blockedDeclinesRef.current.add(call.callId);
         try {
           const declined = await transitionCall('decline', call.callId, clientSessionIdRef.current);
@@ -159,12 +197,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         }
         return;
       }
-      if (!screenVisibleRef.current || viewRef.current.callId !== call.callId) {
+      if (alertState.shouldPresent && (!screenVisibleRef.current || viewRef.current.callId !== call.callId)) {
         router.push({ pathname: '/call/[callId]', params: { callId: call.callId } });
       }
     }
 
     if (isTerminalCallStatus(call.status)) {
+      mediaRecoveryAttemptRef.current = 0;
       await stopMedia();
       setViewSafe((current) => ({ ...current, snapshot: next, phase: 'ended', minimized: false }));
       return;
@@ -185,20 +224,32 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           call.mediaType,
           shouldStartCamera(next, userId),
           (mediaState) => {
-          mediaConnectedRef.current = mediaState === 'connected';
-          if (mediaState === 'disconnected' && mediaRef.current) {
-            void stopMedia().then(async () => {
-              const ended = await transitionCall('end', call.callId, clientSessionIdRef.current);
-              await applySnapshot(ended, generation);
-            }).catch(() => {
-              setViewSafe((current) => ({ ...current, phase: 'unavailable', error: strings.calls.callFailed }));
-            });
-            return;
-          }
-          setViewSafe((current) => ({
-            ...current,
-            phase: mediaState === 'reconnecting' ? 'reconnecting' : phaseForSnapshot(current.snapshot, mediaConnectedRef.current, current.mediaAvailable),
-          }));
+            mediaConnectedRef.current = mediaState === 'connected';
+           if (mediaState === 'connected') mediaRecoveryAttemptRef.current = 0;
+            if (mediaState === 'disconnected' && mediaRef.current) {
+              const delay = callRecoveryDelayMs(mediaRecoveryAttemptRef.current);
+              mediaRecoveryAttemptRef.current += 1;
+              void stopMedia().then(() => {
+                if (delay === null) {
+                  return transitionCall('end', call.callId, clientSessionIdRef.current).then((ended) => applySnapshot(ended, generation));
+                }
+                mediaRecoveryTimerRef.current = setTimeout(() => {
+                  mediaRecoveryTimerRef.current = null;
+                  if (generation !== generationRef.current || isTerminalCallStatus(viewRef.current.snapshot?.call?.status)) return;
+                  void fetchCallSnapshot(clientSessionIdRef.current, call.callId).then((snapshot) => applySnapshot(snapshot, generation)).catch(() => {
+                    setViewSafe((current) => ({ ...current, phase: 'reconnecting' }));
+                  });
+                }, delay);
+                return undefined;
+              }).catch(() => {
+                setViewSafe((current) => ({ ...current, phase: 'unavailable', error: strings.calls.callFailed }));
+              });
+              return;
+            }
+            setViewSafe((current) => ({
+              ...current,
+              phase: mediaState === 'reconnecting' ? 'reconnecting' : phaseForSnapshot(current.snapshot, mediaConnectedRef.current, current.mediaAvailable),
+            }));
           },
           (tracks: CallVideoTrack[]) => {
             setViewSafe((current) => ({ ...current, videoTracks: tracks }));
@@ -229,7 +280,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         mediaStartingRef.current = false;
       }
     }
-  }, [refreshCameraDevices, router, setViewSafe, stopMedia, userId]);
+  }, [refreshCameraDevices, router, setViewSafe, stopMedia, syncNativeBackground, userId]);
 
   const refreshCall = useCallback(async () => {
     if (!userId || refreshingRef.current) {
@@ -291,6 +342,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     setViewSafe({ ...EMPTY_VIEW, mediaAvailable: viewRef.current.mediaAvailable });
+    mediaRecoveryAttemptRef.current = 0;
     if (!(await ensureMicrophonePermission())) return;
     clientSessionIdRef.current = ids.messageId();
     try {
@@ -376,6 +428,32 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     }
   }, [applySnapshot, setViewSafe, userId]);
 
+  const consumeNativeAction = useCallback(async () => {
+    if (!userId) return;
+    const action = await consumeCallBackgroundAction();
+    if (!action) return;
+    const generation = generationRef.current;
+    if (viewRef.current.callId !== action.callId) {
+      await openCall(action.callId);
+    }
+    if (generation !== generationRef.current) return;
+    const current = viewRef.current;
+    const snapshot = current.snapshot;
+    if (!snapshot?.call || snapshot.call.callId !== action.callId || isTerminalCallStatus(snapshot.call.status)) return;
+
+    if (action.action === 'answer' && snapshot.capabilities.canAnswer) {
+      await answerCall();
+      return;
+    }
+    if (snapshot.capabilities.canCancel) {
+      await performTransition('cancel');
+    } else if (snapshot.capabilities.canEnd) {
+      await performTransition('end');
+    } else if (snapshot.capabilities.canAnswer) {
+      await performTransition('decline');
+    }
+  }, [answerCall, openCall, performTransition, userId]);
+
   const setCallScreenVisible = useCallback((visible: boolean) => {
     screenVisibleRef.current = visible;
     if (visible) setViewSafe((current) => ({ ...current, minimized: false }));
@@ -409,6 +487,40 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     }
   }, [setViewSafe, stopMedia]);
 
+  const teardownForForegroundOnlyBackground = useCallback(async () => {
+    const current = viewRef.current;
+    const call = current.snapshot?.call;
+    if (!call || isTerminalCallStatus(call.status)) return;
+    await stopMedia();
+    setViewSafe((next) => ({ ...EMPTY_VIEW, mediaAvailable: next.mediaAvailable }));
+    const action = current.snapshot?.capabilities.canCancel
+      ? 'cancel'
+      : current.snapshot?.capabilities.canEnd
+        ? 'end'
+        : null;
+    if (action) {
+      await Promise.race([
+        transitionCall(action, call.callId, clientSessionIdRef.current).catch(() => undefined),
+        new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+      ]);
+    }
+  }, [setViewSafe, stopMedia]);
+
+  const handleBackgroundTransition = useCallback(async () => {
+    const snapshot = viewRef.current.snapshot;
+    const call = snapshot?.call;
+    if (!snapshot || !call || isTerminalCallStatus(call.status)) return;
+    const continued = await syncNativeBackground(snapshot);
+    if (continued) {
+      if (call.mediaType === 'video' && viewRef.current.cameraEnabled && mediaRef.current) {
+        await setNativeCameraEnabled(mediaRef.current.room, false).catch(() => undefined);
+        setViewSafe((current) => ({ ...current, cameraEnabled: false }));
+      }
+      return;
+    }
+    await teardownForForegroundOnlyBackground();
+  }, [setViewSafe, syncNativeBackground, teardownForForegroundOnlyBackground]);
+
   useEffect(() => registerCallSessionTeardown(teardownForSessionChange), [teardownForSessionChange]);
 
   useEffect(() => {
@@ -417,17 +529,40 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     blockedDeclinesRef.current.clear();
     microphoneDeniedRef.current = false;
     cameraDeniedRef.current = false;
+    mediaRecoveryAttemptRef.current = 0;
+    realtimeRecoveryAttemptRef.current = 0;
     void stopMedia();
     setViewSafe({ ...EMPTY_VIEW, mediaAvailable: isCallingNativeAvailable() });
   }, [setViewSafe, stopMedia, userId]);
 
   useEffect(() => {
     if (!userId) return;
-    const realtime = startCallRealtime(() => void refreshCall());
+    const realtime = startCallRealtime(
+      () => void refreshCall(),
+      (realtimeStatus) => {
+        if (realtimeStatus === 'SUBSCRIBED') {
+          realtimeRecoveryAttemptRef.current = 0;
+          void refreshCall();
+          return;
+        }
+        const delay = callRecoveryDelayMs(realtimeRecoveryAttemptRef.current);
+        realtimeRecoveryAttemptRef.current += 1;
+        if (realtimeRecoveryTimerRef.current) clearTimeout(realtimeRecoveryTimerRef.current);
+        if (delay === null) return;
+        realtimeRecoveryTimerRef.current = setTimeout(() => {
+          realtimeRecoveryTimerRef.current = null;
+          void refreshCall();
+        }, delay);
+      },
+    );
     realtimeRef.current = realtime;
     void refreshCall();
     return () => {
       if (realtimeRef.current === realtime) realtimeRef.current = null;
+      if (realtimeRecoveryTimerRef.current) {
+        clearTimeout(realtimeRecoveryTimerRef.current);
+        realtimeRecoveryTimerRef.current = null;
+      }
       void realtime.stop();
     };
   }, [refreshCall, userId]);
@@ -437,6 +572,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     if (!userId || !chatId || view.snapshot?.call?.status !== 'ringing') return;
     return subscribeChatPreferenceChanges(userId, chatId, () => void refreshCall());
   }, [refreshCall, userId, view.snapshot?.call?.chatId, view.snapshot?.call?.status]);
+
+  useEffect(() => {
+    if (!userId) return;
+    return subscribeNotificationPreferenceChanges(userId, () => void refreshCall());
+  }, [refreshCall, userId]);
 
   const activeCall = view.snapshot?.call;
   const activeCallId = activeCall?.callId;
@@ -457,10 +597,19 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') void refreshCall();
+      const previous = appStateRef.current;
+      appStateRef.current = nextState;
+      if (nextState === 'active') {
+        void refreshCall();
+        void consumeNativeAction();
+      } else if (nextState === 'background' && previous === 'active') {
+        // `inactive` is also emitted for permission dialogs. Only confirmed
+        // backgrounding may trigger foreground-only cleanup.
+        void handleBackgroundTransition();
+      }
     });
     return () => subscription.remove();
-  }, [refreshCall]);
+  }, [consumeNativeAction, handleBackgroundTransition, refreshCall]);
 
   useEffect(() => {
     const callId = view.snapshot?.call?.callId;

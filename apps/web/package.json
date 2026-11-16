@@ -1,0 +1,40 @@
+{
+  "name": "@dologram/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --webpack --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0 && stylelint \"src/**/*.css\" --max-warnings=0",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@dologram/shared": "*",
+    "next": "16.4.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "lucide-react": "1.73.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "26.6.6",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "fake-indexeddb": "6.2.8",
+    "jsdom": "27.4.0",
+    "stylelint": "17.16.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
+  }
+}

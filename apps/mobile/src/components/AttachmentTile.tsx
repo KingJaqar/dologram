@@ -10,8 +10,8 @@ import { VoiceNotePlayer } from './VoiceNotePlayer';
 import { Icon } from './Icon';
 import { DelayedActivityIndicator } from './DelayedActivityIndicator';
 
-export function AttachmentTile({ attachment, index, total, pending, onOpen }: {
-  attachment: ChatAttachment; index: number; total: number; pending: boolean; onOpen: () => void;
+export function AttachmentTile({ attachment, index, total, pending, onOpen, onLongPress }: {
+  attachment: ChatAttachment; index: number; total: number; pending: boolean; onOpen: () => void; onLongPress?: () => void;
 }) {
   const theme = useTheme();
   const source = useMediaSource(attachment);
@@ -28,11 +28,11 @@ export function AttachmentTile({ attachment, index, total, pending, onOpen }: {
     catch (error) { setShareError(error instanceof Error ? error.message : strings.common.couldNotLoad); }
     finally { setSharing(false); }
   };
-  if (source.error) return <Pressable onPress={source.retry} accessibilityRole="button" accessibilityLabel={`${label}. ${source.error}`} style={[styles.tile, { backgroundColor: theme.colors.bg.surface }]}><Icon name="status.failed" color={theme.colors.error.text} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.error.text }]}>{source.error}</Text></Pressable>;
-  if (!source.uri || source.loading) return <View style={styles.tile} accessibilityLabel={`Loading ${label}`}><DelayedActivityIndicator active={source.loading || !source.uri} color={theme.colors.brand.primary} /></View>;
-  if (attachment.mediaType === 'voice') return <VoiceNotePlayer uri={source.uri} onError={source.fail} />;
+  if (source.error) return <Pressable onPress={source.retry} onLongPress={onLongPress} delayLongPress={400} accessibilityRole="button" accessibilityLabel={`${label}. ${source.error}`} accessibilityHint={onLongPress ? 'Long press for message actions' : undefined} style={[styles.tile, { backgroundColor: theme.colors.bg.surface }]}><Icon name="status.failed" color={theme.colors.error.text} accessibilityLabel="" /><Text style={[textStyle(theme.typeTokens.bodySm), { color: theme.colors.error.text }]}>{source.error}</Text></Pressable>;
+  if (!source.uri || source.loading) return <Pressable onLongPress={onLongPress} delayLongPress={400} disabled={!onLongPress} accessibilityLabel={`Loading ${label}`} accessibilityHint={onLongPress ? 'Long press for message actions' : undefined} style={styles.tile}><DelayedActivityIndicator active={source.loading || !source.uri} color={theme.colors.brand.primary} /></Pressable>;
+  if (attachment.mediaType === 'voice') return <VoiceNotePlayer uri={source.uri} onError={source.fail} onLongPress={onLongPress} />;
   return <View style={styles.wrapper}>
-    <Pressable onPress={() => void open()} disabled={sharing} accessibilityRole="button" accessibilityLabel={label} style={[attachment.mediaType === 'file' ? styles.file : styles.tile, { backgroundColor: theme.colors.bg.surface, borderRadius: theme.radius.lg }]}>
+    <Pressable onPress={() => void open()} onLongPress={onLongPress} delayLongPress={400} disabled={sharing} accessibilityRole="button" accessibilityLabel={label} accessibilityHint={onLongPress ? 'Long press for message actions' : undefined} style={[attachment.mediaType === 'file' ? styles.file : styles.tile, { backgroundColor: theme.colors.bg.surface, borderRadius: theme.radius.lg }]}>
       {attachment.mediaType === 'photo' ? <>
         <Image source={{ uri: source.uri }} style={styles.photo} resizeMode="cover" accessibilityLabel={label} onLoad={() => setLoadedImage(source.uri)} onError={source.fail} />
         {loadedImage !== source.uri ? <DelayedActivityIndicator active={loadedImage !== source.uri} style={styles.spinner} color={theme.colors.brand.primary} /> : null}

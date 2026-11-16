@@ -4,6 +4,9 @@ verify_jwt = false
 [functions.send-push-notifications]
 verify_jwt = false
 
+[functions.send-call-notifications]
+verify_jwt = false
+
 [functions.call-action]
 verify_jwt = true
 
@@ -14,4 +17,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.reconcile-calls]
+verify_jwt = false
+[functions.memo-sync]
+verify_jwt = false
+[functions.memo-pin-reset]
+verify_jwt = false
+[functions.send-memo-reminders]
 verify_jwt = false

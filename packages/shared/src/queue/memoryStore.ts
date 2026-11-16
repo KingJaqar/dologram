@@ -59,8 +59,8 @@ export function createMemoryStore(initial: QueueItem[] = []): MemoryStore {
       return unsent();
     },
 
-    async countUnsent(): Promise<number> {
-      return unsent().length;
+    async countUnsent(senderId?: string): Promise<number> {
+      return unsent().filter((item) => senderId === undefined || item.payload.sender_id === senderId).length;
     },
 
     async resetSending(): Promise<void> {
@@ -71,9 +71,9 @@ export function createMemoryStore(initial: QueueItem[] = []): MemoryStore {
       }
     },
 
-    async makeAllDue(now: number): Promise<void> {
+    async makeAllDue(now: number, senderId?: string): Promise<void> {
       for (const [tempId, item] of rows) {
-        if (item.status === 'queued') {
+        if (item.status === 'queued' && (senderId === undefined || item.payload.sender_id === senderId)) {
           rows.set(tempId, { ...item, next_attempt_at: now });
         }
       }

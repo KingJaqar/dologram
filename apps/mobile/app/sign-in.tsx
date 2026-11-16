@@ -320,6 +320,7 @@ export default function SignInScreen() {
         </View>
 
         <View style={{ marginTop: theme.space[4], width: '100%' }}>
+          <Button label={strings.memos.offlineEntry} variant="text" onPress={() => router.push('/local-memos')} />
           <Button
             label={strings.signIn.title}
             variant="primary"

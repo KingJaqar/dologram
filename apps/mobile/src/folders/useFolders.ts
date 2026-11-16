@@ -2,6 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   addChatToFolder,
+  conversationIdentity,
+  memoListKey,
   createFolder as createRemoteFolder,
   deleteFolder as deleteRemoteFolder,
   dgTrim,
@@ -18,6 +20,8 @@ import { getLocalDatabase } from '../queue/db';
 import { notifyCacheChange, subscribeCacheChange } from '../sync/cacheEvents';
 import { useNetState } from '../net/netState';
 import { loadCachedFolders, replaceCachedFolders, type LocalFolder } from './cache';
+import { useMemos } from '../memos/useMemos';
+import { activeMemoScope, withMemoStore } from '../memos/vault';
 
 export type FolderState = {
   folders: LocalFolder[];
@@ -40,6 +44,7 @@ function failure(error: ClassifiedError | null): ClassifiedError | null {
 const unexpectedFailure: ClassifiedError = { kind: 'server', code: null, status: null };
 
 export function useFolders(): FolderState {
+  const memoRows = useMemos();
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
   const net = useNetState();
@@ -152,13 +157,14 @@ export function useFolders(): FolderState {
       try {
         const result = await deleteRemoteFolder(supabase, folderId);
         if (result.error) return failure(result.error);
+        if (memoRows.links.some((link) => link.folder_id === folderId)) await withMemoStore(activeMemoScope(), (store) => store.removeFolder(folderId), true);
         await refresh();
         return null;
       } catch {
         return unexpectedFailure;
       }
     },
-    [net.isConnected, refresh],
+    [net.isConnected, refresh, memoRows.links],
   );
 
   const setChats = useCallback(
@@ -166,9 +172,10 @@ export function useFolders(): FolderState {
       if (!net.isConnected) return { kind: 'network' };
       try {
         const current = folders.find((folder) => folder.folder_id === folderId)?.chatIds ?? [];
-        const wanted = new Set(chatIds);
+        const ordinaryIds = chatIds.filter((id) => conversationIdentity(id).kind === 'chat');
+        const wanted = new Set(ordinaryIds);
         const currentSet = new Set(current);
-        for (const chatId of chatIds) {
+        for (const chatId of ordinaryIds) {
           if (currentSet.has(chatId)) continue;
           const result = await addChatToFolder(supabase, folderId, chatId);
           if (result.error) return failure(result.error);
@@ -178,20 +185,26 @@ export function useFolders(): FolderState {
           const result = await removeChatFromFolder(supabase, folderId, chatId);
           if (result.error) return failure(result.error);
         }
+        const existingMemoIds = memoRows.links.filter((link) => link.folder_id === folderId).map((link) => link.memo_id);
+        const selectedMemoIds = chatIds.flatMap((id) => { const identity = conversationIdentity(id); return identity.kind === 'memo' ? [identity.memoId] : []; });
+        if (existingMemoIds.length || selectedMemoIds.length) await withMemoStore(activeMemoScope(), async (store) => {
+          for (const id of new Set([...existingMemoIds, ...selectedMemoIds])) await store.folder(id, folderId, selectedMemoIds.includes(id));
+        }, true);
         await refresh();
         return null;
       } catch {
         return unexpectedFailure;
       }
     },
-    [folders, net.isConnected, refresh],
+    [folders, net.isConnected, refresh, memoRows.links],
   );
 
+  const combinedFolders = useMemo(() => folders.map((folder) => ({ ...folder, chatIds: [...folder.chatIds, ...memoRows.links.filter((link) => link.folder_id === folder.folder_id).map((link) => memoListKey(link.memo_id))] })), [folders, memoRows.links]);
   const chatIdsByFolder = useMemo(() => {
     const map = new Map<string, readonly string[]>();
-    for (const folder of folders) map.set(folder.folder_id, folder.chatIds);
+    for (const folder of combinedFolders) map.set(folder.folder_id, folder.chatIds);
     return map;
-  }, [folders]);
+  }, [combinedFolders]);
 
-  return { folders, chatIdsByFolder, loading, refreshing, error, reload, refresh, create, rename, remove, setChats };
+  return { folders: combinedFolders, chatIdsByFolder, loading, refreshing, error, reload, refresh, create, rename, remove, setChats };
 }

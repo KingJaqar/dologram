@@ -16,6 +16,12 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   badges: true,
 };
 
+const listeners = new Map<string, Set<() => void>>();
+
+function notifyPreferenceChange(userId: string): void {
+  listeners.get(userId)?.forEach((listener) => listener());
+}
+
 function storageKey(userId: string): string {
   return `dg.notificationPreferences:${userId}`;
 }
@@ -49,6 +55,17 @@ export async function saveNotificationPreferences(
   preferences: NotificationPreferences,
 ): Promise<void> {
   await AsyncStorage.setItem(storageKey(userId), JSON.stringify({ ...preferences, version: 2 }));
+  notifyPreferenceChange(userId);
+}
+
+export function subscribeNotificationPreferenceChanges(userId: string, listener: () => void): () => void {
+  const userListeners = listeners.get(userId) ?? new Set<() => void>();
+  userListeners.add(listener);
+  listeners.set(userId, userListeners);
+  return () => {
+    userListeners.delete(listener);
+    if (userListeners.size === 0) listeners.delete(userId);
+  };
 }
 
 export async function updateNotificationPreferences(

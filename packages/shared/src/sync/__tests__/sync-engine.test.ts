@@ -69,6 +69,7 @@ function profile(userId: string, displayName: string): ProfileRow {
     avatar_url: null,
     display_name: displayName,
     premium_flags: null,
+    roles: 'user',
     user_id: userId,
     username: `user_${userId.slice(-4)}`,
   };
@@ -108,6 +109,8 @@ class MemoryStore implements SyncCacheStore {
   cursors = new Map<string, number>();
 
   async init(): Promise<void> {}
+  checkpointVersion = 0;
+  async upgradeCheckpoints() { if (!this.checkpointVersion) { this.cursors.clear(); this.checkpointVersion = 1; } }
 
   async getCursor(chatId: string): Promise<number> {
     return this.cursors.get(chatId) ?? 0;
@@ -133,16 +136,21 @@ class MemoryStore implements SyncCacheStore {
     this.members.set(`${row.chat_id}:${row.user_id}`, row);
   }
 
+  async replaceMembers(chatId: string, rows: readonly ChatMemberRow[]): Promise<void> {
+    for (const [key, row] of [...this.members]) if (row.chat_id === chatId) this.members.delete(key);
+    for (const row of rows) await this.upsertMember(row);
+  }
+
   async upsertMessage(row: MessageRow): Promise<void> {
-    this.messages.set(row.message_id, row);
+    if ((this.messages.get(row.message_id)?.sync_seq ?? -1) < row.sync_seq) this.messages.set(row.message_id, row);
   }
 
   async upsertMedia(row: MessageMediaRow): Promise<void> {
-    this.media.set(row.media_id, row);
+    if ((this.media.get(row.media_id)?.sync_seq ?? -1) < row.sync_seq) this.media.set(row.media_id, row);
   }
 
   async upsertReaction(row: ReactionRow): Promise<void> {
-    this.reactions.set(`${row.message_id}:${row.user_id}:${row.emoji}`, row);
+    if ((this.reactions.get(`${row.message_id}:${row.user_id}:${row.emoji}`)?.sync_seq ?? -1) < row.sync_seq) this.reactions.set(`${row.message_id}:${row.user_id}:${row.emoji}`, row);
   }
 
   async upsertProfile(row: ProfileRow): Promise<void> {
@@ -255,6 +263,10 @@ class FakeDelivery {
     this.handlers?.onChange(change);
   }
 
+  invalidateMembers(chatId: string): void {
+    this.handlers?.onMembersInvalidated(chatId);
+  }
+
   status(next: 'connected' | 'disconnected'): void {
     this.handlers?.onStatus(next);
   }
@@ -268,7 +280,7 @@ async function until(check: () => boolean): Promise<void> {
   throw new Error('the expected cache state was not reached');
 }
 
-function build(options?: { pageSize?: number }) {
+function build(options?: { pageSize?: number; maxPages?: number; onMetadataChange?: () => void }) {
   const store = new MemoryStore();
   const source = new FakeSource();
   const delivery = new FakeDelivery();
@@ -278,6 +290,8 @@ function build(options?: { pageSize?: number }) {
     source,
     delivery,
     pageSize: options?.pageSize ?? 500,
+    maxPages: options?.maxPages,
+    onMetadataChange: options?.onMetadataChange,
     onError: (error) => errors.push(error),
   });
   return { store, source, delivery, engine, errors };
@@ -317,7 +331,7 @@ describe('sync engine initial fetch', () => {
     expect(source.afterCalls.slice(0, 2)).toEqual([0, 0]);
     expect(source.afterCalls).toContain(2);
     expect(source.afterCalls).toContain(4);
-    expect(source.afterCalls).toContain(5);
+    expect(source.afterCalls).not.toContain(5); // A short final page finishes the pass.
   });
 
   it("caches the display names of a chat's members for the chat list", async () => {
@@ -365,7 +379,7 @@ describe('sync engine changes', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(store.messages.size).toBe(1);
-    expect(await store.getCursor('chat-a')).toBe(9);
+    expect(await store.getCursor('chat-a')).toBe(0);
   });
 
   it('stores an event but leaves the cursor alone until a resync has caught the chat up', async () => {
@@ -427,7 +441,42 @@ describe('sync engine changes', () => {
     await until(() => store.messages.get('m1')?.content === 'edited');
     await until(() => store.reactions.size === 1);
     expect(store.reactions.get(`m1:${USER}:👍`)?.removed_at).not.toBeNull();
-    expect(await store.getCursor('chat-a')).toBe(6);
+    expect(await store.getCursor('chat-a')).toBe(1);
+  });
+
+  it('does not let an in-flight member snapshot overwrite a newer member event', async () => {
+    const { store, source, delivery, engine } = build();
+    source.addChat('chat-a');
+    await engine.start();
+    const { promise, resolve } = Promise.withResolvers<DgResult<ChatMemberRow[]>>();
+    const fetchMembers = vi.spyOn(source, 'fetchMembers').mockImplementationOnce(() => promise);
+
+    const resync = engine.resyncChat('chat-a');
+    await until(() => fetchMembers.mock.calls.length === 1);
+    delivery.emit({ table: 'chat_members', row: { ...member('chat-a'), last_read_seq: 9 } });
+    resolve({ data: [{ ...member('chat-a'), last_read_seq: 4 }], error: null });
+    await resync;
+    await until(() => store.members.get(`chat-a:${USER}`)?.last_read_seq === 9);
+
+    expect(store.members.get(`chat-a:${USER}`)?.last_read_seq).toBe(9);
+  });
+
+  it('coalesces invalidations into one in-flight snapshot and one fresh follow-up', async () => {
+    const { store, source, delivery, engine } = build();
+    source.addChat('chat-a');
+    await engine.start();
+    const { promise, resolve } = Promise.withResolvers<DgResult<ChatMemberRow[]>>();
+    const fetchMembers = vi.spyOn(source, 'fetchMembers').mockImplementationOnce(() => promise);
+
+    delivery.invalidateMembers('chat-a');
+    await until(() => fetchMembers.mock.calls.length === 1);
+    source.members.set('chat-a', [{ ...member('chat-a'), last_read_seq: 12 }]);
+    delivery.invalidateMembers('chat-a');
+    delivery.invalidateMembers('chat-a');
+    resolve({ data: [{ ...member('chat-a'), last_read_seq: 3 }], error: null });
+
+    await until(() => store.members.get(`chat-a:${USER}`)?.last_read_seq === 12);
+    expect(fetchMembers).toHaveBeenCalledTimes(2);
   });
 
   it('ignores events after stop and unsubscribes once', async () => {
@@ -446,6 +495,37 @@ describe('sync engine changes', () => {
 });
 
 describe('sync engine resync and prune', () => {
+  it('publishes every conversation before waiting for any history pages', async () => {
+    const onMetadataChange = vi.fn();
+    const { store, source, engine } = build({ onMetadataChange });
+    source.addChat('chat-a');
+    source.addChat('chat-b');
+    const { promise, resolve } = Promise.withResolvers<DgResult<MessageRow[]>>();
+    vi.spyOn(source, 'fetchMessagesAfter').mockImplementationOnce(() => promise);
+
+    const sync = engine.start();
+    await until(() => onMetadataChange.mock.calls.length > 0);
+    expect([...store.members.values()].map((row) => row.chat_id)).toEqual(['chat-a', 'chat-b']);
+    resolve({ data: [], error: null });
+    await sync;
+  });
+
+  it('ignores a chat-list result from a session stopped during the request', async () => {
+    const { store, source, engine } = build();
+    source.addChat('chat-a');
+    await engine.start();
+    const { promise, resolve } = Promise.withResolvers<DgResult<ChatRow[]>>();
+    const fetchChats = vi.spyOn(source, 'fetchChats').mockImplementationOnce(() => promise);
+    const resync = engine.resyncAll();
+    await until(() => fetchChats.mock.calls.length === 1);
+    engine.stop();
+    resolve({ data: [], error: null });
+    await resync;
+
+    expect(store.chats.has('chat-a')).toBe(true);
+    expect(store.members.has(`chat-a:${USER}`)).toBe(true);
+  });
+
   it('picks up rows missed while the app was backgrounded, including rows from two senders', async () => {
     const { store, source, engine } = build();
     source.addChat('chat-a');
@@ -511,4 +591,90 @@ describe('sync engine resync and prune', () => {
     await until(() => store.messages.has('m2'));
     expect(await store.getCursor('chat-a')).toBe(2);
   });
+});
+
+
+describe('safe common checkpoints and legacy replay', () => {
+  it('restores every ID in imbalanced >500-row tables below an inflated legacy cursor', async () => {
+    const { source, store, engine } = build(); source.addChat('chat-a');
+    store.cursors.set('chat-a', 9000);
+    const rows = Array.from({ length: 1201 }, (_, i) => message('chat-a', `m${i + 1}`, i + 1));
+    source.messages.set('chat-a', rows);
+    source.media.set('chat-a', [media('chat-a', 'later-media', 5000)]);
+    source.reactions.set('chat-a', [reaction('chat-a', 'm1', 6000)]);
+    expect((await engine.start()).failed).toBe(0);
+    expect([...store.messages.values()]).toEqual(rows);
+    expect(store.media.get('later-media')?.sync_seq).toBe(5000);
+    expect(store.reactions.get(`m1:${USER}:👍`)?.sync_seq).toBe(6000);
+    expect(await store.getCursor('chat-a')).toBe(6000);
+    engine.stop(); await engine.start();
+    expect(source.afterCalls).toContain(6000);
+  });
+
+  it('retains a safe continuation at the cap and completes on a later bounded pass', async () => {
+    const { source, store, engine } = build({ pageSize: 2, maxPages: 1 }); source.addChat('chat-a');
+    source.messages.set('chat-a', [1, 2, 3].map((n) => message('chat-a', `m${n}`, n)));
+    source.media.set('chat-a', [media('chat-a', 'later', 100)]);
+    expect((await engine.start()).failed).toBe(1);
+    expect(await store.getCursor('chat-a')).toBe(2);
+    expect(store.messages.has('m3')).toBe(false);
+    expect((await engine.resyncAll()).failed).toBe(0);
+    expect([...store.messages.keys()]).toEqual(['m1', 'm2', 'm3']);
+    expect(await store.getCursor('chat-a')).toBe(100);
+  });
+
+  it('rejects unordered/non-progressing pages and preserves safe checkpoints on partial failures', async () => {
+    const { source, store, engine } = build(); source.addChat('chat-a');
+    vi.spyOn(source, 'fetchMessagesAfter').mockResolvedValueOnce({ data: [message('chat-a', 'bad', 0)], error: null });
+    expect((await engine.start()).failed).toBe(1);
+    expect(store.messages.size).toBe(0); expect(await store.getCursor('chat-a')).toBe(0);
+    source.messages.set('chat-a', [message('chat-a', 'good', 1)]);
+    vi.spyOn(source, 'fetchMediaAfter').mockResolvedValueOnce({ data: null, error: { kind: 'network' } });
+    expect((await engine.resyncAll()).failed).toBe(1);
+    expect(store.messages.size).toBe(0); expect(await store.getCursor('chat-a')).toBe(0);
+  });
+
+  it('does not let later duplicate/out-of-order events resurrect message/media/reaction tombstones', async () => {
+    const { source, store, engine, delivery } = build(); source.addChat('chat-a'); await engine.start();
+    const tombstone = { ...message('chat-a', 'm', 20, ''), deleted_at: '2026-11-15T00:00:00Z' };
+    delivery.emit({ table: 'messages', row: tombstone });
+    delivery.emit({ table: 'messages', row: message('chat-a', 'm', 2, 'stale') });
+    delivery.emit({ table: 'message_media', row: { ...media('chat-a', 'md', 21), deleted_at: tombstone.deleted_at } });
+    delivery.emit({ table: 'message_media', row: media('chat-a', 'md', 1) });
+    delivery.emit({ table: 'reactions', row: { ...reaction('chat-a', 'm', 22), removed_at: tombstone.deleted_at } });
+    delivery.emit({ table: 'reactions', row: reaction('chat-a', 'm', 3) });
+    await until(() => store.reactions.size === 1);
+    expect(store.messages.get('m')).toEqual(tombstone);
+    expect(store.media.get('md')?.deleted_at).toBe(tombstone.deleted_at);
+    expect(store.reactions.get(`m:${USER}:👍`)?.removed_at).toBe(tombstone.deleted_at);
+    expect(await store.getCursor('chat-a')).toBe(0);
+  });
+
+  it('failed/empty member snapshots retain the roster; confirmed removal and rejoin reconcile', async () => {
+    const { source, store, engine, delivery } = build(); source.addChat('chat-a'); await engine.start();
+    const fetch = vi.spyOn(source, 'fetchMembers').mockResolvedValueOnce({ data: [], error: null });
+    expect(await engine.resyncChat('chat-a')).toBe(false);
+    expect(store.members.has(`chat-a:${USER}`)).toBe(true);
+    fetch.mockResolvedValueOnce({ data: null, error: { kind: 'network' } });
+    expect(await engine.resyncChat('chat-a')).toBe(false);
+    source.chats = []; delivery.invalidateMembers('chat-a');
+    await until(() => !store.chats.has('chat-a'));
+    source.addChat('chat-a');
+    source.members.set('chat-a', [{ ...member('chat-a'), joined_at: '2026-11-15T00:00:00Z' }]);
+    expect(await engine.resyncChat('chat-a')).toBe(true);
+    expect(store.members.get(`chat-a:${USER}`)?.joined_at).toBe('2026-11-15T00:00:00Z');
+  });
+});
+
+
+it('replays persisted rows after an interrupted checkpoint write without hiding the remaining history', async () => {
+  const { source, store, engine } = build({ pageSize: 2 }); source.addChat('chat-a');
+  source.messages.set('chat-a', [1, 2, 3].map((n) => message('chat-a', `m${n}`, n)));
+  vi.spyOn(store, 'setCursor').mockRejectedValueOnce(new Error('Injected checkpoint interruption'));
+  await expect(engine.start()).rejects.toThrow('checkpoint interruption');
+  expect(await store.getCursor('chat-a')).toBe(0);
+  expect([...store.messages.keys()]).toEqual(['m1', 'm2']);
+  expect((await engine.resyncAll()).failed).toBe(0);
+  expect([...store.messages.keys()]).toEqual(['m1', 'm2', 'm3']);
+  expect(await store.getCursor('chat-a')).toBe(3);
 });

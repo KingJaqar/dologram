@@ -1,37 +1,51 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { config } from '@dologram/shared';
-import { ChatListSkeleton } from '../components/ChatRow';
+import { DoloGramLoadingLogo } from './DoloGramLoadingLogo';
+import { chatListLaunches } from './startupSnapshot';
 import { useTheme } from '../theme/ThemeProvider';
 
 const FADE_MS = 250;
 const MIN_PLACEHOLDER_MS = 200;
+const LAUNCH_LOADING_MS = 600;
 
-/** Keep the list mounted; only the first cache read gets a placeholder and a reveal. */
-export function ChatListLoadingTransition({ loading, children }: {
+/** Keep rows mounted; show the logo on launch or a real uncached load, then crossfade. */
+export function ChatListLoadingTransition({ loading, launchKey, children }: {
   loading: boolean;
+  launchKey?: string;
   children: React.ReactNode;
 }) {
   const { reduceMotion, colors } = useTheme();
-  const progress = useRef(new Animated.Value(loading ? 0 : 1)).current;
+  const [launchLoading, setLaunchLoading] = useState(() => Boolean(launchKey && !chatListLaunches.has(launchKey)));
+  const waiting = loading || launchLoading;
+  const progress = useRef(new Animated.Value(waiting ? 0 : 1)).current;
   const shownAt = useRef<number | null>(null);
-  const [placeholder, setPlaceholder] = useState(false);
+  const [placeholder, setPlaceholder] = useState(launchLoading);
+
+  useEffect(() => {
+    if (!launchLoading) return;
+    shownAt.current ??= Date.now();
+    if (launchKey) chatListLaunches.add(launchKey);
+    const timer = setTimeout(() => setLaunchLoading(false), reduceMotion ? 0 : LAUNCH_LOADING_MS);
+    return () => clearTimeout(timer);
+  }, [launchKey, launchLoading, reduceMotion]);
 
   useEffect(() => {
     let cancelled = false;
     let animation: Animated.CompositeAnimation | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    if (loading) {
+    if (waiting) {
       progress.setValue(0);
-      shownAt.current = null;
-      timer = setTimeout(() => {
-        shownAt.current = Date.now();
-        setPlaceholder(true);
-      }, config.ui.loadingDelayMs);
+      if (shownAt.current === null) {
+        timer = setTimeout(() => {
+          shownAt.current = Date.now();
+          setPlaceholder(true);
+        }, config.ui.loadingDelayMs);
+      }
     } else {
       const reveal = () => {
-        if (reduceMotion) {
+        if (reduceMotion || shownAt.current === null) {
           progress.setValue(1);
           shownAt.current = null;
           setPlaceholder(false);
@@ -51,10 +65,11 @@ export function ChatListLoadingTransition({ loading, children }: {
           }
         });
       };
-      // A read completing just after the threshold must not flash a one-frame skeleton.
+      // A read completing just after the threshold must not flash a one-frame loader.
       const remaining = shownAt.current === null || reduceMotion
         ? 0 : Math.max(0, MIN_PLACEHOLDER_MS - (Date.now() - shownAt.current));
-      timer = setTimeout(reveal, remaining);
+      if (remaining === 0) reveal();
+      else timer = setTimeout(reveal, remaining);
     }
 
     return () => {
@@ -62,31 +77,38 @@ export function ChatListLoadingTransition({ loading, children }: {
       clearTimeout(timer);
       animation?.stop();
     };
-  }, [loading, progress, reduceMotion]);
+  }, [waiting, progress, reduceMotion]);
 
   return (
-    <View style={styles.region} accessibilityState={{ busy: loading }}>
+    <View style={styles.region} accessibilityState={{ busy: waiting }}>
       <Animated.View
-        style={[styles.region, { opacity: placeholder ? (loading ? 0 : 1) : progress }]}
-        pointerEvents={loading || placeholder ? 'none' : 'auto'}
-        accessibilityElementsHidden={loading || placeholder}
-        importantForAccessibility={loading || placeholder ? 'no-hide-descendants' : 'auto'}
+        needsOffscreenAlphaCompositing
+        style={[styles.region, { opacity: progress }]}
+        pointerEvents={waiting || placeholder ? 'none' : 'auto'}
+        accessibilityElementsHidden={waiting || placeholder}
+        importantForAccessibility={waiting || placeholder ? 'no-hide-descendants' : 'auto'}
       >
         {children}
       </Animated.View>
       {placeholder ? (
         <Animated.View
+          needsOffscreenAlphaCompositing
           pointerEvents="none"
-          style={[StyleSheet.absoluteFill, {
+          style={[StyleSheet.absoluteFill, styles.loader, {
             backgroundColor: colors.bg.app,
             opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
           }]}
         >
-          <ChatListSkeleton />
+          <View accessible accessibilityRole="progressbar" accessibilityLabel="Loading chats" testID="chat-list-loader">
+            <DoloGramLoadingLogo />
+          </View>
         </Animated.View>
       ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({ region: { flex: 1, overflow: 'hidden' } });
+const styles = StyleSheet.create({
+  region: { flex: 1, overflow: 'hidden' },
+  loader: { alignItems: 'center', justifyContent: 'center' },
+});

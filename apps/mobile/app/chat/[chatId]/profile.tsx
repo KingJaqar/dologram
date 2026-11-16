@@ -22,27 +22,31 @@ export default function ChatProfileScreen() {
   const theme = useTheme();
   const c = theme.colors;
   const { session } = useAuth();
+  const userId = session?.user.id;
   const { info, loading, error, refresh } = useChatInfo(chatId);
   const showLoading = useDelayedFlag(loading);
-  const [username, setUsername] = React.useState<string>('');
+  const profileId = info?.isGroup === false ? info.avatarId : null;
+  const scope = `${userId}:${chatId}:${profileId}`;
+  const [loadedUsername, setLoadedUsername] = React.useState<{ scope: string; username: string } | null>(null);
+  const username = loadedUsername?.scope === scope ? loadedUsername.username : '';
 
   React.useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !userId || !profileId) return;
     let active = true;
-    void getLocalDatabase().then((db) => loadChatInfoSource(db, chatId)).then((source) => {
-      if (!active || !info || info.isGroup) return;
-      const other = source.profiles.find((profile) => profile.user_id === info.avatarId);
-      setUsername(other?.username ?? '');
+    void getLocalDatabase().then((db) => loadChatInfoSource(db, chatId, userId)).then((source) => {
+      if (!active) return;
+      const other = source.profiles.find((profile) => profile.user_id === profileId);
+      setLoadedUsername({ scope, username: other?.username ?? '' });
     }).catch(() => undefined);
     return () => { active = false; };
-  }, [chatId, info]);
+  }, [chatId, profileId, scope, userId]);
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg.app }]}>
       <TopBar title={strings.chatInfo.profile} onBack={() => goBackOrReplace(router, chatId ? { pathname: '/chat/[chatId]/info', params: { chatId } } : '/(main)/(tabs)')} />
       {loading ? (showLoading ? <View><SkeletonRow /><SkeletonRow /></View> : null) : info === null ? <ErrorState title={strings.chatInfo.unavailable} message={error ? strings.common.checkConnection : strings.chatInfo.unavailableBody} onRetry={() => void refresh()} /> : (
         <ScrollView contentContainerStyle={[styles.content, { padding: theme.space[6] }]}>
-          <Avatar id={info.avatarId} displayName={info.title} imageUrl={info.avatarUrl} size={96} isSavedMessages={info.savedMessages} />
+          <Avatar id={info.avatarId} displayName={info.title} imageUrl={info.avatarUrl} imageBucket={info.isGroup ? 'chat-avatars' : 'avatars'} size={96} isSavedMessages={info.savedMessages} />
           <Text style={[textStyle(theme.typeTokens.titleLg), { color: c.text.primary, textAlign: 'center' }]}>{info.title}</Text>
           {username ? <Text style={[textStyle(theme.typeTokens.bodyLg), { color: c.text.secondary }]}>@{username}</Text> : null}
           {info.isGroup ? <Text style={[textStyle(theme.typeTokens.bodyMd), { color: c.text.secondary }]}>{info.subtitle}</Text> : null}
